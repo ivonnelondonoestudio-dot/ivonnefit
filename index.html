@@ -554,15 +554,43 @@ canvas{max-width:100%}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
 .pulse{animation:pulse 2s ease-in-out infinite}
 
-/* ─ MOBILE ─ */
+/* ─ MOBILE BOTTOM NAV ─ */
+.mobile-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:rgba(13,26,38,0.97);backdrop-filter:blur(16px);
+  border-top:1px solid var(--border);
+  padding:8px 0 env(safe-area-inset-bottom,8px);
+}
+.mobile-nav-items{display:flex;justify-content:space-around;align-items:center}
+.mobile-nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 12px;border-radius:10px;
+  font-size:9px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;
+  color:var(--gris);cursor:pointer;border:none;background:none;
+  font-family:'Montserrat',sans-serif;transition:all 0.2s;min-width:56px;
+}
+.mobile-nav-item.active{color:var(--magenta-bright)}
+.mobile-nav-item .mnav-icon{font-size:20px;line-height:1}
+.mobile-nav-more{
+  position:fixed;bottom:70px;left:0;right:0;z-index:299;
+  background:rgba(13,26,38,0.98);backdrop-filter:blur(16px);
+  border-top:1px solid var(--border);
+  padding:16px;display:none;flex-direction:column;gap:4px;
+  max-height:60vh;overflow-y:auto;
+}
+.mobile-nav-more.open{display:flex}
+.mobile-nav-more .nav-item{font-size:14px;padding:12px 14px}
 @media(max-width:768px){
   .sidebar{display:none}
-  .main{padding:16px}
+  .mobile-nav{display:block}
+  .main{padding:16px;padding-bottom:90px}
+  .layout{height:auto;min-height:calc(100vh - 58px)}
   .form-row,.form-row-3,.grid-2{grid-template-columns:1fr}
   .ex-hdr{display:none}
   .ex-row{grid-template-columns:1fr;gap:3px}
   .stats-grid{grid-template-columns:1fr 1fr}
   .onboarding-card{padding:24px 18px}
+  .modal{width:95vw;padding:20px 16px}
 }
 </style>
 </head>
@@ -706,6 +734,12 @@ canvas{max-width:100%}
     </div>
     <div class="form-group"><label>Objetivo</label><input type="text" id="nuObjetivo" placeholder="Ej: Mejorar condición física desde casa" /></div>
     <div class="form-group"><label>Observaciones / Lesiones</label><textarea id="nuObs" placeholder="Condiciones médicas, lesiones..."></textarea></div>
+    <hr class="divider-line">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dorado);margin-bottom:10px">💳 Membresía</div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha inicio</label><input type="date" id="nuMemStart" /></div>
+      <div class="form-group"><label>Fecha fin</label><input type="date" id="nuMemEnd" /></div>
+    </div>
     <button class="btn btn-primary btn-full" onclick="crearUsuaria()">✅ Crear usuaria</button>
   </div>
 </div>
@@ -782,8 +816,76 @@ canvas{max-width:100%}
   </div>
 </div>
 
+<!-- Modal: Biblioteca de ejercicios -->
+<div class="modal-overlay" id="modalEjercicios">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-title">📚 BIBLIOTECA DE EJERCICIOS <button class="modal-close" onclick="closeModal('modalEjercicios')">×</button></div>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <input type="text" id="exBuscar" placeholder="Buscar ejercicio..." style="flex:1;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--blanco);font-family:inherit;font-size:13px" oninput="filtrarEjercicios()" />
+      <button class="btn btn-primary btn-sm" onclick="showNuevoEjercicio()">+ Nuevo</button>
+    </div>
+    <div id="exBibliotecaList" style="max-height:300px;overflow-y:auto;margin-bottom:14px"></div>
+    <div id="nuevoEjercicioForm" class="hidden">
+      <hr class="divider-line">
+      <div style="font-size:12px;font-weight:700;color:var(--dorado);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">Nuevo ejercicio</div>
+      <div class="form-row">
+        <div class="form-group"><label>Nombre</label><input type="text" id="exNombre" placeholder="Ej: Sentadilla con barra" /></div>
+        <div class="form-group"><label>Grupo muscular</label>
+          <select id="exGrupo">
+            <option value="Pierna">Pierna</option>
+            <option value="Glúteo">Glúteo</option>
+            <option value="Espalda">Espalda</option>
+            <option value="Pecho">Pecho</option>
+            <option value="Hombro">Hombro</option>
+            <option value="Bíceps">Bíceps</option>
+            <option value="Tríceps">Tríceps</option>
+            <option value="Core">Core / Abdomen</option>
+            <option value="Full Body">Full Body</option>
+            <option value="Cardio">Cardio / Funcional</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>URL Video guía</label><input type="text" id="exVideo" placeholder="https://youtu.be/..." /></div>
+        <div class="form-group"><label>Equipamiento</label><input type="text" id="exEquipo" placeholder="Mancuernas, barra, banda..." /></div>
+      </div>
+      <div class="form-group"><label>Descripción / instrucciones</label><textarea id="exDesc" placeholder="Cómo ejecutar correctamente..."></textarea></div>
+      <button class="btn btn-primary btn-sm" onclick="guardarEjercicioBiblioteca()">💾 Guardar en biblioteca</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Membresía -->
+<div class="modal-overlay" id="modalMembresia">
+  <div class="modal">
+    <div class="modal-title">💳 MEMBRESÍA <button class="modal-close" onclick="closeModal('modalMembresia')">×</button></div>
+    <div id="membresiaUsuariaName" style="font-size:14px;color:var(--gris);margin-bottom:16px"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha inicio</label><input type="date" id="memStart" /></div>
+      <div class="form-group"><label>Fecha fin</label><input type="date" id="memEnd" /></div>
+    </div>
+    <div id="membresiaStatus" style="margin:12px 0"></div>
+    <input type="hidden" id="membresiaUserId" />
+    <button class="btn btn-primary btn-full" onclick="guardarMembresia()">💾 Guardar membresía</button>
+  </div>
+</div>
+
+<!-- Modal: Ver/Recuperar contraseña -->
+<div class="modal-overlay" id="modalPassword">
+  <div class="modal">
+    <div class="modal-title">🔑 DATOS DE ACCESO <button class="modal-close" onclick="closeModal('modalPassword')">×</button></div>
+    <div id="passwordContent"></div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- ══════════════ MOBILE BOTTOM NAV ══════════════ -->
+<div class="mobile-nav" id="mobileNav">
+  <div class="mobile-nav-items" id="mobileNavItems"></div>
+</div>
+<div class="mobile-nav-more" id="mobileNavMore"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
@@ -859,9 +961,20 @@ async function sheetsPost(action, payload){
 // Aplica un cambio al caché local sin esperar a Sheets
 function applyToCache(action, payload){
   const d=getCache();
+  if(!d.ejercicios) d.ejercicios=[];
   if(action==='saveUser'){
     const idx=d.users.findIndex(u=>u.id===payload.id);
     if(idx>=0) d.users[idx]=payload; else d.users.push(payload);
+  } else if(action==='saveEjercicio'){
+    const idx=d.ejercicios.findIndex(e=>e.id===payload.id);
+    if(idx>=0) d.ejercicios[idx]=payload; else d.ejercicios.push(payload);
+  } else if(action==='deleteEjercicio'){
+    d.ejercicios=d.ejercicios.filter(e=>e.id!==payload.id);
+  } else if(action==='deleteUser'){
+    d.users=d.users.filter(u=>u.id!==payload.id);
+    d.medidas=d.medidas.filter(m=>m.userId!==payload.id);
+    d.rutinas=d.rutinas.filter(r=>r.userId!==payload.id);
+    d.logs=d.logs.filter(l=>l.userId!==payload.id);
   } else if(action==='saveMedida'){
     const idx=d.medidas.findIndex(m=>m.id===payload.id);
     if(idx>=0) d.medidas[idx]=payload; else d.medidas.push(payload);
@@ -888,7 +1001,8 @@ async function refreshData(){
     users:[localCoach,...(remote.users||[]).filter(u=>u.role!=='coach')],
     medidas:remote.medidas||[],
     rutinas:remote.rutinas||[],
-    logs:remote.logs||[]
+    logs:remote.logs||[],
+    ejercicios:remote.ejercicios||[]
   };
   setCache(merged);
   return merged;
@@ -944,7 +1058,7 @@ async function doLogin(){
 
   btn.textContent='Ingresar →';btn.disabled=false;
 
-  const user=d.users.find(x=>x.username===u&&x.password===p);
+  const user=d.users.find(x=>(x.username===u||x.email===u)&&x.password===p);
   if(!user){toast('❌ Usuario o contraseña incorrectos');return}
 
   if(user.role==='user'&&!user.diagnostico){ CU=user; showOnboarding(); return; }
@@ -1213,6 +1327,7 @@ function showApp(){
   document.getElementById('appScreen').classList.remove('hidden');
   setupTopbar();
   buildSidebar();
+  buildMobileNav();
   navigate(CU.role==='coach'?'dashboard':'miRutina');
 }
 
@@ -1227,7 +1342,7 @@ function setupTopbar(){
 const COACH_NAV=[
   {s:'Panel'},{id:'dashboard',label:'Resumen',icon:'📊'},
   {s:'Usuarias'},{id:'usuarias',label:'Mis Usuarias',icon:'👥'},{id:'medidas',label:'Medidas',icon:'📏'},
-  {s:'Entrenamiento'},{id:'rutinas',label:'Rutinas',icon:'🏋️'},{id:'logs',label:'Registro global',icon:'📋'},
+  {s:'Entrenamiento'},{id:'rutinas',label:'Rutinas',icon:'🏋️'},{id:'ejercicios',label:'Biblioteca ejercicios',icon:'📚'},{id:'logs',label:'Registro global',icon:'📋'},
   {s:'Sistema'},{id:'ajustes',label:'Configuración',icon:'⚙️'},
 ];
 const USER_NAV=[
@@ -1257,9 +1372,10 @@ function navigate(page){
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   const n=document.getElementById('nav_'+page);
   if(n)n.classList.add('active');
+  updateMobileNav(page);
   const map={
     dashboard:renderDashboard,usuarias:renderUsuarias,medidas:renderMedidas,
-    rutinas:renderRutinas,logs:renderLogs,ajustes:renderAjustes,
+    rutinas:renderRutinas,ejercicios:renderEjercicios,logs:renderLogs,ajustes:renderAjustes,
     miRutina:renderMiRutina,registrar:()=>{renderMiRutina();setTimeout(()=>openLogModal(),200)},
     miProgreso:renderMiProgreso,miHistorial:renderMiHistorial,miPerfil:renderMiPerfil,
     onboarding_new:()=>showOnboardingNew()
@@ -1282,12 +1398,14 @@ function setMain(html){document.getElementById('mainContent').innerHTML=html}
 function renderDashboard(){
   const d=getData();
   const usr=d.users.filter(u=>u.role==='user');
+  const alertasMembresia=checkMembresiaAlerts();
   const logsW=d.logs.filter(l=>{const f=new Date(l.fecha);const h=new Date();h.setDate(h.getDate()-7);return f>=h}).length;
   setMain(`
     <div class="page-header">
       <div class="page-title">PANEL COACH</div>
       <div class="page-sub">Bienvenida, ${CU.name.split(' ')[0]} — ${new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
     </div>
+    \${alertasMembresia.length>0?'<div style="background:rgba(255,170,68,0.1);border:1px solid rgba(255,170,68,0.3);border-radius:12px;padding:14px 16px;margin-bottom:16px"><div style="font-size:12px;font-weight:700;color:#ffaa44;margin-bottom:8px">⚠️ ALERTAS MEMBRESÍA</div>'+alertasMembresia.map(function(a){return '<div style="font-size:12px;color:'+a.color+';padding:4px 0">'+a.name+' — '+a.label+'</div>'}).join('')+'</div>':''}
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-label">Usuarias activas</div><div class="stat-value">${usr.length}</div></div>
       <div class="stat-card"><div class="stat-label">Sesiones totales</div><div class="stat-value">${d.logs.length}</div></div>
@@ -1365,12 +1483,16 @@ function renderUsuarias(){
               <span class="badge badge-gray">${ts} sesiones</span>
               ${um?`<span class="badge badge-gold">${um.peso} kg</span>`:''}
               ${hasDiag?`<span class="badge badge-ok">✓ Diagnóstico</span>`:`<span class="badge badge-warn">Sin diagnóstico</span>`}
+              ${(()=>{const st=membresiaStatus(u);return `<span class="badge" style="background:rgba(0,0,0,0.2);color:${st.color};border:1px solid ${st.color}40">${st.label}</span>`})()}
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px">
             <button class="btn btn-ghost btn-sm" onclick="openMedidasFor('${u.id}')">📏 Medidas</button>
             <button class="btn btn-ghost btn-sm" onclick="openRutinaFor('${u.id}')">🏋️ Rutina</button>
             ${hasDiag?`<button class="btn btn-ghost btn-sm" onclick="verDiagnostico('${u.id}')">📋 Diagnóstico</button>`:''}
+            <button class="btn btn-ghost btn-sm" onclick="openMembresia('${u.id}')">💳 Membresía</button>
+            <button class="btn btn-ghost btn-sm" onclick="verPassword('${u.id}')">🔑 Contraseña</button>
+            <button class="btn btn-danger btn-sm" onclick="eliminarUsuaria('${u.id}')">🗑️ Eliminar</button>
           </div>
         </div>`;
       }).join('')}
@@ -2191,7 +2313,9 @@ async function crearUsuaria(){
     edad:parseInt(document.getElementById('nuEdad').value)||null,
     tel:document.getElementById('nuTel').value,
     objetivo:document.getElementById('nuObjetivo').value,
-    obs:document.getElementById('nuObs').value
+    obs:document.getElementById('nuObs').value,
+    memStart:document.getElementById('nuMemStart').value||null,
+    memEnd:document.getElementById('nuMemEnd').value||null
   };
   const res=await sheetsPost('saveUser', nu);
   closeModal('modalUsuaria');
@@ -2306,8 +2430,359 @@ function toast(msg){
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
 document.getElementById('videoModal').addEventListener('click',e=>{if(e.target===document.getElementById('videoModal'))closeVideoModal()});
 
+// ══════════════════════════════════════════════════════
+//  MEMBRESÍA
+// ══════════════════════════════════════════════════════
+function membresiaStatus(u){
+  if(!u.memEnd) return {label:'Sin membresía',color:'var(--gris)',days:null,activa:false};
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
+  const fin=new Date(u.memEnd); fin.setHours(0,0,0,0);
+  const diff=Math.ceil((fin-hoy)/(1000*60*60*24));
+  if(diff<0) return {label:'Vencida hace '+Math.abs(diff)+' días',color:'#ff8080',days:diff,activa:false};
+  if(diff===0) return {label:'Vence hoy',color:'#ffaa44',days:0,activa:true};
+  if(diff<=7) return {label:'Vence en '+diff+' días',color:'#ffaa44',days:diff,activa:true};
+  return {label:'Activa — '+diff+' días restantes',color:'#80d4a0',days:diff,activa:true};
+}
+
+function openMembresia(uid){
+  const d=getData();
+  const u=d.users.find(x=>x.id===uid);
+  if(!u) return;
+  document.getElementById('membresiaUserId').value=uid;
+  document.getElementById('membresiaUsuariaName').textContent=u.name;
+  document.getElementById('memStart').value=u.memStart||'';
+  document.getElementById('memEnd').value=u.memEnd||'';
+  const st=membresiaStatus(u);
+  document.getElementById('membresiaStatus').innerHTML=
+    '<div style="padding:10px;border-radius:8px;background:rgba(255,255,255,0.05);font-size:13px;font-weight:600;color:'+st.color+'">'+st.label+'</div>';
+  openModal('modalMembresia');
+}
+
+async function guardarMembresia(){
+  const uid=document.getElementById('membresiaUserId').value;
+  const start=document.getElementById('memStart').value;
+  const end=document.getElementById('memEnd').value;
+  const d=getData();
+  const idx=d.users.findIndex(x=>x.id===uid);
+  if(idx<0) return;
+  d.users[idx].memStart=start||null;
+  d.users[idx].memEnd=end||null;
+  setCache(d);
+  await sheetsPost('saveUser', d.users[idx]);
+  closeModal('modalMembresia');
+  toast('✅ Membresía actualizada');
+  renderUsuarias();
+}
+
+function checkMembresiaAlerts(){
+  const d=getData();
+  const alertas=[];
+  d.users.filter(u=>u.role==='user').forEach(u=>{
+    const st=membresiaStatus(u);
+    if(st.days!==null && st.days<=7){
+      alertas.push({name:u.name, label:st.label, color:st.color});
+    }
+  });
+  return alertas;
+}
+
+// ══════════════════════════════════════════════════════
+//  ELIMINAR USUARIA
+// ══════════════════════════════════════════════════════
+async function eliminarUsuaria(uid){
+  const d=getData();
+  const u=d.users.find(x=>x.id===uid);
+  if(!u) return;
+  if(!confirm('⚠️ ¿Eliminar a '+u.name+'? Se borrarán también sus medidas, rutinas y sesiones. Esta acción no se puede deshacer.')) return;
+  d.users=d.users.filter(x=>x.id!==uid);
+  d.medidas=d.medidas.filter(x=>x.userId!==uid);
+  d.rutinas=d.rutinas.filter(x=>x.userId!==uid);
+  d.logs=d.logs.filter(x=>x.userId!==uid);
+  setCache(d);
+  await sheetsPost('deleteUser', {id:uid});
+  toast('🗑️ Usuaria eliminada');
+  renderUsuarias();
+}
+
+// ══════════════════════════════════════════════════════
+//  VER / RECUPERAR CONTRASEÑA
+// ══════════════════════════════════════════════════════
+function verPassword(uid){
+  const d=getData();
+  const u=d.users.find(x=>x.id===uid);
+  if(!u) return;
+  document.getElementById('passwordContent').innerHTML=
+    '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px">'
+    +'<div style="font-size:12px;color:var(--gris);margin-bottom:4px">Usuaria</div>'
+    +'<div style="font-size:16px;font-weight:600">'+u.name+'</div>'
+    +'</div>'
+    +'<div class="form-row">'
+    +'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px">'
+    +'<div style="font-size:11px;color:var(--gris);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Usuario</div>'
+    +'<div style="font-size:18px;font-weight:700;color:var(--blanco);font-family:monospace">'+u.username+'</div>'
+    +'</div>'
+    +'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px">'
+    +'<div style="font-size:11px;color:var(--gris);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Contraseña</div>'
+    +'<div style="font-size:18px;font-weight:700;color:var(--dorado);font-family:monospace">'+u.password+'</div>'
+    +'</div>'
+    +'</div>'
+    +'<hr class="divider-line">'
+    +'<div style="font-size:12px;color:var(--gris);line-height:1.7">Puedes cambiar la contraseña editando la usuaria o comunicándosela directamente.</div>'
+    +'<button class="btn btn-primary btn-sm" style="margin-top:12px;width:100%" onclick="cambiarPasswordUsuaria(&quot;'+uid+'&quot;)">✏️ Cambiar contraseña</button>';
+  openModal('modalPassword');
+}
+
+async function cambiarPasswordUsuaria(uid){
+  const nuevaPass=prompt('Nueva contraseña para la usuaria (mínimo 6 caracteres):');
+  if(!nuevaPass||nuevaPass.length<6){toast('❌ Mínimo 6 caracteres');return}
+  const d=getData();
+  const idx=d.users.findIndex(x=>x.id===uid);
+  if(idx<0) return;
+  d.users[idx].password=nuevaPass;
+  setCache(d);
+  await sheetsPost('saveUser', d.users[idx]);
+  closeModal('modalPassword');
+  toast('✅ Contraseña actualizada');
+}
+
+// ══════════════════════════════════════════════════════
+//  LOGIN CON CORREO (además de username)
+// ══════════════════════════════════════════════════════
+// doLogin ya busca por username; ahora también busca por email
+// (ya está manejado en doLogin — el find busca username, ahora también email)
+
+// ══════════════════════════════════════════════════════
+//  BIBLIOTECA DE EJERCICIOS
+// ══════════════════════════════════════════════════════
+function renderEjercicios(){
+  setMain('<div class="page-header"><div class="page-title">BIBLIOTECA</div><div class="page-sub">Ejercicios guardados para usar en rutinas</div></div>'
+  +'<div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">'
+  +'<input type="text" id="exSearch" placeholder="Buscar por nombre o músculo..." oninput="renderEjerciciosGrid()" style="flex:1;min-width:200px;padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--blanco);font-family:inherit;font-size:13px" />'
+  +'<button class="btn btn-primary" onclick="openModal(&quot;modalEjercicios&quot;);loadBibliotecaModal()">+ Nuevo ejercicio</button>'
+  +'</div>'
+  +'<div id="ejerciciosGrid"></div>');
+  renderEjerciciosGrid();
+}
+
+function renderEjerciciosGrid(){
+  const d=getData();
+  const q=(document.getElementById('exSearch')?.value||'').toLowerCase();
+  const exs=(d.ejercicios||[]).filter(e=>
+    !q||e.nombre.toLowerCase().includes(q)||e.grupo.toLowerCase().includes(q)
+  );
+  const grid=document.getElementById('ejerciciosGrid');
+  if(!grid) return;
+  if(!exs.length){
+    grid.innerHTML='<div class="empty"><div class="empty-icon">📚</div><div class="empty-title">SIN EJERCICIOS</div><div class="empty-sub">Añade ejercicios para usarlos en rutinas</div></div>';
+    return;
+  }
+  const grupos={};
+  exs.forEach(e=>{if(!grupos[e.grupo])grupos[e.grupo]=[];grupos[e.grupo].push(e)});
+  grid.innerHTML=Object.keys(grupos).map(g=>'<div style="margin-bottom:18px">'
+    +'<div style="font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:2px;color:var(--dorado);margin-bottom:8px">'+g+'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">'
+    +grupos[g].map(e=>'<div class="card" style="padding:14px;cursor:default">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start">'
+      +'<div style="font-weight:600;font-size:13px;flex:1">'+e.nombre+'</div>'
+      +'<button data-id="'+e.id+'" class="ej-del" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--gris);padding:0 0 0 8px">🗑️</button>'
+      +'</div>'
+      +(e.equipo?'<div style="font-size:11px;color:var(--gris);margin-top:4px">'+e.equipo+'</div>':'')
+      +(e.desc?'<div style="font-size:11px;color:var(--gris);margin-top:6px;line-height:1.6">'+e.desc+'</div>':'')
+      +(e.video?'<a href="'+e.video+'" target="_blank" class="video-btn" style="margin-top:8px;display:inline-flex">▶ Ver video</a>':'')
+      +'</div>'
+    ).join('')
+    +'</div></div>'
+  ).join('');
+}
+
+function loadBibliotecaModal(){
+  filtrarEjercicios();
+}
+
+function filtrarEjercicios(){
+  const d=getData();
+  const q=(document.getElementById('exBuscar')?.value||'').toLowerCase();
+  const list=document.getElementById('exBibliotecaList');
+  if(!list) return;
+  const exs=(d.ejercicios||[]).filter(e=>!q||e.nombre.toLowerCase().includes(q)||e.grupo.toLowerCase().includes(q));
+  if(!exs.length){list.innerHTML='<div style="text-align:center;color:var(--gris);font-size:13px;padding:20px">No hay ejercicios guardados aún</div>';return}
+  list.innerHTML=exs.map(e=>'<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--border);font-size:13px">'
+    +'<div><strong>'+e.nombre+'</strong> <span style="font-size:11px;color:var(--gris);margin-left:6px">'+e.grupo+'</span></div>'
+    +'<div style="display:flex;gap:6px">'
+    +(e.video?'<a href="'+e.video+'" target="_blank" class="video-btn">▶</a>':'')
+    +'</div>'
+    +'</div>'
+  ).join('');
+}
+
+function showNuevoEjercicio(){
+  const f=document.getElementById('nuevoEjercicioForm');
+  if(f) f.classList.toggle('hidden');
+}
+
+async function guardarEjercicioBiblioteca(){
+  const nombre=document.getElementById('exNombre')?.value.trim();
+  if(!nombre){toast('❌ Ingresa el nombre del ejercicio');return}
+  const ej={
+    id:'ej'+Date.now(),
+    nombre,
+    grupo:document.getElementById('exGrupo')?.value||'General',
+    video:document.getElementById('exVideo')?.value.trim()||'',
+    equipo:document.getElementById('exEquipo')?.value.trim()||'',
+    desc:document.getElementById('exDesc')?.value.trim()||''
+  };
+  const d=getData();
+  if(!d.ejercicios) d.ejercicios=[];
+  d.ejercicios.push(ej);
+  setCache(d);
+  await sheetsPost('saveEjercicio', ej);
+  toast('✅ Ejercicio guardado en biblioteca');
+  document.getElementById('nuevoEjercicioForm')?.classList.add('hidden');
+  if(document.getElementById('exNombre')) document.getElementById('exNombre').value='';
+  filtrarEjercicios();
+  if(document.getElementById('ejerciciosGrid')) renderEjerciciosGrid();
+}
+
+async function eliminarEjercicioBiblioteca(id){
+  if(!confirm('¿Eliminar este ejercicio de la biblioteca?')) return;
+  const d=getData();
+  d.ejercicios=(d.ejercicios||[]).filter(e=>e.id!==id);
+  setCache(d);
+  await sheetsPost('deleteEjercicio',{id});
+  renderEjerciciosGrid();
+  toast('🗑️ Ejercicio eliminado');
+}
+
+// ══════════════════════════════════════════════════════
+//  BUSCAR EJERCICIO EN MODAL RUTINA
+// ══════════════════════════════════════════════════════
+function buscarEjercicioBiblioteca(inputId){
+  const d=getData();
+  const q=(document.getElementById(inputId)?.value||'').toLowerCase();
+  if(!q||q.length<2) return;
+  const exs=(d.ejercicios||[]).filter(e=>e.nombre.toLowerCase().includes(q)||e.grupo.toLowerCase().includes(q)).slice(0,8);
+  let existing=document.getElementById('exSuggestions_'+inputId);
+  if(!existing){
+    existing=document.createElement('div');
+    existing.id='exSuggestions_'+inputId;
+    existing.style.cssText='position:absolute;z-index:999;background:rgba(13,26,38,0.98);border:1px solid var(--border);border-radius:8px;width:100%;max-height:200px;overflow-y:auto;top:100%;left:0';
+    const parent=document.getElementById(inputId)?.parentElement;
+    if(parent){parent.style.position='relative';parent.appendChild(existing);}
+  }
+  if(!exs.length){existing.innerHTML='';return}
+  existing.innerHTML=exs.map(function(e){
+    return '<div data-nombre="'+e.nombre.replace(/"/g,"&quot;")+'" data-inputid="'+inputId+'" class="ex-sug-item" style="padding:9px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border)">'+e.nombre+' <span style="color:var(--gris);font-size:10px">'+e.grupo+'</span></div>';
+  }).join('');
+  existing.querySelectorAll('.ex-sug-item').forEach(function(el){
+    el.onmousedown=function(ev){
+      ev.preventDefault();
+      seleccionarEjercicio(this.getAttribute('data-inputid'), this.getAttribute('data-nombre'));
+    };
+    el.onmouseover=function(){this.style.background='var(--surface2)';};
+    el.onmouseout=function(){this.style.background='';};
+  });
+}
+
+function seleccionarEjercicio(inputId, nombre){
+  const el=document.getElementById(inputId);
+  if(el) el.value=nombre;
+  const sug=document.getElementById('exSuggestions_'+inputId);
+  if(sug) sug.innerHTML='';
+}
+
 // ─ INIT ─
 initData();
+
+// ══════════════════════════════════════════════════════
+//  MOBILE BOTTOM NAV
+// ══════════════════════════════════════════════════════
+const COACH_MOBILE=[
+  {id:'dashboard',label:'Inicio',icon:'📊'},
+  {id:'usuarias',label:'Usuarias',icon:'👥'},
+  {id:'rutinas',label:'Rutinas',icon:'🏋️'},
+  {id:'medidas',label:'Medidas',icon:'📏'},
+  {id:'__more',label:'Más',icon:'☰'},
+];
+const USER_MOBILE=[
+  {id:'miRutina',label:'Rutina',icon:'🏋️'},
+  {id:'miProgreso',label:'Progreso',icon:'📈'},
+  {id:'miHistorial',label:'Historial',icon:'📋'},
+  {id:'miPerfil',label:'Perfil',icon:'👤'},
+  {id:'__more',label:'Más',icon:'☰'},
+];
+const COACH_MORE=[
+  {id:'logs',label:'Registro global',icon:'📋'},
+  {id:'ejercicios',label:'Biblioteca ejercicios',icon:'📚'},
+  {id:'ajustes',label:'Configuración',icon:'⚙️'},
+];
+const USER_MORE=[
+  {id:'registrar',label:'Registrar sesión',icon:'✅'},
+];
+
+function buildMobileNav(){
+  var mn=document.getElementById('mobileNav');
+  var more=document.getElementById('mobileNavMore');
+  if(!mn||!CU)return;
+  var isCoach=CU.role==='coach';
+  var items=isCoach?COACH_MOBILE:USER_MOBILE;
+  var moreItems=isCoach?COACH_MORE:USER_MORE;
+  var ni=document.getElementById('mobileNavItems');
+  if(!ni)return;
+  ni.innerHTML='';
+  items.forEach(function(item){
+    var btn=document.createElement('button');
+    btn.className='mobile-nav-item';
+    btn.id='mnav_'+item.id;
+    btn.innerHTML='<span class="mnav-icon">'+item.icon+'</span><span>'+item.label+'</span>';
+    if(item.id==='__more'){
+      btn.onclick=function(){toggleMobileMore()};
+    } else {
+      btn.onclick=function(){closeMobileMore();navigate(item.id)};
+    }
+    ni.appendChild(btn);
+  });
+  // Build more menu
+  more.innerHTML='';
+  moreItems.forEach(function(item){
+    var btn=document.createElement('button');
+    btn.className='nav-item';
+    btn.id='mnav_more_'+item.id;
+    btn.innerHTML='<span class="nav-icon">'+item.icon+'</span>'+item.label;
+    btn.onclick=function(){closeMobileMore();navigate(item.id)};
+    more.appendChild(btn);
+  });
+  // logout button in more
+  var logoutBtn=document.createElement('button');
+  logoutBtn.className='nav-item';
+  logoutBtn.style.cssText='color:#ff8080;margin-top:8px;border-top:1px solid var(--border);padding-top:14px';
+  logoutBtn.innerHTML='<span class="nav-icon">🚪</span>Cerrar sesión';
+  logoutBtn.onclick=function(){closeMobileMore();doLogout()};
+  more.appendChild(logoutBtn);
+}
+
+function toggleMobileMore(){
+  var more=document.getElementById('mobileNavMore');
+  if(more) more.classList.toggle('open');
+}
+function closeMobileMore(){
+  var more=document.getElementById('mobileNavMore');
+  if(more) more.classList.remove('open');
+}
+function updateMobileNav(page){
+  document.querySelectorAll('.mobile-nav-item').forEach(function(el){
+    el.classList.remove('active');
+  });
+  var active=document.getElementById('mnav_'+page);
+  if(active) active.classList.add('active');
+}
+// Close more menu when clicking outside
+document.addEventListener('click',function(e){
+  var more=document.getElementById('mobileNavMore');
+  var nav=document.getElementById('mobileNav');
+  if(more&&more.classList.contains('open')&&!more.contains(e.target)&&nav&&!nav.contains(e.target)){
+    closeMobileMore();
+  }
+});
 </script>
 </body>
 </html>
