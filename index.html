@@ -907,7 +907,13 @@ const COACH_DEFAULT = { id:'ivonne_coach', username:'ivonne',
   role:'coach', email:'ivo_wellness_coach@gmail.com' };
 
 // ── Caché local (solo para velocidad, Sheets manda) ──
-function getCache(){ try{ return JSON.parse(localStorage.getItem(SK)||'{"users":[],"medidas":[],"rutinas":[],"logs":[]}') }catch(e){ return {users:[],medidas:[],rutinas:[],logs:[]} } }
+function getCache(){
+  try{
+    const d=JSON.parse(localStorage.getItem(SK)||'{"users":[],"medidas":[],"rutinas":[],"logs":[],"ejercicios":[]}');
+    if(!d.ejercicios) d.ejercicios=[];
+    return d;
+  }catch(e){ return {users:[],medidas:[],rutinas:[],logs:[],ejercicios:[]} }
+}
 function setCache(d){ localStorage.setItem(SK,JSON.stringify(d)) }
 
 // ── URL y clave del script ──
@@ -1494,17 +1500,36 @@ function renderUsuarias(){
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px">
-            <button class="btn btn-ghost btn-sm" onclick="openMedidasFor('${u.id}')">📏 Medidas</button>
-            <button class="btn btn-ghost btn-sm" onclick="openRutinaFor('${u.id}')">🏋️ Rutina</button>
-            ${hasDiag?`<button class="btn btn-ghost btn-sm" onclick="verDiagnostico('${u.id}')">📋 Diagnóstico</button>`:''}
-            <button class="btn btn-ghost btn-sm" onclick="openMembresia('${u.id}')">💳 Membresía</button>
-            <button class="btn btn-ghost btn-sm" onclick="verPassword('${u.id}')">🔑 Contraseña</button>
-            <button class="btn btn-danger btn-sm" onclick="eliminarUsuaria('${u.id}')">🗑️ Eliminar</button>
+            <button class="btn btn-ghost btn-sm med-btn" data-uid="${u.id}">📏 Medidas</button>
+            <button class="btn btn-ghost btn-sm rut-btn" data-uid="${u.id}">🏋️ Rutina</button>
+            ${hasDiag?`<button class="btn btn-ghost btn-sm diag-btn" data-uid="${u.id}">📋 Diagnóstico</button>`:''}
+            <button class="btn btn-ghost btn-sm mem-btn" data-uid="${u.id}">💳 Membresía</button>
+            <button class="btn btn-ghost btn-sm pass-btn" data-uid="${u.id}">🔑 Contraseña</button>
+            <button class="btn btn-danger btn-sm del-user-btn" data-uid="${u.id}">🗑️ Eliminar</button>
           </div>
         </div>`;
       }).join('')}
     </div>
   `);
+  // Event delegation for all user action buttons
+  document.querySelectorAll('.del-user-btn').forEach(function(btn){
+    btn.onclick=function(){eliminarUsuaria(this.getAttribute('data-uid'));};
+  });
+  document.querySelectorAll('.mem-btn').forEach(function(btn){
+    btn.onclick=function(){openMembresia(this.getAttribute('data-uid'));};
+  });
+  document.querySelectorAll('.pass-btn').forEach(function(btn){
+    btn.onclick=function(){verPassword(this.getAttribute('data-uid'));};
+  });
+  document.querySelectorAll('.med-btn').forEach(function(btn){
+    btn.onclick=function(){openMedidasFor(this.getAttribute('data-uid'));};
+  });
+  document.querySelectorAll('.rut-btn').forEach(function(btn){
+    btn.onclick=function(){openRutinaFor(this.getAttribute('data-uid'));};
+  });
+  document.querySelectorAll('.diag-btn').forEach(function(btn){
+    btn.onclick=function(){verDiagnostico(this.getAttribute('data-uid'));};
+  });
 }
 
 function calcEdad(dob){if(!dob)return'?';const d=new Date(dob);const h=new Date();return Math.floor((h-d)/(365.25*24*3600*1000))}
