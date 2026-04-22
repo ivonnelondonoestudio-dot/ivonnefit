@@ -1511,25 +1511,27 @@ function renderUsuarias(){
       }).join('')}
     </div>
   `);
-  // Event delegation for all user action buttons
-  document.querySelectorAll('.del-user-btn').forEach(function(btn){
-    btn.onclick=function(){eliminarUsuaria(this.getAttribute('data-uid'));};
-  });
-  document.querySelectorAll('.mem-btn').forEach(function(btn){
-    btn.onclick=function(){openMembresia(this.getAttribute('data-uid'));};
-  });
-  document.querySelectorAll('.pass-btn').forEach(function(btn){
-    btn.onclick=function(){verPassword(this.getAttribute('data-uid'));};
-  });
-  document.querySelectorAll('.med-btn').forEach(function(btn){
-    btn.onclick=function(){openMedidasFor(this.getAttribute('data-uid'));};
-  });
-  document.querySelectorAll('.rut-btn').forEach(function(btn){
-    btn.onclick=function(){openRutinaFor(this.getAttribute('data-uid'));};
-  });
-  document.querySelectorAll('.diag-btn').forEach(function(btn){
-    btn.onclick=function(){verDiagnostico(this.getAttribute('data-uid'));};
-  });
+  // Event delegation — setTimeout asegura que el DOM ya está listo
+  setTimeout(function(){
+    document.querySelectorAll('.del-user-btn').forEach(function(btn){
+      btn.onclick=function(){eliminarUsuaria(this.getAttribute('data-uid'));};
+    });
+    document.querySelectorAll('.mem-btn').forEach(function(btn){
+      btn.onclick=function(){openMembresia(this.getAttribute('data-uid'));};
+    });
+    document.querySelectorAll('.pass-btn').forEach(function(btn){
+      btn.onclick=function(){verPassword(this.getAttribute('data-uid'));};
+    });
+    document.querySelectorAll('.med-btn').forEach(function(btn){
+      btn.onclick=function(){openMedidasFor(this.getAttribute('data-uid'));};
+    });
+    document.querySelectorAll('.rut-btn').forEach(function(btn){
+      btn.onclick=function(){openRutinaFor(this.getAttribute('data-uid'));};
+    });
+    document.querySelectorAll('.diag-btn').forEach(function(btn){
+      btn.onclick=function(){verDiagnostico(this.getAttribute('data-uid'));};
+    });
+  }, 0);
 }
 
 function calcEdad(dob){if(!dob)return'?';const d=new Date(dob);const h=new Date();return Math.floor((h-d)/(365.25*24*3600*1000))}
@@ -2522,17 +2524,18 @@ function checkMembresiaAlerts(){
 //  ELIMINAR USUARIA
 // ══════════════════════════════════════════════════════
 async function eliminarUsuaria(uid){
-  const d=getData();
-  const u=d.users.find(x=>x.id===uid);
-  if(!u) return;
-  if(!confirm('⚠️ ¿Eliminar a '+u.name+'? Se borrarán también sus medidas, rutinas y sesiones. Esta acción no se puede deshacer.')) return;
-  d.users=d.users.filter(x=>x.id!==uid);
-  d.medidas=d.medidas.filter(x=>x.userId!==uid);
-  d.rutinas=d.rutinas.filter(x=>x.userId!==uid);
-  d.logs=d.logs.filter(x=>x.userId!==uid);
+  if(!uid){toast('❌ Error: ID no encontrado');return;}
+  var d=getData();
+  var u=d.users.find(function(x){return x.id===uid;});
+  if(!u){toast('❌ Usuaria no encontrada: '+uid);return;}
+  if(!confirm('⚠️ ¿Eliminar a '+u.name+'?\nSe borrarán sus medidas, rutinas y sesiones.\nEsta acción no se puede deshacer.')) return;
+  d.users=d.users.filter(function(x){return x.id!==uid;});
+  d.medidas=d.medidas.filter(function(x){return x.userId!==uid;});
+  d.rutinas=d.rutinas.filter(function(x){return x.userId!==uid;});
+  d.logs=d.logs.filter(function(x){return x.userId!==uid;});
   setCache(d);
-  await sheetsPost('deleteUser', {id:uid});
-  toast('🗑️ Usuaria eliminada');
+  sheetsPost('deleteUser',{id:uid}); // fire and forget
+  toast('🗑️ '+u.name+' eliminada');
   renderUsuarias();
 }
 
@@ -2653,24 +2656,31 @@ function showNuevoEjercicio(){
 }
 
 async function guardarEjercicioBiblioteca(){
-  const nombre=document.getElementById('exNombre')?.value.trim();
-  if(!nombre){toast('❌ Ingresa el nombre del ejercicio');return}
+  const nombreEl=document.getElementById('exNombre');
+  const nombre=nombreEl?nombreEl.value.trim():'';
+  if(!nombre){toast('❌ Ingresa el nombre del ejercicio');return;}
   const ej={
     id:'ej'+Date.now(),
-    nombre,
-    grupo:document.getElementById('exGrupo')?.value||'General',
-    video:document.getElementById('exVideo')?.value.trim()||'',
-    equipo:document.getElementById('exEquipo')?.value.trim()||'',
-    desc:document.getElementById('exDesc')?.value.trim()||''
+    nombre:nombre,
+    grupo:(document.getElementById('exGrupo')||{value:'General'}).value,
+    video:(document.getElementById('exVideo')||{value:''}).value.trim(),
+    equipo:(document.getElementById('exEquipo')||{value:''}).value.trim(),
+    desc:(document.getElementById('exDesc')||{value:''}).value.trim()
   };
-  const d=getData();
+  var d=getData();
   if(!d.ejercicios) d.ejercicios=[];
   d.ejercicios.push(ej);
   setCache(d);
-  await sheetsPost('saveEjercicio', ej);
-  toast('✅ Ejercicio guardado en biblioteca');
-  document.getElementById('nuevoEjercicioForm')?.classList.add('hidden');
-  if(document.getElementById('exNombre')) document.getElementById('exNombre').value='';
+  sheetsPost('saveEjercicio', ej); // fire and forget
+  toast('✅ Ejercicio "'+nombre+'" guardado');
+  // Reset form
+  ['exNombre','exVideo','exEquipo','exDesc'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.value='';
+  });
+  var form=document.getElementById('nuevoEjercicioForm');
+  if(form) form.classList.add('hidden');
+  // Refresh both views
   filtrarEjercicios();
   if(document.getElementById('ejerciciosGrid')) renderEjerciciosGrid();
 }
