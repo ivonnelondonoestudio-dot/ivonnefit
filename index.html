@@ -443,6 +443,18 @@ tr:hover td{background:var(--s1)}
 </div>
 </div>
 
+<!-- Video Modal -->
+<div class="overlay" id="m_video">
+<div class="modal" style="width:660px;padding:0;overflow:hidden">
+  <div style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--brd)">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px" id="m_video_title">VIDEO GUÍA</div>
+    <button class="close-btn" onclick="closeModal('m_video');stopVideo()">×</button>
+  </div>
+  <div id="m_video_wrap" style="position:relative;padding-bottom:56.25%;height:0;background:#000"></div>
+  <div style="padding:12px 16px;font-size:12px;color:var(--gris)" id="m_video_hint">Usa los controles del video para pausar, avanzar o poner en pantalla completa.</div>
+</div>
+</div>
+
 <!-- Detalle sesión (coach retroalimentación) -->
 <div class="overlay" id="m_log_detail">
 <div class="modal" style="width:640px">
@@ -1611,7 +1623,8 @@ function addExRow(diaVal, existing) {
     '<div class="fr"><div class="fg ac-wrap">' +
     '<label style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gris);display:block;margin-bottom:5px">Ejercicio</label>' +
     '<input type="text" id="rex_nom_'+i+'" value="'+(e.nombre||'')+'" placeholder="Escribe o busca..." autocomplete="off" style="width:100%;padding:9px 13px;background:var(--s1);border:1px solid var(--brd);border-radius:var(--r);color:var(--blanco);font-family:\'Montserrat\',sans-serif;font-size:13px">' +
-    '<div id="rex_sug_'+i+'" class="ac-list"></div></div>' +
+    '<div id="rex_sug_'+i+'" class="ac-list"></div>'
+    +'<div id="rex_info_'+i+'" style="display:none;padding:6px 2px;margin-top:4px"></div></div>' +
     '<div class="fg"><label style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gris);display:block;margin-bottom:5px">Series × Reps</label><input type="text" id="rex_dos_'+i+'" value="'+(e.dosis||'')+'" placeholder="3x15" style="width:100%;padding:9px 13px;background:var(--s1);border:1px solid var(--brd);border-radius:var(--r);color:var(--blanco);font-family:\'Montserrat\',sans-serif;font-size:13px"></div></div>' +
     '<div class="fr3">' +
     '<div class="fg"><label style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gris);display:block;margin-bottom:5px">Carga</label><input type="text" id="rex_car_'+i+'" value="'+(e.carga||'')+'" placeholder="5kg" style="width:100%;padding:9px 13px;background:var(--s1);border:1px solid var(--brd);border-radius:var(--r);color:var(--blanco);font-family:\'Montserrat\',sans-serif;font-size:13px"></div>' +
@@ -1632,7 +1645,29 @@ function addExRow(diaVal, existing) {
       exs.forEach(function(ex) {
         var item = document.createElement('div'); item.className = 'ac-item';
         item.textContent = ex.nombre + (ex.grupo ? ' (' + ex.grupo + ')' : '');
-        item.onmousedown = function(ev) { ev.preventDefault(); inp.value = ex.nombre; sug.style.display = 'none'; };
+        item.onmousedown = function(ev) {
+          ev.preventDefault();
+          inp.value = ex.nombre;
+          sug.style.display = 'none';
+          // Auto-fill from library
+          var dosEl  = document.getElementById('rex_dos_'+i);
+          var carEl  = document.getElementById('rex_car_'+i);
+          var vidEl  = document.getElementById('rex_vid_'+i);
+          // Only fill if empty
+          if (ex.equipo && carEl && !carEl.value) carEl.value = ex.equipo;
+          if (ex.video && vidEl && !vidEl.value) vidEl.value = ex.video;
+          // Show library info below
+          var infoEl = document.getElementById('rex_info_'+i);
+          if (infoEl) {
+            var info = '';
+            if (ex.grupo) info += '<span class="badge bm">'+ex.grupo+'</span> ';
+            if (ex.equipo) info += '<span class="badge bg">'+ex.equipo+'</span> ';
+            if (ex.desc) info += '<span style="font-size:11px;color:var(--gris)">'+ex.desc+'</span>';
+            if (ex.video) info += ' <a href="'+ex.video+'" target="_blank" style="font-size:11px;color:#e080d8;text-decoration:none">▶ Ver video</a>';
+            infoEl.innerHTML = info;
+            infoEl.style.display = info ? 'block' : 'none';
+          }
+        };
         sug.appendChild(item);
       });
       sug.style.display = 'block';
@@ -2184,7 +2219,16 @@ function pgMiRutina() {
     html += '<div class="w-day"><div class="w-day-hdr"><span class="w-day-t">'+dia.nombre+'</span><span class="w-day-s">'+(dia.tipo||'')+'</span></div>';
     html += '<div class="ex-hdr"><span>Ejercicio</span><span>Series×Reps</span><span>Carga</span><span>Descanso</span><span>Video</span></div>';
     (dia.ejercicios||[]).forEach(function(e) {
-      var vidHtml = e.videoUrl ? '<a href="'+e.videoUrl+'" target="_blank" style="font-size:10px;color:#e080d8;text-decoration:none">▶ Ver</a>' : '—';
+      var vidHtml = '—';
+      if (e.videoUrl) {
+        // Check if it's a YouTube embed
+        if (e.videoUrl.indexOf('youtube.com/embed/') >= 0 || e.videoUrl.indexOf('youtu.be/') >= 0) {
+          var embedUrl = e.videoUrl.indexOf('youtube.com/embed/') >= 0 ? e.videoUrl : e.videoUrl.replace('youtu.be/','youtube.com/embed/');
+          vidHtml = '<button class="vid-play-btn" data-url="'+embedUrl+'" data-nom="'+e.nombre.replace(/"/g,'&quot;')+'" style="background:rgba(119,0,105,0.2);border:1px solid rgba(119,0,105,0.4);color:#e080d8;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;cursor:pointer;font-family:inherit">&#9654; Ver video</button>';
+        } else {
+          vidHtml = '<a href="'+e.videoUrl+'" target="_blank" style="font-size:10px;color:#e080d8;text-decoration:none;font-weight:600">▶ Ver</a>';
+        }
+      }
       html += '<div class="ex-row"><span style="font-weight:500">'+e.nombre+'</span><span style="color:var(--gris)">'+(e.dosis||'—')+'</span><span style="color:var(--gris)">'+(e.carga||'—')+'</span><span style="color:var(--gris)">'+(e.descanso||'—')+'</span><span>'+vidHtml+'</span></div>';
     });
     html += '</div>';
@@ -2487,10 +2531,32 @@ function pgMiPerfil() {
   setMain(html);
 }
 
+function showVideoModal(url, nombre) {
+  document.getElementById('m_video_title').textContent = nombre ? nombre.toUpperCase() : 'VIDEO GUÍA';
+  var wrap = document.getElementById('m_video_wrap');
+  wrap.innerHTML = '<iframe id="yt_frame" src="'+url+'?autoplay=1&rel=0" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allow="autoplay;fullscreen" allowfullscreen></iframe>';
+  openModal('m_video');
+}
+
+function stopVideo() {
+  var wrap = document.getElementById('m_video_wrap');
+  if (wrap) wrap.innerHTML = '';
+}
+
 // ═══════════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════════
 db(); // Initialize / ensure coach exists
+
+// Global click handler for video play buttons
+document.addEventListener('click', function(ev) {
+  var btn = ev.target.closest('.vid-play-btn');
+  if (!btn) return;
+  ev.stopPropagation();
+  var url = btn.getAttribute('data-url');
+  var nom = btn.getAttribute('data-nom') || 'Video';
+  if (url) showVideoModal(url, nom);
+});
 </script>
 </body>
 </html>
