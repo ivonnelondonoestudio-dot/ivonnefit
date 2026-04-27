@@ -385,6 +385,10 @@ tr:hover td{background:var(--s1)}
     </div>
   </div>
   <div class="fg"><label>Objetivo</label><input type="text" id="rut_obj" placeholder="Mejorar condición física"/></div>
+  <div class="fr">
+    <div class="fg"><label>Fecha inicio vigencia</label><input type="date" id="rut_fecha_ini"/></div>
+    <div class="fg"><label>Fecha fin vigencia (cambio estimado)</label><input type="date" id="rut_fecha_fin"/></div>
+  </div>
   <div class="hr"></div>
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
     <div style="font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:1px">Ejercicios</div>
@@ -901,10 +905,22 @@ function pgDashboard() {
     var st = memStatus(u);
     if (st.color !== 'var(--gris)' && st.color !== '#80d4a0') alerts.push({ name: u.name, label: st.label, color: st.color });
   });
+  // Rutina expiry alerts
+  var hoyD = new Date(); hoyD.setHours(0,0,0,0);
+  d.rutinas.forEach(function(r) {
+    if (!r.fechaFin) return;
+    var fin = new Date(r.fechaFin); fin.setHours(0,0,0,0);
+    var diff = Math.ceil((fin - hoyD) / 86400000);
+    if (diff <= 7) {
+      var u2=null; for(var i=0;i<d.users.length;i++){if(d.users[i].id===r.userId){u2=d.users[i];break;}}
+      var msg = diff<0?'Rutina vencida hace '+Math.abs(diff)+'d':diff===0?'Rutina vence HOY':'Rutina vence en '+diff+'d';
+      alerts.push({ name:(u2?u2.name:''), label:msg, color:'#ffaa44' });
+    }
+  });
   var alertHtml = '';
   if (alerts.length > 0) {
     alertHtml = '<div style="background:rgba(255,170,0,0.08);border:1px solid rgba(255,170,0,0.25);border-radius:12px;padding:14px;margin-bottom:16px">';
-    alertHtml += '<div style="font-size:11px;font-weight:700;color:#ffaa44;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">⚠️ ALERTAS DE MEMBRESÍA</div>';
+    alertHtml += '<div style="font-size:11px;font-weight:700;color:#ffaa44;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">⚠️ ALERTAS</div>';
     alerts.forEach(function(a) {
       alertHtml += '<div style="font-size:12px;color:' + a.color + ';padding:3px 0">' + a.name + ' — ' + a.label + '</div>';
     });
@@ -995,7 +1011,7 @@ function pgUsuarias() {
       var uid = btn.getAttribute('data-uid');
       var action = btn.getAttribute('data-action');
       if (action === 'medidas') openMedidasFor(uid);
-      else if (action === 'rutina') openRutinaFor(uid);
+      else if (action === 'rutina') openNuevaRutina(uid);
       else if (action === 'membresia') openMembresiaFor(uid);
       else if (action === 'diag') showDiag(uid);
       else if (action === 'pass') showPass(uid);
@@ -1344,23 +1360,65 @@ var exCount = 0;
 function pgRutinas() {
   var d = db();
   var usr = d.users.filter(function(u){return u.role==='user';});
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
   var html = '<div class="page-title">RUTINAS</div><div class="page-sub">Planes de entrenamiento por usuaria</div>';
   html += '<div style="margin-bottom:16px"><button class="btn btn-p" onclick="openNuevaRutina(\'\')">+ Nueva rutina</button></div>';
+  // Rutina expiry alerts
+  var alertas = [];
+  d.rutinas.forEach(function(r) {
+    if (!r.fechaFin) return;
+    var fin = new Date(r.fechaFin); fin.setHours(0,0,0,0);
+    var diff = Math.ceil((fin - hoy) / 86400000);
+    if (diff <= 7) {
+      var u2 = null;
+      for (var i=0;i<d.users.length;i++){if(d.users[i].id===r.userId){u2=d.users[i];break;}}
+      alertas.push({ name: (u2?u2.name:''), rutName: r.nombre||'Sem.'+r.semana, diff: diff, rid: r.id });
+    }
+  });
+  if (alertas.length) {
+    html += '<div style="background:rgba(255,140,0,0.1);border:1px solid rgba(255,140,0,0.3);border-radius:12px;padding:14px 16px;margin-bottom:16px">';
+    html += '<div style="font-size:11px;font-weight:700;color:#ffaa44;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">⏰ RUTINAS POR VENCER / CAMBIAR</div>';
+    alertas.forEach(function(a) {
+      var msg = a.diff < 0 ? 'Venció hace '+Math.abs(a.diff)+' días' : a.diff===0 ? 'Vence HOY' : 'Vence en '+a.diff+' días';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,140,0,0.1)">';
+      html += '<span style="font-size:12px;color:var(--blanco)">'+a.name+' — '+a.rutName+'</span>';
+      html += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;color:#ffaa44">'+msg+'</span>';
+      html += '<button class="btn btn-warn btn-sm" onclick="openEditRutina(\''+a.rid+'\')">✏️ Cambiar</button></div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
   usr.forEach(function(u) {
     var ruts = d.rutinas.filter(function(r){return r.userId===u.id;}).sort(function(a,b){return a.semana-b.semana;});
-    html += '<div class="card"><div class="card-title"><span>🏋️ ' + u.name + ' <span class="badge bm" style="font-size:11px">' + ruts.length + ' planes</span></span>';
-    html += '<button class="btn btn-g btn-sm" onclick="openNuevaRutina(\'' + u.id + '\')">+ Añadir</button></div>';
+    html += '<div class="card"><div class="card-title">';
+    html += '<span>🏋️ '+u.name+' <span class="badge bm" style="font-size:11px">'+ruts.length+' planes</span></span>';
+    html += '<button class="btn btn-g btn-sm" onclick="openNuevaRutina(\''+u.id+'\')">+ Añadir</button>';
+    html += '</div>';
     if (!ruts.length) {
       html += '<div style="font-size:12px;color:var(--gris)">Sin rutinas. Carga el primer plan.</div>';
     } else {
-      ruts.forEach(function(r, ri) {
-        html += '<details style="margin-bottom:8px"><summary style="cursor:pointer;padding:10px 13px;background:var(--s2);border-radius:var(--r);font-size:13px;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--brd)">';
-        html += '<span><span class="rut-num">' + r.semana + '</span>' + (r.nombre||'Semana '+r.semana) + ' <span style="font-size:11px;color:var(--gris);margin-left:6px">' + (r.intensidad||'') + '</span></span>';
-        html += '<div style="display:flex;gap:6px" onclick="event.stopPropagation()">';
-        html += '<button class="btn btn-g btn-sm" onclick="openEditRutina(\'' + r.id + '\')">✏️ Editar</button>';
-        html += '<button class="btn btn-d btn-sm" onclick="delRutina(\'' + r.id + '\')">🗑️</button>';
+      ruts.forEach(function(r) {
+        var finDate = r.fechaFin ? new Date(r.fechaFin) : null;
+        finDate && finDate.setHours(0,0,0,0);
+        var diffDays = finDate ? Math.ceil((finDate-hoy)/86400000) : null;
+        var vigenciaHtml = '';
+        if (r.fechaIni || r.fechaFin) {
+          var color = diffDays===null ? 'var(--gris)' : diffDays<0 ? '#ff8080' : diffDays<=7 ? '#ffaa44' : '#80d4a0';
+          var vigLabel = '';
+          if (r.fechaIni) vigLabel += '📅 '+fDate(r.fechaIni);
+          if (r.fechaFin) vigLabel += ' → '+fDate(r.fechaFin);
+          if (diffDays!==null) vigLabel += ' · <span style="color:'+color+'">'+( diffDays<0?'Venció':'Vence en '+diffDays+' días')+'</span>';
+          vigenciaHtml = '<div style="font-size:11px;color:var(--gris);margin-top:4px">'+vigLabel+'</div>';
+        }
+        html += '<details style="margin-bottom:8px">';
+        html += '<summary style="cursor:pointer;padding:10px 13px;background:var(--s2);border-radius:var(--r);font-size:13px;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:flex-start;border:1px solid var(--brd)">';
+        html += '<div><div style="display:flex;align-items:center"><span class="rut-num">'+r.semana+'</span>'+(r.nombre||'Semana '+r.semana)+'<span style="font-size:11px;color:var(--gris);margin-left:8px">'+(r.intensidad||'')+'</span></div>'+vigenciaHtml+'</div>';
+        html += '<div style="display:flex;gap:5px;margin-top:2px" onclick="event.stopPropagation()">';
+        html += '<button class="btn btn-g btn-sm" onclick="openEditRutina(\''+r.id+'\')">✏️ Editar</button>';
+        html += '<button class="btn btn-d btn-sm" onclick="delRutina(\''+r.id+'\')">🗑️</button>';
         html += '</div></summary>';
-        html += '<div style="padding:8px 4px">' + renderRutinaContent(r) + '</div></details>';
+        html += '<div style="padding:8px 4px">'+renderRutinaContent(r)+'</div>';
+        html += '</details>';
       });
     }
     html += '</div>';
@@ -1392,9 +1450,15 @@ function openNuevaRutina(uid) {
   document.getElementById('rut_nombre').value = '';
   document.getElementById('rut_obj').value = '';
   document.getElementById('rut_int').value = 'Media (7-8)';
-  // Auto-suggest next semana number for selected user
+  // Fecha inicio = hoy
+  var hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('rut_fecha_ini').value = hoy;
+  // Fecha fin = 4 semanas por defecto
+  var fin = new Date(); fin.setDate(fin.getDate() + 28);
+  document.getElementById('rut_fecha_fin').value = fin.toISOString().split('T')[0];
+  // Auto semana
   var autoSem = 1;
-  d.rutinas.forEach(function(r){ if(r.userId===uid&&r.semana>=autoSem) autoSem=r.semana+1; });
+  d.rutinas.forEach(function(r){ if(r.userId===uid && r.semana>=autoSem) autoSem=r.semana+1; });
   document.getElementById('rut_semana').value = autoSem;
   exCount = 0;
   document.getElementById('rut_exs').innerHTML = '';
@@ -1415,13 +1479,12 @@ function openEditRutina(rid) {
   document.getElementById('rut_semana').value = r.semana || '';
   document.getElementById('rut_obj').value = r.objetivo || '';
   document.getElementById('rut_int').value = r.intensidad || 'Media (7-8)';
+  document.getElementById('rut_fecha_ini').value = r.fechaIni || r.fechaCarga || '';
+  document.getElementById('rut_fecha_fin').value = r.fechaFin || '';
   exCount = 0;
   document.getElementById('rut_exs').innerHTML = '';
-  // Load existing exercises
   (r.dias || []).forEach(function(dia) {
-    (dia.ejercicios || []).forEach(function(e) {
-      addExRow(dia.dia, e);
-    });
+    (dia.ejercicios || []).forEach(function(e) { addExRow(dia.dia, e); });
   });
   openModal('m_rutina');
 }
@@ -1475,8 +1538,14 @@ function saveRutina() {
   var userId = document.getElementById('rut_uid').value;
   var semana = parseInt(document.getElementById('rut_semana').value) || 0;
   var nombre = document.getElementById('rut_nombre').value || 'Semana ' + semana;
+  var fechaIni = document.getElementById('rut_fecha_ini').value || new Date().toISOString().split('T')[0];
+  var fechaFin = document.getElementById('rut_fecha_fin').value || '';
   if (!userId || !semana) { toast('Selecciona usuaria y número de semana'); return; }
-  var dias = { dia1:{dia:'dia1',nombre:'Día 1',tipo:'',ejercicios:[]}, dia2:{dia:'dia2',nombre:'Día 2',tipo:'',ejercicios:[]}, dia3:{dia:'dia3',nombre:'Día 3',tipo:'',ejercicios:[]} };
+  var dias = {
+    dia1:{dia:'dia1',nombre:'Día 1',tipo:'',ejercicios:[]},
+    dia2:{dia:'dia2',nombre:'Día 2',tipo:'',ejercicios:[]},
+    dia3:{dia:'dia3',nombre:'Día 3',tipo:'',ejercicios:[]}
+  };
   var hasExs = false;
   for (var i = 0; i < exCount; i++) {
     var elN = document.getElementById('rex_nom_'+i);
@@ -1500,26 +1569,30 @@ function saveRutina() {
   ['dia1','dia2','dia3'].forEach(function(k){ if(dias[k].ejercicios.length>0) diasArr.push(dias[k]); });
   var d = db();
   if (editId) {
-    // Edit existing
-    var found = false;
     for (var i = 0; i < d.rutinas.length; i++) {
       if (d.rutinas[i].id === editId) {
-        d.rutinas[i].nombre = nombre; d.rutinas[i].semana = semana;
+        d.rutinas[i].nombre = nombre;
+        d.rutinas[i].semana = semana;
         d.rutinas[i].objetivo = document.getElementById('rut_obj').value;
         d.rutinas[i].intensidad = document.getElementById('rut_int').value;
-        d.rutinas[i].dias = diasArr; d.rutinas[i].fechaUpdate = new Date().toISOString().split('T')[0];
-        var rut = d.rutinas[i]; found = true; break;
+        d.rutinas[i].fechaIni = fechaIni;
+        d.rutinas[i].fechaFin = fechaFin;
+        d.rutinas[i].dias = diasArr;
+        d.rutinas[i].fechaUpdate = new Date().toISOString().split('T')[0];
+        save(d); sync('saveRutina', d.rutinas[i]);
+        closeModal('m_rutina'); toast('✅ Rutina actualizada: ' + nombre); pgRutinas(); return;
       }
     }
-    if (!found) { toast('Rutina no encontrada'); return; }
-    save(d); sync('saveRutina', d.rutinas.find(function(r){return r.id===editId;}));
-    closeModal('m_rutina'); toast('✅ Rutina actualizada'); pgRutinas();
+    toast('Rutina no encontrada'); return;
   } else {
-    var rutina = { id: 'r'+Date.now(), userId: userId, semana: semana, nombre: nombre,
+    var rutina = {
+      id: 'r'+Date.now(), userId: userId, semana: semana, nombre: nombre,
       objetivo: document.getElementById('rut_obj').value,
       intensidad: document.getElementById('rut_int').value,
-      fechaCarga: new Date().toISOString().split('T')[0], dias: diasArr };
-    // Remove duplicate semana for same user
+      fechaIni: fechaIni, fechaFin: fechaFin,
+      fechaCarga: new Date().toISOString().split('T')[0],
+      dias: diasArr
+    };
     d.rutinas = d.rutinas.filter(function(r){ return !(r.userId===userId && r.semana===semana); });
     d.rutinas.push(rutina);
     save(d); sync('saveRutina', rutina);
@@ -1764,7 +1837,10 @@ function pgMiRutina() {
     return;
   }
   var r = ruts[0];
-  var html = '<div class="page-title">MI RUTINA</div><div class="page-sub">' + (r.nombre||'Semana '+r.semana) + ' · ' + (r.objetivo||'') + ' · ' + (r.intensidad||'') + (r.fechaCarga ? ' · Cargada: '+fDate(r.fechaCarga) : '') + '</div>';
+  var vigStr = '';
+  if (r.fechaIni) vigStr += '📅 '+fDate(r.fechaIni);
+  if (r.fechaFin) { var dDiff=Math.ceil((new Date(r.fechaFin)-new Date())/86400000); vigStr += ' → '+fDate(r.fechaFin); if(dDiff<=7) vigStr+=' ⚠️'; }
+  var html = '<div class="page-title">MI RUTINA</div><div class="page-sub">' + (r.nombre||'Semana '+r.semana) + ' · ' + (r.objetivo||'') + (vigStr?' · '+vigStr:'') + '</div>';
   html += '<div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto">';
   r.dias.forEach(function(dia, i) {
     html += '<button class="btn btn-g" id="rdt_'+i+'" onclick="showDia('+i+','+r.dias.length+')">' + dia.nombre + '</button>';
