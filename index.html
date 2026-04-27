@@ -707,10 +707,7 @@ canvas{max-width:100%}
       <div class="form-group"><label>Pantorrilla (cm)</label><input type="number" id="medPantorrilla" step="0.1" /></div>
       <div class="form-group"><label>Antebrazo (cm)</label><input type="number" id="medAntebrazo" step="0.1" /></div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>% Grasa</label><input type="number" id="medGrasa" step="0.1" placeholder="25.0" /></div>
-      <div class="form-group"><label>Masa muscular (kg)</label><input type="number" id="medMuscular" step="0.1" /></div>
-    </div>
+
     <div class="form-group"><label>Observaciones</label><textarea id="medObs" placeholder="Notas adicionales..."></textarea></div>
     <button class="btn btn-primary btn-full" onclick="guardarMedidas()">💾 Guardar medidas</button>
   </div>
@@ -1471,67 +1468,50 @@ function renderDashboard(){
 //  COACH: USUARIAS
 // ═══════════════════════════════════════════════════════
 function renderUsuarias(){
-  const d=getData();
-  const usr=d.users.filter(u=>u.role==='user');
-  setMain(`
-    <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
-      <div><div class="page-title">MIS USUARIAS</div><div class="page-sub">${usr.length} usuarias registradas</div></div>
-      <button class="btn btn-primary" onclick="openModal('modalUsuaria')">+ Nueva usuaria</button>
-    </div>
-    <div class="card" style="padding:0">
-      ${usr.length===0?`<div class="empty"><div class="empty-icon">👥</div><div class="empty-title">SIN USUARIAS</div></div>`:
-      usr.map(u=>{
-        const um=d.medidas.filter(m=>m.userId===u.id).sort((a,b)=>b.fecha.localeCompare(a.fecha))[0];
-        const ts=d.logs.filter(l=>l.userId===u.id).length;
-        const ruts=d.rutinas.filter(r=>r.userId===u.id).length;
-        const hasDiag=!!u.diagnostico;
-        return `<div class="user-row">
-          <div class="user-avatar-lg" style="width:48px;height:48px;font-size:16px">${u.name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
-          <div class="user-info">
-            <div class="user-name">${u.name}</div>
-            <div class="user-meta">${u.email||''} ${u.tel?'· '+u.tel:''} ${u.dob?'· '+calcEdad(u.dob)+' años':''}</div>
-            <div style="font-size:11px;color:var(--gris);margin-top:3px">${u.objetivo||''}</div>
-            <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
-              <span class="badge badge-magenta">${ruts} rutinas</span>
-              <span class="badge badge-gray">${ts} sesiones</span>
-              ${um?`<span class="badge badge-gold">${um.peso} kg</span>`:''}
-              ${hasDiag?`<span class="badge badge-ok">✓ Diagnóstico</span>`:`<span class="badge badge-warn">Sin diagnóstico</span>`}
-              ${(()=>{const st=membresiaStatus(u);return `<span class="badge" style="background:rgba(0,0,0,0.2);color:${st.color};border:1px solid ${st.color}40">${st.label}</span>`})()}
-            </div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <button class="btn btn-ghost btn-sm med-btn" data-uid="${u.id}">📏 Medidas</button>
-            <button class="btn btn-ghost btn-sm rut-btn" data-uid="${u.id}">🏋️ Rutina</button>
-            ${hasDiag?`<button class="btn btn-ghost btn-sm diag-btn" data-uid="${u.id}">📋 Diagnóstico</button>`:''}
-            <button class="btn btn-ghost btn-sm mem-btn" data-uid="${u.id}">💳 Membresía</button>
-            <button class="btn btn-ghost btn-sm pass-btn" data-uid="${u.id}">🔑 Contraseña</button>
-            <button class="btn btn-danger btn-sm del-user-btn" data-uid="${u.id}">🗑️ Eliminar</button>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>
-  `);
-  // Event delegation — setTimeout asegura que el DOM ya está listo
-  setTimeout(function(){
-    document.querySelectorAll('.del-user-btn').forEach(function(btn){
-      btn.onclick=function(){eliminarUsuaria(this.getAttribute('data-uid'));};
+  var d=getData();
+  var usr=d.users.filter(function(u){return u.role==='user';});
+  var html='';
+  html+='<div class="page-header" style="display:flex;align-items:center;justify-content:space-between">';
+  html+='<div><div class="page-title">MIS USUARIAS</div>';
+  html+='<div class="page-sub">'+usr.length+' usuarias registradas</div></div>';
+  html+='<button class="btn btn-primary" onclick="openModal(\'modalUsuaria\')">+ Nueva usuaria</button></div>';
+  html+='<div class="card" style="padding:0">';
+  if(usr.length===0){
+    html+='<div class="empty"><div class="empty-icon">👥</div><div class="empty-title">SIN USUARIAS</div></div>';
+  } else {
+    usr.forEach(function(u){
+      var um=d.medidas.filter(function(m){return m.userId===u.id;}).sort(function(a,b){return b.fecha.localeCompare(a.fecha);})[0];
+      var ts=d.logs.filter(function(l){return l.userId===u.id;}).length;
+      var ruts=d.rutinas.filter(function(r){return r.userId===u.id;}).length;
+      var hasDiag=!!u.diagnostico;
+      var st=membresiaStatus(u);
+      var ini=u.name.split(' ').map(function(n){return n[0];}).join('').slice(0,2);
+      var uid=u.id;
+      html+='<div class="user-row">';
+      html+='<div class="user-avatar-lg" style="width:48px;height:48px;font-size:16px">'+ini+'</div>';
+      html+='<div class="user-info">';
+      html+='<div class="user-name">'+u.name+'</div>';
+      html+='<div class="user-meta">'+(u.email||'')+' '+(u.tel?'&middot; '+u.tel:'')+'</div>';
+      html+='<div style="font-size:11px;color:var(--gris);margin-top:3px">'+(u.objetivo||'')+'</div>';
+      html+='<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">';
+      html+='<span class="badge badge-magenta">'+ruts+' rutinas</span>';
+      html+='<span class="badge badge-gray">'+ts+' sesiones</span>';
+      if(um) html+='<span class="badge badge-gold">'+um.peso+' kg</span>';
+      html+=(hasDiag?'<span class="badge badge-ok">&#10003; Diagn&oacute;stico</span>':'<span class="badge badge-warn">Sin diagn&oacute;stico</span>');
+      html+='<span class="badge" style="color:'+st.color+';border:1px solid '+st.color+'">'+st.label+'</span>';
+      html+='</div></div>';
+      html+='<div style="display:flex;flex-direction:column;gap:6px">';
+      html+='<button class="btn btn-ghost btn-sm" onclick="openMedidasFor(\''+uid+'\')">&#128207; Medidas</button>';
+      html+='<button class="btn btn-ghost btn-sm" onclick="openRutinaFor(\''+uid+'\')">&#127947; Rutina</button>';
+      if(hasDiag) html+='<button class="btn btn-ghost btn-sm" onclick="verDiagnostico(\''+uid+'\')">&#128203; Diagn&oacute;stico</button>';
+      html+='<button class="btn btn-ghost btn-sm" onclick="openMembresia(\''+uid+'\')">&#128179; Membres&iacute;a</button>';
+      html+='<button class="btn btn-ghost btn-sm" onclick="verPassword(\''+uid+'\')">&#128273; Contrase&ntilde;a</button>';
+      html+='<button class="btn btn-danger btn-sm" onclick="eliminarUsuaria(\''+uid+'\')">&#128465; Eliminar</button>';
+      html+='</div></div>';
     });
-    document.querySelectorAll('.mem-btn').forEach(function(btn){
-      btn.onclick=function(){openMembresia(this.getAttribute('data-uid'));};
-    });
-    document.querySelectorAll('.pass-btn').forEach(function(btn){
-      btn.onclick=function(){verPassword(this.getAttribute('data-uid'));};
-    });
-    document.querySelectorAll('.med-btn').forEach(function(btn){
-      btn.onclick=function(){openMedidasFor(this.getAttribute('data-uid'));};
-    });
-    document.querySelectorAll('.rut-btn').forEach(function(btn){
-      btn.onclick=function(){openRutinaFor(this.getAttribute('data-uid'));};
-    });
-    document.querySelectorAll('.diag-btn').forEach(function(btn){
-      btn.onclick=function(){verDiagnostico(this.getAttribute('data-uid'));};
-    });
-  }, 0);
+  }
+  html+='</div>';
+  setMain(html);
 }
 
 function calcEdad(dob){if(!dob)return'?';const d=new Date(dob);const h=new Date();return Math.floor((h-d)/(365.25*24*3600*1000))}
@@ -2133,25 +2113,54 @@ function updateLogEx(){
 }
 
 async function guardarLog(){
-  const d=getData();
-  const fecha=document.getElementById('logFecha').value;
-  const selVal=document.getElementById('logSemana').value;
-  const dia=document.getElementById('logDia').value;
-  const duracion=parseInt(document.getElementById('logDuracion').value)||null;
-  const peso=parseFloat(document.getElementById('logPeso').value)||null;
-  const comentario=document.getElementById('logComentario').value;
-  const r=d.rutinas.find(r=>(r.id||r.userId+r.semana)===selVal&&r.userId===CU.id);
-  const diaData=r?r.dias.find(di=>di.dia===dia):null;
-  const ejercicios=diaData&&!diaData.circuitos?diaData.ejercicios.map((e,i)=>({
-    nombre:e.nombre,
-    reps:document.getElementById('ex_reps_'+i)?.value||'',
-    carga:document.getElementById('ex_carga_'+i)?.value||''
-  })).filter(e=>e.reps||e.carga):[];
-  const log={id:'l'+Date.now(),userId:CU.id,fecha,rutId:selVal,
-    semana:r?r.semana:0,dia,duracion,peso,comentario,ejercicios};
-  const res=await sheetsPost('saveLog', log);
+  var elFecha=document.getElementById('logFecha');
+  var elSemana=document.getElementById('logSemana');
+  var elDia=document.getElementById('logDia');
+  var elDuracion=document.getElementById('logDuracion');
+  var elPeso=document.getElementById('logPeso');
+  var elComentario=document.getElementById('logComentario');
+  if(!elFecha||!elFecha.value){toast('Selecciona la fecha');return;}
+  var fecha=elFecha.value;
+  var selVal=elSemana?elSemana.value:'';
+  var dia=elDia?elDia.value:'dia1';
+  var duracion=elDuracion?parseInt(elDuracion.value)||null:null;
+  var peso=elPeso?parseFloat(elPeso.value)||null:null;
+  var comentario=elComentario?elComentario.value.trim():'';
+  var d=getData();
+  var r=null;
+  for(var i=0;i<d.rutinas.length;i++){
+    var rid=d.rutinas[i].id||d.rutinas[i].userId+d.rutinas[i].semana;
+    if(rid===selVal&&d.rutinas[i].userId===CU.id){r=d.rutinas[i];break;}
+  }
+  var diaData=null;
+  if(r){for(var i=0;i<r.dias.length;i++){if(r.dias[i].dia===dia){diaData=r.dias[i];break;}}}
+  var ejercicios=[];
+  if(diaData&&!diaData.circuitos&&diaData.ejercicios){
+    for(var i=0;i<diaData.ejercicios.length;i++){
+      var elR=document.getElementById('ex_reps_'+i);
+      var elC=document.getElementById('ex_carga_'+i);
+      var reps=elR?elR.value:'';
+      var carga=elC?elC.value:'';
+      if(reps||carga) ejercicios.push({nombre:diaData.ejercicios[i].nombre,reps:reps,carga:carga});
+    }
+  }
+  var log={
+    id:'l'+Date.now(),
+    userId:CU.id,
+    fecha:fecha,
+    rutId:selVal,
+    semana:r?r.semana:0,
+    dia:dia,
+    duracion:duracion,
+    peso:peso,
+    comentario:comentario,
+    ejercicios:ejercicios
+  };
+  d.logs.push(log);
+  setCache(d);
+  sheetsPost('saveLog',log);
   closeModal('modalLog');
-  toast(res.local?'🔥 Sesión guardada localmente':'🔥 ¡Sesión registrada en Sheets!');
+  toast('Sesion registrada correctamente');
   navigate('miHistorial');
 }
 
@@ -2325,8 +2334,7 @@ async function guardarMedidas(){
     musloMedio:parseFloat(document.getElementById('medMusloMedio').value)||null,
     pantorrilla:parseFloat(document.getElementById('medPantorrilla').value)||null,
     antebrazo:parseFloat(document.getElementById('medAntebrazo').value)||null,
-    grasa:parseFloat(document.getElementById('medGrasa').value)||null,
-    muscular:parseFloat(document.getElementById('medMuscular').value)||null,
+
     obs:document.getElementById('medObs').value
   };
   const res=await sheetsPost('saveMedida', med);
@@ -2374,65 +2382,130 @@ function openRutinaFor(uid){
 }
 
 function addEjercicioForm(){
-  const i=exCount++;
-  const div=document.createElement('div');
+  var i=exCount++;
+  var div=document.createElement('div');
   div.style.cssText='background:rgba(0,0,0,0.2);border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid var(--border)';
-  div.innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <span style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gris)">Ejercicio #${i+1}</span>
-      <select id="rex_dia_${i}" style="padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--blanco);font-size:11px;font-family:'Montserrat',sans-serif">
-        <option value="dia1">Día 1</option><option value="dia2">Día 2</option><option value="dia3">Día 3</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label>Nombre del ejercicio</label><input type="text" id="rex_nom_${i}" placeholder="Crunch tradicional" /></div>
-      <div class="form-group"><label>Series × Reps</label><input type="text" id="rex_dos_${i}" placeholder="3x15 reps" /></div>
-    </div>
-    <div class="form-row-3">
-      <div class="form-group"><label>Carga</label><input type="text" id="rex_car_${i}" placeholder="5kg / Peso corporal" /></div>
-      <div class="form-group"><label>Descanso</label><input type="text" id="rex_des_${i}" placeholder="1:10 min" /></div>
-      <div class="form-group"><label>URL Video</label><input type="text" id="rex_vid_${i}" placeholder="https://youtu.be/..." /></div>
-    </div>
-    <div class="form-group"><label>Nota / instrucción</label><input type="text" id="rex_com_${i}" placeholder="Ej: Pareja con push ups" /></div>
-  `;
-  document.getElementById('rutinaBuilder').appendChild(div);
+  var html='';
+  html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+  html+='<span style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dorado)">Ejercicio #'+(i+1)+'</span>';
+  html+='<select id="rex_dia_'+i+'" style="padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--blanco);font-size:11px;font-family:inherit">';
+  html+='<option value="dia1">Dia 1</option><option value="dia2">Dia 2</option><option value="dia3">Dia 3</option>';
+  html+='</select></div>';
+  html+='<div class="form-row">';
+  html+='<div class="form-group" style="position:relative"><label>Ejercicio</label>';
+  html+='<input type="text" id="rex_nom_'+i+'" placeholder="Escribe o busca en biblioteca..." autocomplete="off" />';
+  html+='<div id="rex_sug_'+i+'" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:999;background:rgba(13,26,38,0.98);border:1px solid var(--border);border-radius:8px;max-height:160px;overflow-y:auto"></div>';
+  html+='</div>';
+  html+='<div class="form-group"><label>Series x Reps</label><input type="text" id="rex_dos_'+i+'" placeholder="3x15 rep" /></div>';
+  html+='</div>';
+  html+='<div class="form-row-3">';
+  html+='<div class="form-group"><label>Carga</label><input type="text" id="rex_car_'+i+'" placeholder="5kg" /></div>';
+  html+='<div class="form-group"><label>Descanso</label><input type="text" id="rex_des_'+i+'" placeholder="1:30 min" /></div>';
+  html+='<div class="form-group"><label>Video URL</label><input type="text" id="rex_vid_'+i+'" placeholder="https://youtu.be/..." /></div>';
+  html+='</div>';
+  html+='<div class="form-group"><label>Nota</label><input type="text" id="rex_com_'+i+'" placeholder="Instruccion tecnica..." /></div>';
+  div.innerHTML=html;
+  var builder=document.getElementById('rutinaBuilder');
+  if(builder) builder.appendChild(div);
+  // Attach autocomplete listener
+  var inputEl=document.getElementById('rex_nom_'+i);
+  var sugEl=document.getElementById('rex_sug_'+i);
+  if(inputEl&&sugEl){
+    inputEl.addEventListener('input',function(){
+      var q=this.value.toLowerCase().trim();
+      var d=getData();
+      var exs=d.ejercicios||[];
+      if(q.length<1){sugEl.style.display='none';return;}
+      var matches=exs.filter(function(e){return e.nombre.toLowerCase().indexOf(q)>=0;}).slice(0,8);
+      if(!matches.length){sugEl.style.display='none';return;}
+      sugEl.innerHTML='';
+      matches.forEach(function(e){
+        var item=document.createElement('div');
+        item.style.cssText='padding:8px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--border)';
+        item.textContent=e.nombre+(e.grupo?' ('+e.grupo+')':'');
+        item.onmousedown=function(ev){
+          ev.preventDefault();
+          inputEl.value=e.nombre;
+          sugEl.style.display='none';
+        };
+        item.onmouseover=function(){this.style.background='var(--surface2)';};
+        item.onmouseout=function(){this.style.background='';};
+        sugEl.appendChild(item);
+      });
+      sugEl.style.display='block';
+    });
+    inputEl.addEventListener('blur',function(){setTimeout(function(){sugEl.style.display='none';},200);});
+  }
 }
 
 async function guardarRutina(){
-  const d=getData();
-  const userId=document.getElementById('rutUsuaria').value;
-  const semana=parseInt(document.getElementById('rutSemana').value);
-  const nombre=document.getElementById('rutNombre').value||'Semana '+semana;
-  const objetivo=document.getElementById('rutObjetivo').value;
-  const intensidad=document.getElementById('rutIntensidad').value;
-  if(!userId||!semana){toast('❌ Selecciona usuaria y número de semana');return}
-  const dias={
-    dia1:{dia:'dia1',nombre:'Día 1',tipo:'',circuitos:false,ejercicios:[]},
-    dia2:{dia:'dia2',nombre:'Día 2',tipo:'',circuitos:false,ejercicios:[]},
-    dia3:{dia:'dia3',nombre:'Día 3',tipo:'',circuitos:false,ejercicios:[]}
+  var elUsuaria=document.getElementById('rutUsuaria');
+  var elSemana=document.getElementById('rutSemana');
+  var elNombre=document.getElementById('rutNombre');
+  var elObjetivo=document.getElementById('rutObjetivo');
+  var elIntensidad=document.getElementById('rutIntensidad');
+  var userId=elUsuaria?elUsuaria.value:'';
+  var semana=elSemana?parseInt(elSemana.value)||0:0;
+  if(!userId||!semana){toast('Selecciona usuaria y numero de semana');return;}
+  var d=getData();
+  // Auto-number: find highest existing semana for this user
+  var maxSem=0;
+  d.rutinas.forEach(function(r){if(r.userId===userId&&r.semana>maxSem)maxSem=r.semana;});
+  if(!semana) semana=maxSem+1;
+  var nombre=elNombre&&elNombre.value?elNombre.value:'Semana '+semana;
+  var objetivo=elObjetivo?elObjetivo.value:'';
+  var intensidad=elIntensidad?elIntensidad.value:'Media (7-8)';
+  var hoy=new Date().toISOString().split('T')[0];
+  var dias={
+    dia1:{dia:'dia1',nombre:'Dia 1',tipo:'',circuitos:false,ejercicios:[]},
+    dia2:{dia:'dia2',nombre:'Dia 2',tipo:'',circuitos:false,ejercicios:[]},
+    dia3:{dia:'dia3',nombre:'Dia 3',tipo:'',circuitos:false,ejercicios:[]}
   };
-  for(let i=0;i<exCount;i++){
-    const nom=document.getElementById('rex_nom_'+i)?.value.trim();
-    if(!nom)continue;
-    const dia=document.getElementById('rex_dia_'+i).value;
-    const vidRaw=document.getElementById('rex_vid_'+i)?.value.trim()||'';
-    let vid=vidRaw;
-    const ytMatch=vidRaw.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([^&\s]+)/);
-    if(ytMatch)vid=`https://www.youtube.com/embed/${ytMatch[1]}`;
-    dias[dia].ejercicios.push({
-      nombre:nom,
-      dosis:document.getElementById('rex_dos_'+i)?.value||'',
-      carga:document.getElementById('rex_car_'+i)?.value||'',
-      descanso:document.getElementById('rex_des_'+i)?.value||'',
-      comentario:document.getElementById('rex_com_'+i)?.value||'',
+  for(var i=0;i<exCount;i++){
+    var elN=document.getElementById('rex_nom_'+i);
+    if(!elN||!elN.value.trim()) continue;
+    var elDia=document.getElementById('rex_dia_'+i);
+    var elDos=document.getElementById('rex_dos_'+i);
+    var elCar=document.getElementById('rex_car_'+i);
+    var elDes=document.getElementById('rex_des_'+i);
+    var elCom=document.getElementById('rex_com_'+i);
+    var elVid=document.getElementById('rex_vid_'+i);
+    var diaKey=elDia?elDia.value:'dia1';
+    var vidRaw=elVid?elVid.value.trim():'';
+    var vid=vidRaw;
+    var ytMatch=vidRaw.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([^&\s]+)/);
+    if(ytMatch) vid='https://www.youtube.com/embed/'+ytMatch[1];
+    dias[diaKey].ejercicios.push({
+      nombre:elN.value.trim(),
+      dosis:elDos?elDos.value:'',
+      carga:elCar?elCar.value:'',
+      descanso:elDes?elDes.value:'',
+      comentario:elCom?elCom.value:'',
       videoUrl:vid
     });
   }
-  const rutina={id:'r'+Date.now(),userId,semana,nombre,objetivo,intensidad,
-    dias:Object.values(dias).filter(di=>di.ejercicios.length>0)};
-  const res=await sheetsPost('saveRutina', rutina);
+  var diasArr=[];
+  ['dia1','dia2','dia3'].forEach(function(k){if(dias[k].ejercicios.length>0)diasArr.push(dias[k]);});
+  if(diasArr.length===0){toast('Agrega al menos un ejercicio');return;}
+  var rutina={
+    id:'r'+Date.now(),
+    userId:userId,
+    semana:semana,
+    nombre:nombre,
+    objetivo:objetivo,
+    intensidad:intensidad,
+    fechaCarga:hoy,
+    dias:diasArr
+  };
+  // Remove existing same semana
+  var newRuts=[];
+  d.rutinas.forEach(function(r){if(!(r.userId===userId&&r.semana===semana))newRuts.push(r);});
+  newRuts.push(rutina);
+  d.rutinas=newRuts;
+  setCache(d);
+  sheetsPost('saveRutina',rutina);
   closeModal('modalRutina');
-  toast(res.local?'✅ Rutina guardada localmente':'✅ Rutina guardada en Sheets — '+nombre);
+  toast('Rutina guardada: '+nombre+' (Sem. '+semana+')');
   renderRutinas();
 }
 
@@ -2524,18 +2597,21 @@ function checkMembresiaAlerts(){
 //  ELIMINAR USUARIA
 // ══════════════════════════════════════════════════════
 async function eliminarUsuaria(uid){
-  if(!uid){toast('❌ Error: ID no encontrado');return;}
+  if(!uid){toast('Error: ID no recibido');return;}
   var d=getData();
-  var u=d.users.find(function(x){return x.id===uid;});
-  if(!u){toast('❌ Usuaria no encontrada: '+uid);return;}
-  if(!confirm('⚠️ ¿Eliminar a '+u.name+'?\nSe borrarán sus medidas, rutinas y sesiones.\nEsta acción no se puede deshacer.')) return;
-  d.users=d.users.filter(function(x){return x.id!==uid;});
-  d.medidas=d.medidas.filter(function(x){return x.userId!==uid;});
-  d.rutinas=d.rutinas.filter(function(x){return x.userId!==uid;});
-  d.logs=d.logs.filter(function(x){return x.userId!==uid;});
+  var u=null;
+  for(var i=0;i<d.users.length;i++){if(d.users[i].id===uid){u=d.users[i];break;}}
+  if(!u){toast('Usuaria no encontrada');return;}
+  var ok=confirm('Eliminar a '+u.name+'?\nSe borran sus medidas, rutinas y sesiones.\nEsta accion no se puede deshacer.');
+  if(!ok) return;
+  var newUsers=[]; for(var i=0;i<d.users.length;i++){if(d.users[i].id!==uid)newUsers.push(d.users[i]);}
+  var newMeds=[]; for(var i=0;i<d.medidas.length;i++){if(d.medidas[i].userId!==uid)newMeds.push(d.medidas[i]);}
+  var newRuts=[]; for(var i=0;i<d.rutinas.length;i++){if(d.rutinas[i].userId!==uid)newRuts.push(d.rutinas[i]);}
+  var newLogs=[]; for(var i=0;i<d.logs.length;i++){if(d.logs[i].userId!==uid)newLogs.push(d.logs[i]);}
+  d.users=newUsers; d.medidas=newMeds; d.rutinas=newRuts; d.logs=newLogs;
   setCache(d);
-  sheetsPost('deleteUser',{id:uid}); // fire and forget
-  toast('🗑️ '+u.name+' eliminada');
+  sheetsPost('deleteUser',{id:uid});
+  toast('Usuaria eliminada correctamente');
   renderUsuarias();
 }
 
@@ -2600,34 +2676,50 @@ function renderEjercicios(){
 }
 
 function renderEjerciciosGrid(){
-  const d=getData();
-  const q=(document.getElementById('exSearch')?.value||'').toLowerCase();
-  const exs=(d.ejercicios||[]).filter(e=>
-    !q||e.nombre.toLowerCase().includes(q)||e.grupo.toLowerCase().includes(q)
-  );
-  const grid=document.getElementById('ejerciciosGrid');
+  var d=getData();
+  var q='';
+  var elSearch=document.getElementById('exSearch');
+  if(elSearch) q=elSearch.value.toLowerCase();
+  var exs=d.ejercicios||[];
+  var filtered=[];
+  for(var i=0;i<exs.length;i++){
+    var e=exs[i];
+    if(!q||e.nombre.toLowerCase().indexOf(q)>=0||(e.grupo&&e.grupo.toLowerCase().indexOf(q)>=0)){
+      filtered.push(e);
+    }
+  }
+  var grid=document.getElementById('ejerciciosGrid');
   if(!grid) return;
-  if(!exs.length){
-    grid.innerHTML='<div class="empty"><div class="empty-icon">📚</div><div class="empty-title">SIN EJERCICIOS</div><div class="empty-sub">Añade ejercicios para usarlos en rutinas</div></div>';
+  if(filtered.length===0){
+    grid.innerHTML='<div class="empty"><div class="empty-icon">&#128218;</div><div class="empty-title">SIN EJERCICIOS</div><div class="empty-sub">Añade ejercicios para usarlos en rutinas</div></div>';
     return;
   }
-  const grupos={};
-  exs.forEach(e=>{if(!grupos[e.grupo])grupos[e.grupo]=[];grupos[e.grupo].push(e)});
-  grid.innerHTML=Object.keys(grupos).map(g=>'<div style="margin-bottom:18px">'
-    +'<div style="font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:2px;color:var(--dorado);margin-bottom:8px">'+g+'</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">'
-    +grupos[g].map(e=>'<div class="card" style="padding:14px;cursor:default">'
-      +'<div style="display:flex;justify-content:space-between;align-items:flex-start">'
-      +'<div style="font-weight:600;font-size:13px;flex:1">'+e.nombre+'</div>'
-      +'<button data-id="'+e.id+'" class="ej-del" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--gris);padding:0 0 0 8px">🗑️</button>'
-      +'</div>'
-      +(e.equipo?'<div style="font-size:11px;color:var(--gris);margin-top:4px">'+e.equipo+'</div>':'')
-      +(e.desc?'<div style="font-size:11px;color:var(--gris);margin-top:6px;line-height:1.6">'+e.desc+'</div>':'')
-      +(e.video?'<a href="'+e.video+'" target="_blank" class="video-btn" style="margin-top:8px;display:inline-flex">▶ Ver video</a>':'')
-      +'</div>'
-    ).join('')
-    +'</div></div>'
-  ).join('');
+  // Group by muscle group
+  var grupos={};
+  filtered.forEach(function(e){
+    var g=e.grupo||'General';
+    if(!grupos[g]) grupos[g]=[];
+    grupos[g].push(e);
+  });
+  var html='';
+  Object.keys(grupos).forEach(function(g){
+    html+='<div style="margin-bottom:18px">';
+    html+='<div style="font-size:15px;font-weight:700;color:var(--dorado);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">'+g+'</div>';
+    html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px">';
+    grupos[g].forEach(function(e){
+      html+='<div class="card" style="padding:14px">';
+      html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">';
+      html+='<div style="font-weight:600;font-size:13px">'+e.nombre+'</div>';
+      html+='<button onclick="eliminarEjercicioBiblioteca(\''+e.id+'\')" style="background:none;border:none;cursor:pointer;font-size:15px;color:var(--gris);padding:0 0 0 6px" title="Eliminar">&#128465;</button>';
+      html+='</div>';
+      if(e.equipo) html+='<div style="font-size:11px;color:var(--gris);margin-bottom:4px">'+e.equipo+'</div>';
+      if(e.desc) html+='<div style="font-size:11px;color:var(--gris);line-height:1.5">'+e.desc+'</div>';
+      if(e.video) html+='<a href="'+e.video+'" target="_blank" class="video-btn" style="margin-top:8px;display:inline-flex">&#9654; Ver video</a>';
+      html+='</div>';
+    });
+    html+='</div></div>';
+  });
+  grid.innerHTML=html;
 }
 
 function loadBibliotecaModal(){
@@ -2656,33 +2748,35 @@ function showNuevoEjercicio(){
 }
 
 async function guardarEjercicioBiblioteca(){
-  const nombreEl=document.getElementById('exNombre');
-  const nombre=nombreEl?nombreEl.value.trim():'';
-  if(!nombre){toast('❌ Ingresa el nombre del ejercicio');return;}
-  const ej={
+  var elNombre=document.getElementById('exNombre');
+  var elGrupo=document.getElementById('exGrupo');
+  var elVideo=document.getElementById('exVideo');
+  var elEquipo=document.getElementById('exEquipo');
+  var elDesc=document.getElementById('exDesc');
+  if(!elNombre||!elNombre.value.trim()){toast('Ingresa el nombre del ejercicio');return;}
+  var ej={
     id:'ej'+Date.now(),
-    nombre:nombre,
-    grupo:(document.getElementById('exGrupo')||{value:'General'}).value,
-    video:(document.getElementById('exVideo')||{value:''}).value.trim(),
-    equipo:(document.getElementById('exEquipo')||{value:''}).value.trim(),
-    desc:(document.getElementById('exDesc')||{value:''}).value.trim()
+    nombre:elNombre.value.trim(),
+    grupo:elGrupo?elGrupo.value:'General',
+    video:elVideo?elVideo.value.trim():'',
+    equipo:elEquipo?elEquipo.value.trim():'',
+    desc:elDesc?elDesc.value.trim():''
   };
   var d=getData();
   if(!d.ejercicios) d.ejercicios=[];
   d.ejercicios.push(ej);
   setCache(d);
-  sheetsPost('saveEjercicio', ej); // fire and forget
-  toast('✅ Ejercicio "'+nombre+'" guardado');
-  // Reset form
-  ['exNombre','exVideo','exEquipo','exDesc'].forEach(function(id){
-    var el=document.getElementById(id);
-    if(el) el.value='';
-  });
+  sheetsPost('saveEjercicio',ej);
+  toast('Ejercicio guardado: '+ej.nombre);
+  elNombre.value='';
+  if(elVideo) elVideo.value='';
+  if(elEquipo) elEquipo.value='';
+  if(elDesc) elDesc.value='';
   var form=document.getElementById('nuevoEjercicioForm');
   if(form) form.classList.add('hidden');
-  // Refresh both views
   filtrarEjercicios();
-  if(document.getElementById('ejerciciosGrid')) renderEjerciciosGrid();
+  var grid=document.getElementById('ejerciciosGrid');
+  if(grid) renderEjerciciosGrid();
 }
 
 async function eliminarEjercicioBiblioteca(id){
