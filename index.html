@@ -1474,10 +1474,10 @@ function renderUsuarias(){
   html+='<div class="page-header" style="display:flex;align-items:center;justify-content:space-between">';
   html+='<div><div class="page-title">MIS USUARIAS</div>';
   html+='<div class="page-sub">'+usr.length+' usuarias registradas</div></div>';
-  html+='<button class="btn btn-primary" onclick="openModal(\'modalUsuaria\')">+ Nueva usuaria</button></div>';
-  html+='<div class="card" style="padding:0">';
+  html+='<button class="btn btn-primary" onclick="openModal(&quot;modalUsuaria&quot;)">+ Nueva usuaria</button></div>';
+  html+='<div id="listaUsuarias" class="card" style="padding:0">';
   if(usr.length===0){
-    html+='<div class="empty"><div class="empty-icon">👥</div><div class="empty-title">SIN USUARIAS</div></div>';
+    html+='<div class="empty"><div class="empty-icon">&#128101;</div><div class="empty-title">SIN USUARIAS</div></div>';
   } else {
     usr.forEach(function(u){
       var um=d.medidas.filter(function(m){return m.userId===u.id;}).sort(function(a,b){return b.fecha.localeCompare(a.fecha);})[0];
@@ -1486,32 +1486,51 @@ function renderUsuarias(){
       var hasDiag=!!u.diagnostico;
       var st=membresiaStatus(u);
       var ini=u.name.split(' ').map(function(n){return n[0];}).join('').slice(0,2);
-      var uid=u.id;
-      html+='<div class="user-row">';
-      html+='<div class="user-avatar-lg" style="width:48px;height:48px;font-size:16px">'+ini+'</div>';
+      html+='<div class="user-row" style="align-items:flex-start">';
+      html+='<div class="user-avatar-lg" style="width:48px;height:48px;font-size:16px;margin-top:4px">'+ini+'</div>';
       html+='<div class="user-info">';
       html+='<div class="user-name">'+u.name+'</div>';
       html+='<div class="user-meta">'+(u.email||'')+' '+(u.tel?'&middot; '+u.tel:'')+'</div>';
-      html+='<div style="font-size:11px;color:var(--gris);margin-top:3px">'+(u.objetivo||'')+'</div>';
-      html+='<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">';
+      html+='<div style="font-size:11px;color:var(--gris);margin-top:2px">'+(u.objetivo||'')+'</div>';
+      html+='<div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap">';
       html+='<span class="badge badge-magenta">'+ruts+' rutinas</span>';
       html+='<span class="badge badge-gray">'+ts+' sesiones</span>';
       if(um) html+='<span class="badge badge-gold">'+um.peso+' kg</span>';
-      html+=(hasDiag?'<span class="badge badge-ok">&#10003; Diagn&oacute;stico</span>':'<span class="badge badge-warn">Sin diagn&oacute;stico</span>');
-      html+='<span class="badge" style="color:'+st.color+';border:1px solid '+st.color+'">'+st.label+'</span>';
+      html+=(hasDiag?'<span class="badge badge-ok">&#10003; Diagn</span>':'<span class="badge badge-warn">Sin diagn</span>');
+      html+='<span class="badge" style="color:'+st.color+';border:1px solid '+st.color+'40">'+st.label+'</span>';
       html+='</div></div>';
-      html+='<div style="display:flex;flex-direction:column;gap:6px">';
-      html+='<button class="btn btn-ghost btn-sm" onclick="openMedidasFor(\''+uid+'\')">&#128207; Medidas</button>';
-      html+='<button class="btn btn-ghost btn-sm" onclick="openRutinaFor(\''+uid+'\')">&#127947; Rutina</button>';
-      if(hasDiag) html+='<button class="btn btn-ghost btn-sm" onclick="verDiagnostico(\''+uid+'\')">&#128203; Diagn&oacute;stico</button>';
-      html+='<button class="btn btn-ghost btn-sm" onclick="openMembresia(\''+uid+'\')">&#128179; Membres&iacute;a</button>';
-      html+='<button class="btn btn-ghost btn-sm" onclick="verPassword(\''+uid+'\')">&#128273; Contrase&ntilde;a</button>';
-      html+='<button class="btn btn-danger btn-sm" onclick="eliminarUsuaria(\''+uid+'\')">&#128465; Eliminar</button>';
+      html+='<div style="display:flex;flex-direction:column;gap:5px;min-width:110px">';
+      html+='<button class="btn btn-ghost btn-sm usr-action" data-uid="'+u.id+'" data-fn="openMedidasFor">&#128207; Medidas</button>';
+      html+='<button class="btn btn-ghost btn-sm usr-action" data-uid="'+u.id+'" data-fn="openRutinaFor">&#127947; Rutina</button>';
+      if(hasDiag) html+='<button class="btn btn-ghost btn-sm usr-action" data-uid="'+u.id+'" data-fn="verDiagnostico">&#128203; Diagn</button>';
+      html+='<button class="btn btn-ghost btn-sm usr-action" data-uid="'+u.id+'" data-fn="openMembresia">&#128179; Membresia</button>';
+      html+='<button class="btn btn-ghost btn-sm usr-action" data-uid="'+u.id+'" data-fn="verPassword">&#128273; Contrasena</button>';
+      html+='<button class="btn btn-danger btn-sm usr-action" data-uid="'+u.id+'" data-fn="eliminarUsuaria">&#128465; Eliminar</button>';
       html+='</div></div>';
     });
   }
   html+='</div>';
   setMain(html);
+  // Single event listener on the container — no inline onclick needed
+  var lista=document.getElementById('listaUsuarias');
+  if(lista){
+    lista.addEventListener('click', function(ev){
+      var btn=ev.target.closest('.usr-action');
+      if(!btn) return;
+      var uid=btn.getAttribute('data-uid');
+      var fn=btn.getAttribute('data-fn');
+      if(!uid||!fn) return;
+      var funcs={
+        openMedidasFor: openMedidasFor,
+        openRutinaFor:  openRutinaFor,
+        verDiagnostico: verDiagnostico,
+        openMembresia:  openMembresia,
+        verPassword:    verPassword,
+        eliminarUsuaria:eliminarUsuaria
+      };
+      if(funcs[fn]) funcs[fn](uid);
+    });
+  }
 }
 
 function calcEdad(dob){if(!dob)return'?';const d=new Date(dob);const h=new Date();return Math.floor((h-d)/(365.25*24*3600*1000))}
