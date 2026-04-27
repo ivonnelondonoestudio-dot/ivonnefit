@@ -442,7 +442,7 @@ tr:hover td{background:var(--s1)}
 //  STORAGE — Simple, directa, confiable
 // ═══════════════════════════════════════════════════════════
 var DB_KEY = 'iw_db_v1';
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbzfKIjD-GTYrYIcElR643EdKkBtsctt2cRK8vIKcDIeKrNLEBeQDno6V8YxRcynqvZA/exec';
+var GAS_URL = 'https://script.google.com/macros/s/AKfycby7UgG9t0f3cnq6APz3vD_Ud4AKrr82SVMJI04pEvOe7kthr4kZIYzDb2ozgQOgqLrX/exec';
 var GAS_SECRET = 'IvonneWellness2024';
 
 function db() {
@@ -472,28 +472,85 @@ function save(d) {
   localStorage.setItem(DB_KEY, JSON.stringify(d));
 }
 
-// Fire-and-forget sync to Sheets
-function sync(action, payload) {
-  try {
-    fetch(GAS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: action, key: GAS_SECRET, payload: payload })
-    });
-  } catch(e) {}
+// ═══════════════════════════════════════════════════
+// SHEETS API — JSONP para todo (lectura Y escritura)
+// Así podemos confirmar que los datos se guardaron
+// ═══════════════════════════════════════════════════
+
+function sheetsCall(params, cb, timeout) {
+  var cbName = '_sc_' + Date.now();
+  var s = document.createElement('script');
+  var t = setTimeout(function() { cleanup(); if(cb) cb(null); }, timeout||12000);
+  function cleanup() { delete window[cbName]; if(s.parentNode) s.parentNode.removeChild(s); clearTimeout(t); }
+  window[cbName] = function(data) { cleanup(); if(cb) cb(data); };
+  params.cb = cbName;
+  params.key = GAS_SECRET;
+  params._ = Date.now();
+  var qs = Object.keys(params).map(function(k){ return k+'='+encodeURIComponent(typeof params[k]==='object'?JSON.stringify(params[k]):params[k]); }).join('&');
+  s.src = GAS_URL + '?' + qs;
+  s.onerror = function() { cleanup(); if(cb) cb(null); };
+  document.head.appendChild(s);
 }
 
-// Load from Sheets on login
+// Sync a single record to Sheets via JSONP GET (readable, confirmable)
+function sync(action, payload, cb) {
+  sheetsCall({ action: action, payload: payload }, function(res) {
+    if (cb) cb(res);
+  }, 10000);
+}
+
+// Load ALL data from Sheets
 function loadFromSheets(cb) {
-  var cbName = '_gs_' + Date.now();
-  var s = document.createElement('script');
-  var t = setTimeout(function() { cleanup(); cb(null); }, 8000);
-  function cleanup() { delete window[cbName]; if (s.parentNode) s.parentNode.removeChild(s); clearTimeout(t); }
-  window[cbName] = function(data) { cleanup(); cb(data); };
-  s.src = GAS_URL + '?action=getAll&key=' + encodeURIComponent(GAS_SECRET) + '&cb=' + cbName + '&_=' + Date.now();
-  s.onerror = function() { cleanup(); cb(null); };
-  document.head.appendChild(s);
+  sheetsCall({ action: 'getAll' }, cb, 12000);
+}
+
+// Save to local + Sheets, then optionally refresh
+function saveAndSync(action, payload, onDone) {
+  // 1. Save locally immediately (fast UI)
+  var d = db();
+  applyChange(d, action, payload);
+  save(d);
+  // 2. Send to Sheets via JSONP
+  sync(action, payload, function(res) {
+    if (onDone) onDone(res && res.ok);
+  });
+}
+
+function applyChange(d, action, payload) {
+  var i, found;
+  if (action === 'saveUser') {
+    found = false;
+    for (i=0;i<d.users.length;i++){if(d.users[i].id===payload.id){d.users[i]=payload;found=true;break;}}
+    if(!found) d.users.push(payload);
+  } else if (action === 'saveMedida') {
+    found = false;
+    for (i=0;i<d.medidas.length;i++){if(d.medidas[i].id===payload.id){d.medidas[i]=payload;found=true;break;}}
+    if(!found) d.medidas.push(payload);
+  } else if (action === 'saveRutina') {
+    found = false;
+    for (i=0;i<d.rutinas.length;i++){if(d.rutinas[i].id===payload.id){d.rutinas[i]=payload;found=true;break;}}
+    if(!found) d.rutinas.push(payload);
+  } else if (action === 'saveLog') {
+    found = false;
+    for (i=0;i<d.logs.length;i++){if(d.logs[i].id===payload.id){d.logs[i]=payload;found=true;break;}}
+    if(!found) d.logs.push(payload);
+  } else if (action === 'saveEjercicio') {
+    if(!d.ejercicios) d.ejercicios=[];
+    found = false;
+    for (i=0;i<d.ejercicios.length;i++){if(d.ejercicios[i].id===payload.id){d.ejercicios[i]=payload;found=true;break;}}
+    if(!found) d.ejercicios.push(payload);
+  } else if (action === 'deleteUser') {
+    d.users = d.users.filter(function(x){return x.id!==payload.id;});
+    d.medidas = d.medidas.filter(function(x){return x.userId!==payload.id;});
+    d.rutinas = d.rutinas.filter(function(x){return x.userId!==payload.id;});
+    d.logs = d.logs.filter(function(x){return x.userId!==payload.id;});
+    if(!d.deleted) d.deleted=[];
+    d.deleted.push(payload.id);
+  } else if (action === 'deleteEjercicio') {
+    if(d.ejercicios) d.ejercicios = d.ejercicios.filter(function(x){return x.id!==payload.id;});
+  } else if (action === 'deleteRutina') {
+    d.rutinas = d.rutinas.filter(function(x){return x.id!==payload.id;});
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -735,7 +792,7 @@ function finishOb() {
   for (var i = 0; i < d.users.length; i++) { if (d.users[i].id === CU.id) { idx = i; break; } }
   if (idx >= 0) d.users[idx] = CU;
   save(d);
-  sync('saveUser', CU);
+  saveAndSync('saveUser', CU);
   document.getElementById('obScreen').classList.add('hidden');
   toast('🎉 ¡Bienvenida! Tu perfil está listo.');
   showApp();
@@ -1066,9 +1123,9 @@ function saveUsuaria() {
       objetivo: document.getElementById('u_obj').value, obs: document.getElementById('u_obs').value,
       mem_start: document.getElementById('u_mem_start').value || null,
       mem_end: document.getElementById('u_mem_end').value || null };
-    d.users.push(nu);
-    save(d); sync('saveUser', nu);
-    closeModal('m_usuaria'); toast('✅ Usuaria creada: ' + nombre); pgUsuarias();
+    saveAndSync('saveUser', nu, function(){
+      closeModal('m_usuaria'); toast('✅ Usuaria creada: ' + nombre); pgUsuarias();
+    });
   } else {
     // Edit existing
     var idx = -1;
@@ -1083,8 +1140,9 @@ function saveUsuaria() {
     d.users[idx].obs = document.getElementById('u_obs').value;
     d.users[idx].mem_start = document.getElementById('u_mem_start').value || null;
     d.users[idx].mem_end = document.getElementById('u_mem_end').value || null;
-    save(d); sync('saveUser', d.users[idx]);
-    closeModal('m_usuaria'); toast('✅ Usuaria actualizada'); pgUsuarias();
+    saveAndSync('saveUser', d.users[idx], function(){
+      closeModal('m_usuaria'); toast('✅ Usuaria actualizada'); pgUsuarias();
+    });
   }
 }
 
@@ -1103,10 +1161,10 @@ function delUsuaria(uid) {
   d.users = newU; d.medidas = newM; d.rutinas = newR; d.logs = newL;
   if (!d.deleted) d.deleted = [];
   d.deleted.push(uid);
-  save(d);
-  sync('deleteUser', { id: uid });
-  toast('✅ ' + u.name + ' eliminada correctamente');
-  pgUsuarias();
+  saveAndSync('deleteUser', {id: uid}, function(){
+    toast('✅ ' + u.name + ' eliminada');
+    pgUsuarias();
+  });
 }
 
 function showPass(uid) {
@@ -1211,9 +1269,9 @@ function saveMedidas() {
     antebrazo: numF(document.getElementById('med_ant').value),
     obs: document.getElementById('med_obs').value
   };
-  var d = db(); d.medidas.push(med); save(d);
-  sync('saveMedida', med);
-  closeModal('m_medidas'); toast('✅ Medidas guardadas'); pgMedidas();
+  saveAndSync('saveMedida', med, function(){
+    closeModal('m_medidas'); toast('✅ Medidas guardadas'); pgMedidas();
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1226,45 +1284,67 @@ function pgEjercicios() {
   html += '<div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">';
   html += '<input type="text" id="ej_search" placeholder="Buscar..." oninput="filterEjs()" style="flex:1;min-width:180px;padding:9px 13px;background:var(--s1);border:1px solid var(--brd);border-radius:var(--r);color:var(--blanco);font-family:\'Montserrat\',sans-serif;font-size:13px">';
   html += '<button class="btn btn-p" onclick="openNewEj()">+ Nuevo ejercicio</button></div>';
-  html += '<div id="ej_grid">';
-  html += renderEjGrid(exs);
-  html += '</div>';
+  html += '<div id="ej_grid"></div>';
   setMain(html);
+  renderEjGrid(exs);
 }
 
 function renderEjGrid(exs) {
-  if (!exs.length) return '<div class="empty"><div class="empty-icon">📚</div><div class="empty-t">SIN EJERCICIOS</div><div class="empty-s">Añade ejercicios a la biblioteca</div></div>';
+  var grid = document.getElementById('ej_grid');
+  if (!grid) return;
+  if (!exs || !exs.length) {
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">📚</div><div class="empty-t">SIN EJERCICIOS</div><div class="empty-s">Añade ejercicios a la biblioteca</div></div>';
+    return;
+  }
   var grupos = {};
-  exs.forEach(function(e) { var g = e.grupo||'General'; if (!grupos[g]) grupos[g]=[]; grupos[g].push(e); });
+  exs.forEach(function(e) {
+    var g = e.grupo || 'General';
+    if (!grupos[g]) grupos[g] = [];
+    grupos[g].push(e);
+  });
   var html = '';
   Object.keys(grupos).forEach(function(g) {
-    html += '<div style="margin-bottom:16px"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;letter-spacing:2px;color:var(--oro);margin-bottom:8px">' + g + '</div>';
+    html += '<div style="margin-bottom:16px">';
+    html += '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;letter-spacing:2px;color:var(--oro);margin-bottom:8px">' + g + '</div>';
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">';
     grupos[g].forEach(function(e) {
+      // Store ID in data attribute, attach listeners after render
       html += '<div class="card" style="padding:13px">';
       html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">';
       html += '<div style="font-weight:600;font-size:13px">' + e.nombre + '</div>';
       html += '<div style="display:flex;gap:4px">';
-      html += '<button class="btn btn-g btn-sm" data-ejid="' + e.id + '" data-ejaction="editar">✏️</button>';
-      html += '<button class="btn btn-d btn-sm" data-ejid="' + e.id + '" data-ejaction="borrar">🗑️</button>';
+      html += '<button class="btn btn-g btn-sm ej-edit-btn" data-id="' + e.id + '">✏️ Editar</button>';
+      html += '<button class="btn btn-d btn-sm ej-del-btn" data-id="' + e.id + '">🗑️</button>';
       html += '</div></div>';
       if (e.equipo) html += '<div style="font-size:11px;color:var(--gris);margin-bottom:4px">' + e.equipo + '</div>';
       if (e.desc) html += '<div style="font-size:11px;color:var(--gris);line-height:1.5">' + e.desc + '</div>';
-      if (e.video) html += '<a href="' + e.video + '" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;background:rgba(119,0,105,0.2);color:#e080d8;border:1px solid rgba(119,0,105,0.4);cursor:pointer;margin-top:8px;text-decoration:none">▶ Ver video</a>';
+      if (e.video) html += '<a href="' + e.video + '" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;background:rgba(119,0,105,0.2);color:#e080d8;border:1px solid rgba(119,0,105,0.4);text-decoration:none;margin-top:8px">▶ Ver video</a>';
       html += '</div>';
     });
     html += '</div></div>';
   });
-  return html;
+  grid.innerHTML = html;
+  // Attach listeners AFTER innerHTML is set
+  grid.querySelectorAll('.ej-edit-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      openEditEj(this.getAttribute('data-id'));
+    });
+  });
+  grid.querySelectorAll('.ej-del-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      delEj(this.getAttribute('data-id'));
+    });
+  });
 }
 
 function filterEjs() {
   var d = db();
-  var q = (document.getElementById('ej_search')||{value:''}).value.toLowerCase();
-  var filtered = q ? d.ejercicios.filter(function(e){return e.nombre.toLowerCase().indexOf(q)>=0||(e.grupo||'').toLowerCase().indexOf(q)>=0;}) : d.ejercicios;
-  var grid = document.getElementById('ej_grid');
-  if (grid) grid.innerHTML = renderEjGrid(filtered);
-  attachEjListeners();
+  var q = '';
+  var el = document.getElementById('ej_search');
+  if (el) q = el.value.toLowerCase();
+  var exs = d.ejercicios || [];
+  if (q) exs = exs.filter(function(e){ return e.nombre.toLowerCase().indexOf(q)>=0 || (e.grupo||'').toLowerCase().indexOf(q)>=0; });
+  renderEjGrid(exs);
 }
 
 function attachEjListeners() {
@@ -1321,24 +1401,21 @@ function saveEjercicio() {
     equipo: document.getElementById('ej_equipo').value.trim(),
     desc: document.getElementById('ej_desc').value.trim()
   };
-  var d = db();
-  if (!d.ejercicios) d.ejercicios = [];
   if (editId) {
-    // Edit
-    var found = false;
-    for (var i = 0; i < d.ejercicios.length; i++) {
-      if (d.ejercicios[i].id === editId) { ej.id = editId; d.ejercicios[i] = ej; found = true; break; }
-    }
-    if (!found) { toast('Ejercicio no encontrado'); return; }
+    ej.id = editId;
   } else {
     ej.id = 'ej' + Date.now();
-    d.ejercicios.push(ej);
   }
-  save(d);
-  sync('saveEjercicio', ej);
   closeModal('m_ejercicio');
-  toast('✅ Ejercicio guardado: ' + nombre);
-  pgEjercicios();
+  toast('⏳ Guardando en Drive...');
+  saveAndSync('saveEjercicio', ej, function(res) {
+    if (res && res.ok) {
+      toast('✅ Ejercicio guardado en Drive: ' + nombre);
+    } else {
+      toast('⚠️ Guardado localmente (sin conexión)');
+    }
+    pgEjercicios();
+  });
 }
 
 function delEj(ejid) {
@@ -1348,8 +1425,9 @@ function delEj(ejid) {
   if (!e) return;
   if (!confirm('¿Eliminar el ejercicio "' + e.nombre + '"?')) return;
   d.ejercicios = d.ejercicios.filter(function(x){return x.id !== ejid;});
-  save(d); sync('deleteEjercicio', {id: ejid});
-  toast('Ejercicio eliminado'); pgEjercicios();
+  saveAndSync('deleteEjercicio', {id: ejid}, function(){
+    toast('Ejercicio eliminado'); pgEjercicios();
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1579,8 +1657,9 @@ function saveRutina() {
         d.rutinas[i].fechaFin = fechaFin;
         d.rutinas[i].dias = diasArr;
         d.rutinas[i].fechaUpdate = new Date().toISOString().split('T')[0];
-        save(d); sync('saveRutina', d.rutinas[i]);
-        closeModal('m_rutina'); toast('✅ Rutina actualizada: ' + nombre); pgRutinas(); return;
+        saveAndSync('saveRutina', d.rutinas[i], function(){
+          closeModal('m_rutina'); toast('✅ Rutina actualizada en Drive: ' + nombre); pgRutinas();
+        }); return;
       }
     }
     toast('Rutina no encontrada'); return;
@@ -1595,8 +1674,9 @@ function saveRutina() {
     };
     d.rutinas = d.rutinas.filter(function(r){ return !(r.userId===userId && r.semana===semana); });
     d.rutinas.push(rutina);
-    save(d); sync('saveRutina', rutina);
-    closeModal('m_rutina'); toast('✅ Rutina guardada: ' + nombre); pgRutinas();
+    saveAndSync('saveRutina', rutina, function(){
+      closeModal('m_rutina'); toast('✅ Rutina guardada en Drive: ' + nombre); pgRutinas();
+    });
   }
 }
 
@@ -1607,8 +1687,9 @@ function delRutina(rid) {
   if (!r) return;
   if (!confirm('¿Eliminar la rutina "' + (r.nombre||'Semana '+r.semana) + '"?')) return;
   d.rutinas = d.rutinas.filter(function(x){return x.id !== rid;});
-  save(d); sync('deleteRutina', {id: rid});
-  toast('Rutina eliminada'); pgRutinas();
+  saveAndSync('deleteRutina', {id: rid}, function(){
+    toast('Rutina eliminada'); pgRutinas();
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1679,8 +1760,7 @@ function changeCoachPass() {
   if (!nueva || nueva.length < 6) { toast('Mínimo 6 caracteres'); return; }
   if (nueva !== conf) { toast('Las contraseñas no coinciden'); return; }
   d.users[ci].password = nueva;
-  save(d); sync('saveUser', d.users[ci]);
-  toast('✅ Contraseña actualizada');
+  saveAndSync('saveUser', d.users[ci], function(){ toast('✅ Contraseña actualizada en Drive'); });
   document.getElementById('cp_actual').value = '';
   document.getElementById('cp_nueva').value = '';
   document.getElementById('cp_conf').value = '';
@@ -1806,19 +1886,37 @@ function getGasCode() {
     '',
     'function doGet(e) {',
     '  var p = e.parameter;',
-    '  var cb = p.cb||p.callback||"cb";',
-    '  if (p.key!==CLAVE) return jsonp(cb,{error:"Acceso denegado"});',
+    '  var cb = p.cb || "cb";',
+    '  if (p.key !== CLAVE) return jsonp(cb, {error:"Acceso denegado"});',
     '  var ss = SpreadsheetApp.openById(SS_ID);',
+    '  // WRITE via GET/JSONP (for cross-origin compatibility)',
+    '  if (p.action && p.action !== "getAll") {',
+    '    try {',
+    '      var payload = p.payload ? JSON.parse(decodeURIComponent(p.payload)) : {};',
+    '      var a = p.action;',
+    '      if (a==="saveUser")        upsert(ss,"usuarios",payload.id,payload);',
+    '      if (a==="saveMedida")      upsert(ss,"medidas",payload.id,payload);',
+    '      if (a==="saveRutina")      upsert(ss,"rutinas",payload.userId+"_"+payload.semana,payload);',
+    '      if (a==="saveLog")         upsert(ss,"logs",payload.id,payload);',
+    '      if (a==="saveEjercicio")   upsert(ss,"ejercicios",payload.id,payload);',
+    '      if (a==="deleteUser")      delRow(ss,"usuarios",payload.id);',
+    '      if (a==="deleteEjercicio") delRow(ss,"ejercicios",payload.id);',
+    '      if (a==="deleteRutina")    delRow(ss,"rutinas",payload.id);',
+    '      return jsonp(cb, {ok:true, action:a});',
+    '    } catch(err) { return jsonp(cb, {error:err.toString()}); }',
+    '  }',
+    '  // READ all data',
     '  var result = {users:[],medidas:[],rutinas:[],logs:[],ejercicios:[]};',
     '  var map = {usuarios:"users",medidas:"medidas",rutinas:"rutinas",logs:"logs",ejercicios:"ejercicios"};',
     '  Object.keys(map).forEach(function(name) {',
     '    var s = ss.getSheetByName(name);',
-    '    if (!s||s.getLastRow()===0) return;',
+    '    if (!s || s.getLastRow()===0) return;',
     '    s.getDataRange().getValues().forEach(function(r) {',
-    '      try { var obj=JSON.parse(r[1]||r[0]); if(obj) result[map[name]].push(obj); } catch(e2){}',
+    '      try { var obj=JSON.parse(r[1]!==""?r[1]:r[0]); if(obj) result[map[name]].push(obj); }',
+    '      catch(e2) {}',
     '    });',
     '  });',
-    '  return jsonp(cb,result);',
+    '  return jsonp(cb, result);',
     '}',
     '',
     'function resp(d){return ContentService.createTextOutput(JSON.stringify(d)).setMimeType(ContentService.MimeType.JSON);}',
@@ -1958,9 +2056,9 @@ function saveLog() {
     });
   }
   var log = { id: 'l'+Date.now(), userId: CU.id, fecha: fecha, rutId: rutId, semana: r?r.semana:0, dia: dia, duracion: duracion, peso: peso, comentario: comentario, ejercicios: ejercicios };
-  d.logs.push(log); save(d);
-  sync('saveLog', log);
-  closeModal('m_log'); toast('🔥 Sesión registrada'); nav('miHistorial');
+  saveAndSync('saveLog', log, function(){
+    closeModal('m_log'); toast('🔥 Sesión registrada en Drive'); nav('miHistorial');
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
