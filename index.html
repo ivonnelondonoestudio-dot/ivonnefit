@@ -996,19 +996,31 @@ function applyToCache(action, payload){
 
 // Carga Sheets → actualiza caché → devuelve datos frescos
 async function refreshData(){
-  const remote=await sheetsGet();
+  var remote=await sheetsGet();
   if(!remote||!remote.users) return getCache();
-  // El coach siempre viene del caché local (seguridad)
-  const localCoach=getCache().users.find(u=>u.role==='coach')||COACH_DEFAULT;
-  const merged={
-    users:[localCoach,...(remote.users||[]).filter(u=>u.role!=='coach')],
-    medidas:remote.medidas||[],
-    rutinas:remote.rutinas||[],
-    logs:remote.logs||[],
+  var deletedIds=getDeletedIds();
+  var localCoach=getCache().users.find(function(u){return u.role==='coach';})||COACH_DEFAULT;
+  var remoteUsers=(remote.users||[]).filter(function(u){
+    return u.role!=='coach' && deletedIds.indexOf(u.id)<0;
+  });
+  var merged={
+    users:[localCoach].concat(remoteUsers),
+    medidas:(remote.medidas||[]).filter(function(m){return deletedIds.indexOf(m.userId)<0;}),
+    rutinas:(remote.rutinas||[]).filter(function(r){return deletedIds.indexOf(r.userId)<0;}),
+    logs:(remote.logs||[]).filter(function(l){return deletedIds.indexOf(l.userId)<0;}),
     ejercicios:remote.ejercicios||[]
   };
+  if(!merged.users.find(function(u){return u.role==='coach';})) merged.users.push(localCoach);
   setCache(merged);
   return merged;
+}
+
+function getDeletedIds(){
+  try{return JSON.parse(localStorage.getItem('ivonne_deleted')||'[]');}catch(e){return [];}
+}
+function addDeletedId(uid){
+  var ids=getDeletedIds();
+  if(ids.indexOf(uid)<0){ids.push(uid);localStorage.setItem('ivonne_deleted',JSON.stringify(ids));}
 }
 
 // getData — devuelve caché inmediatamente (rápido para UI)
@@ -1932,6 +1944,9 @@ function gasCodeFull(){
     '    if (data.action === "saveMedida") upsertRow(ss, "medidas",  p.id, JSON.stringify(p));',
     '    if (data.action === "saveRutina") upsertRow(ss, "rutinas",  p.userId+"_"+p.semana, JSON.stringify(p));',
     '    if (data.action === "saveLog")    upsertRow(ss, "logs",     p.id, JSON.stringify(p));',
+    '    if (data.action === "saveEjercicio") upsertRow(ss, "ejercicios", p.id, JSON.stringify(p));',
+    '    if (data.action === "deleteUser") deleteRow(ss, "usuarios", p.id);',
+    '    if (data.action === "deleteEjercicio") deleteRow(ss, "ejercicios", p.id);',
     '    return resp({ok: true});',
     '  } catch(err) {',
     '    return resp({error: err.toString()});',
@@ -1951,6 +1966,17 @@ function gasCodeFull(){
     '  sheet.appendRow([key, json]);',
     '}',
     '',
+    'function deleteRow(ss, sheetName, key) {',
+    '  var sheet = ss.getSheetByName(sheetName);',
+    '  if (!sheet || sheet.getLastRow() === 0) return;',
+    '  var vals = sheet.getDataRange().getValues();',
+    '  for (var i = vals.length - 1; i >= 0; i--) {',
+    '    if (String(vals[i][0]) === String(key)) {',
+    '      sheet.deleteRow(i + 1); return;',
+    '    }',
+    '  }',
+    '}',
+    '',
     '// -- LECTURA (GET) -----------------------------',
     'function doGet(e) {',
     '  var p  = e.parameter;',
@@ -1959,7 +1985,7 @@ function gasCodeFull(){
     '  try {',
     '    var ss = SpreadsheetApp.openById(SS_ID);',
     '    var result = {users:[], medidas:[], rutinas:[], logs:[]};',
-    '    var map = {usuarios:"users", medidas:"medidas", rutinas:"rutinas", logs:"logs"};',
+    '    var map = {usuarios:"users", medidas:"medidas", rutinas:"rutinas", logs:"logs", ejercicios:"ejercicios"};',
     '    Object.keys(map).forEach(function(name) {',
     '      var s = ss.getSheetByName(name);',
     '      if (!s || s.getLastRow() === 0) return;',
@@ -2629,6 +2655,7 @@ async function eliminarUsuaria(uid){
   var newLogs=[]; for(var i=0;i<d.logs.length;i++){if(d.logs[i].userId!==uid)newLogs.push(d.logs[i]);}
   d.users=newUsers; d.medidas=newMeds; d.rutinas=newRuts; d.logs=newLogs;
   setCache(d);
+  addDeletedId(uid);  // marcar como eliminado para que no vuelva de Sheets
   sheetsPost('deleteUser',{id:uid});
   toast('Usuaria eliminada correctamente');
   renderUsuarias();
