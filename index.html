@@ -2057,29 +2057,63 @@ function saveFeedback(logId) {
 //  COACH: AJUSTES
 // ═══════════════════════════════════════════════════════════
 function pgAjustes() {
-  var html = '<div class="page-title">CONFIGURACIÓN</div><div class="page-sub">Sistema y Google Sheets</div>';
-  html += '<div class="card"><div class="card-title">🔐 Cambiar contraseña coach</div>';
-  html += '<div class="fr"><div class="fg"><label>Contraseña actual</label><input type="password" id="cp_actual"/></div><div class="fg"><label>Nueva contraseña</label><input type="password" id="cp_nueva"/></div></div>';
+  // Build HTML without interpolating GAS_URL (has special chars)
+  var html = '';
+  html += '<div class="page-title">CONFIGURACI\u00d3N</div>';
+  html += '<div class="page-sub">Sistema y Google Sheets</div>';
+
+  // Change password card
+  html += '<div class="card">';
+  html += '<div class="card-title">\ud83d\udd10 Cambiar contrase\u00f1a coach</div>';
+  html += '<div class="fr">';
+  html += '<div class="fg"><label>Contrase\u00f1a actual</label><input type="password" id="cp_actual"/></div>';
+  html += '<div class="fg"><label>Nueva contrase\u00f1a</label><input type="password" id="cp_nueva"/></div>';
+  html += '</div>';
   html += '<div class="fg"><label>Confirmar nueva</label><input type="password" id="cp_conf"/></div>';
-  html += '<button class="btn btn-p btn-sm" onclick="changeCoachPass()">Actualizar</button></div>';
-  html += '<div class="card"><div class="card-title">🔗 Google Sheets</div>';
-  html += '<div style="font-size:11px;color:var(--gris);background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:12px;margin-bottom:14px;line-height:1.9">';
-  html += '<strong style="color:var(--blanco)">URL configurada:</strong><br><span style="font-size:10px;word-break:break-all;color:var(--oro)">'+GAS_URL+'</span>';
+  html += '<button class="btn btn-p btn-sm" onclick="changeCoachPass()">Actualizar</button>';
+  html += '</div>';
+
+  // Google Sheets card
+  html += '<div class="card">';
+  html += '<div class="card-title">\ud83d\udd17 Google Sheets</div>';
+  html += '<div style="background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:12px;margin-bottom:14px">';
+  html += '<div style="font-size:11px;color:var(--oro);font-weight:700;margin-bottom:6px">URL CONFIGURADA:</div>';
+  html += '<div id="ajustes_url_display" style="font-size:10px;color:var(--gris);word-break:break-all;line-height:1.6"></div>';
   html += '</div>';
   html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
-  html += '<button class="btn btn-p btn-sm" onclick="testSheets()">🔍 Probar conexión</button>';
-  html += '<button class="btn btn-g btn-sm" onclick="pushAll()">⬆️ Subir todos los datos</button>';
-  html += '<button class="btn btn-g btn-sm" onclick="pullAll()">⬇️ Cargar desde Sheets</button>';
-  html += '</div><div id="sheets_status" style="margin-top:12px"></div></div>';
-  html += '<div class="card"><div class="card-title">📄 Código Apps Script</div>';
+  html += '<button class="btn btn-p btn-sm" onclick="testSheets()">\ud83d\udd0d Probar conexi\u00f3n</button>';
+  html += '<button class="btn btn-g btn-sm" onclick="pushAll()">\u2b06\ufe0f Subir todos los datos</button>';
+  html += '<button class="btn btn-g btn-sm" onclick="pullAll()">\u2b07\ufe0f Cargar desde Sheets</button>';
+  html += '</div>';
+  html += '<div id="sheets_status" style="margin-top:12px"></div>';
+  html += '</div>';
+
+  // Apps Script code card
+  html += '<div class="card">';
+  html += '<div class="card-title">\ud83d\udcc4 C\u00f3digo Apps Script</div>';
   html += '<div style="font-size:11px;color:var(--gris);line-height:1.9;margin-bottom:12px">';
-  html += '1. Google Sheets → Extensiones → Apps Script → borra todo<br>2. Pega el código de abajo<br>3. Implementar → Web App → Nueva versión → Cualquier persona</div>';
-  html += '<button class="btn btn-g btn-sm" style="margin-bottom:10px" onclick="copyCode()">📋 Copiar código</button>';
-  html += '<pre id="gas_code" style="background:rgba(0,0,0,0.4);border:1px solid var(--brd);border-radius:10px;padding:14px;font-size:10px;overflow:auto;color:var(--oro);line-height:1.8;max-height:360px;white-space:pre-wrap;word-break:break-all"></pre></div>';
-  html += '<div class="card"><div class="card-title">📤 Backup</div>';
-  html += '<div style="display:flex;gap:8px"><button class="btn btn-g btn-sm" onclick="exportData()">⬇️ Descargar JSON</button><button class="btn btn-d btn-sm" onclick="resetData()">🗑️ Borrar datos locales</button></div></div>';
+  html += '1. Google Sheets \u2192 Extensiones \u2192 Apps Script \u2192 borra todo<br>';
+  html += '2. Pega el c\u00f3digo de abajo<br>';
+  html += '3. Implementar \u2192 Web App \u2192 Nueva versi\u00f3n \u2192 Cualquier persona';
+  html += '</div>';
+  html += '<button class="btn btn-g btn-sm" style="margin-bottom:10px" onclick="copyCode()">\ud83d\udccb Copiar c\u00f3digo</button>';
+  html += '<pre id="gas_code" style="background:rgba(0,0,0,0.4);border:1px solid var(--brd);border-radius:10px;padding:14px;font-size:10px;overflow:auto;color:var(--oro);line-height:1.8;max-height:360px;white-space:pre-wrap;word-break:break-all"></pre>';
+  html += '</div>';
+
+  // Backup card
+  html += '<div class="card">';
+  html += '<div class="card-title">\ud83d\udce4 Backup</div>';
+  html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  html += '<button class="btn btn-g btn-sm" onclick="exportData()">\u2b07\ufe0f Descargar JSON</button>';
+  html += '<button class="btn btn-d btn-sm" onclick="resetData()">\ud83d\uddd1\ufe0f Borrar datos locales</button>';
+  html += '</div></div>';
+
   setMain(html);
+
+  // Set values AFTER render to avoid special char issues
   setTimeout(function() {
+    var urlDisplay = document.getElementById('ajustes_url_display');
+    if (urlDisplay) urlDisplay.textContent = GAS_URL;
     var pre = document.getElementById('gas_code');
     if (pre) pre.textContent = getGasCode();
   }, 50);
