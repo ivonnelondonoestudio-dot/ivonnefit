@@ -444,14 +444,54 @@ tr:hover td{background:var(--s1)}
 </div>
 
 <!-- Video Modal -->
-<div class="overlay" id="m_video">
-<div class="modal" style="width:660px;padding:0;overflow:hidden">
+<div class="overlay" id="m_video" style="align-items:center;padding:16px">
+<div style="background:var(--negro);border:1px solid var(--brd);border-radius:18px;width:min(660px,95vw);overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8)">
   <div style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--brd)">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px" id="m_video_title">VIDEO GUÍA</div>
-    <button class="close-btn" onclick="closeModal('m_video');stopVideo()">×</button>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--blanco)" id="m_video_title">VIDEO GUÍA</div>
+    <button class="close-btn" onclick="closeModal('m_video');stopVideo()" style="font-size:24px;color:var(--gris);background:none;border:none;cursor:pointer;padding:0 4px">×</button>
   </div>
-  <div id="m_video_wrap" style="position:relative;padding-bottom:56.25%;height:0;background:#000"></div>
-  <div style="padding:12px 16px;font-size:12px;color:var(--gris)" id="m_video_hint">Usa los controles del video para pausar, avanzar o poner en pantalla completa.</div>
+  <div id="m_video_wrap" style="position:relative;padding-bottom:56.25%;height:0;background:#000;overflow:hidden"></div>
+  <div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
+    <div style="font-size:11px;color:var(--gris)">Toca el video para reproducir · Usa ⛶ para pantalla completa</div>
+    <a id="m_video_ext" href="#" target="_blank" style="font-size:11px;color:var(--mag2);text-decoration:none;font-weight:600">Abrir en YouTube ↗</a>
+  </div>
+</div>
+</div>
+
+<!-- Editar sesión -->
+<div class="overlay" id="m_edit_log">
+<div class="modal">
+  <div class="modal-title">✏️ EDITAR SESIÓN<button class="close-btn" onclick="closeModal('m_edit_log')">×</button></div>
+  <input type="hidden" id="edit_log_id"/>
+  <div class="fr">
+    <div class="fg"><label>Fecha</label><input type="date" id="edit_log_fecha"/></div>
+    <div class="fg"><label>Duración (min)</label><input type="number" id="edit_log_dur"/></div>
+  </div>
+  <div class="fr">
+    <div class="fg"><label>Peso (kg)</label><input type="number" id="edit_log_peso" step="0.1"/></div>
+    <div class="fg"><label>Esfuerzo (1-10)</label>
+      <select id="edit_log_esf">
+        <option value="">—</option>
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+        <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+        <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+        <option value="10">10</option>
+      </select>
+    </div>
+  </div>
+  <div class="fg"><label>¿Dolor o molestia?</label>
+    <select id="edit_log_dolor">
+      <option value="no">No, todo bien</option>
+      <option value="leve">Leve molestia</option>
+      <option value="moderado">Dolor moderado</option>
+      <option value="fuerte">Dolor fuerte</option>
+    </select>
+  </div>
+  <div class="fg"><label>Comentario</label><textarea id="edit_log_comment" style="min-height:80px"></textarea></div>
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-p" style="flex:1" id="edit_log_save_btn" onclick="updateLog()">💾 Guardar cambios</button>
+    <button class="btn btn-d" onclick="deleteLog()">🗑️ Eliminar sesión</button>
+  </div>
 </div>
 </div>
 
@@ -1148,42 +1188,56 @@ function editUsuaria(uid) {
 }
 
 function saveUsuaria() {
-  var editId = document.getElementById('u_edit_id').value;
-  var nombre = document.getElementById('u_nombre').value.trim();
+  if (_saving['usuaria']) return;
+  var editId   = document.getElementById('u_edit_id').value;
+  var nombre   = document.getElementById('u_nombre').value.trim();
   var username = document.getElementById('u_username').value.trim();
-  var pass = document.getElementById('u_pass').value;
-  if (!nombre || !username) { toast('Nombre y username son obligatorios'); return; }
+  var pass     = document.getElementById('u_pass').value;
+  if (!nombre||!username) { toast('Nombre y username son obligatorios'); return; }
   var d = db();
   if (!editId) {
-    // New user
     if (!pass) { toast('La contraseña es obligatoria'); return; }
-    for (var i = 0; i < d.users.length; i++) {
-      if (d.users[i].username === username) { toast('Ese username ya existe'); return; }
+    for(var i=0;i<d.users.length;i++){
+      if(d.users[i].username===username){toast('Ese username ya existe');return;}
     }
-    var nu = { id: username, username: username, password: pass, name: nombre, role: 'user',
-      email: document.getElementById('u_email').value, tel: document.getElementById('u_tel').value,
-      objetivo: document.getElementById('u_obj').value, obs: document.getElementById('u_obs').value,
-      mem_start: document.getElementById('u_mem_start').value || null,
-      mem_end: document.getElementById('u_mem_end').value || null };
-    saveAndSync('saveUser', nu, function(){
-      closeModal('m_usuaria'); toast('✅ Usuaria creada: ' + nombre); pgUsuarias();
+    var nu = {id:username,username:username,password:pass,name:nombre,role:'user',
+      email:document.getElementById('u_email').value,
+      tel:document.getElementById('u_tel').value,
+      objetivo:document.getElementById('u_obj').value,
+      obs:document.getElementById('u_obs').value,
+      mem_start:document.getElementById('u_mem_start').value||null,
+      mem_end:document.getElementById('u_mem_end').value||null};
+    _saving['usuaria'] = true;
+    var btn = document.querySelector('#m_usuaria .btn-p');
+    if(btn){btn.disabled=true;btn.textContent='⏳ Guardando...';}
+    saveAndSync('saveUser', nu, function(res) {
+      _saving['usuaria'] = false;
+      if(btn){btn.disabled=false;btn.textContent='✅ Guardar';}
+      closeModal('m_usuaria');
+      toast(res&&res.ok?'✅ Usuaria creada en Drive: '+nombre:'✅ Usuaria creada: '+nombre);
+      pgUsuarias();
     });
   } else {
-    // Edit existing
-    var idx = -1;
-    for (var i = 0; i < d.users.length; i++) { if (d.users[i].id === editId) { idx = i; break; } }
-    if (idx < 0) { toast('Usuaria no encontrada'); return; }
-    d.users[idx].name = nombre;
-    d.users[idx].username = username;
-    if (pass) d.users[idx].password = pass;
-    d.users[idx].email = document.getElementById('u_email').value;
-    d.users[idx].tel = document.getElementById('u_tel').value;
-    d.users[idx].objetivo = document.getElementById('u_obj').value;
-    d.users[idx].obs = document.getElementById('u_obs').value;
-    d.users[idx].mem_start = document.getElementById('u_mem_start').value || null;
-    d.users[idx].mem_end = document.getElementById('u_mem_end').value || null;
-    saveAndSync('saveUser', d.users[idx], function(){
-      closeModal('m_usuaria'); toast('✅ Usuaria actualizada'); pgUsuarias();
+    var idx=-1;
+    for(var i=0;i<d.users.length;i++){if(d.users[i].id===editId){idx=i;break;}}
+    if(idx<0){toast('Usuaria no encontrada');return;}
+    d.users[idx].name=nombre; d.users[idx].username=username;
+    if(pass) d.users[idx].password=pass;
+    d.users[idx].email=document.getElementById('u_email').value;
+    d.users[idx].tel=document.getElementById('u_tel').value;
+    d.users[idx].objetivo=document.getElementById('u_obj').value;
+    d.users[idx].obs=document.getElementById('u_obs').value;
+    d.users[idx].mem_start=document.getElementById('u_mem_start').value||null;
+    d.users[idx].mem_end=document.getElementById('u_mem_end').value||null;
+    _saving['usuaria'] = true;
+    var btn2 = document.querySelector('#m_usuaria .btn-p');
+    if(btn2){btn2.disabled=true;btn2.textContent='⏳ Guardando...';}
+    saveAndSync('saveUser', d.users[idx], function(res) {
+      _saving['usuaria'] = false;
+      if(btn2){btn2.disabled=false;btn2.textContent='✅ Guardar';}
+      closeModal('m_usuaria');
+      toast(res&&res.ok?'✅ Usuaria actualizada en Drive':'✅ Usuaria actualizada');
+      pgUsuarias();
     });
   }
 }
@@ -1429,33 +1483,38 @@ function openEditEj(ejid) {
 }
 
 function saveEjercicio() {
+  if (_saving['ejercicio']) return;
   var editId = document.getElementById('ej_edit_id').value;
   var nombre = document.getElementById('ej_nombre').value.trim();
   if (!nombre) { toast('Ingresa el nombre del ejercicio'); return; }
+  var d = db();
+  // Check duplicate name (only for new)
+  if (!editId) {
+    var dup = (d.ejercicios||[]).filter(function(e){return e.nombre.toLowerCase()===nombre.toLowerCase();});
+    if (dup.length > 0) {
+      if (!confirm('"'+nombre+'" ya existe en la biblioteca.\n¿Guardar de todas formas?')) return;
+    }
+  }
   var vidRaw = document.getElementById('ej_video').value.trim();
   var vid = vidRaw;
   var ytM = vidRaw.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([^&\s]+)/);
-  if (ytM) vid = 'https://www.youtube.com/embed/' + ytM[1];
+  if (ytM) vid = 'https://www.youtube.com/embed/'+ytM[1];
   var ej = {
+    id: editId || 'ej'+Date.now(),
     nombre: nombre,
     grupo: document.getElementById('ej_grupo').value,
     video: vid,
     equipo: document.getElementById('ej_equipo').value.trim(),
     desc: document.getElementById('ej_desc').value.trim()
   };
-  if (editId) {
-    ej.id = editId;
-  } else {
-    ej.id = 'ej' + Date.now();
-  }
-  closeModal('m_ejercicio');
-  toast('⏳ Guardando en Drive...');
+  _saving['ejercicio'] = true;
+  var btn = document.querySelector('#m_ejercicio .btn-p');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Guardando...';}
   saveAndSync('saveEjercicio', ej, function(res) {
-    if (res && res.ok) {
-      toast('✅ Ejercicio guardado en Drive: ' + nombre);
-    } else {
-      toast('⚠️ Guardado localmente (sin conexión)');
-    }
+    _saving['ejercicio'] = false;
+    if(btn){btn.disabled=false;btn.textContent='💾 Guardar ejercicio';}
+    closeModal('m_ejercicio');
+    toast(res&&res.ok?'✅ Ejercicio guardado en Drive: '+nombre:'✅ Ejercicio guardado: '+nombre);
     pgEjercicios();
   });
 }
@@ -1677,71 +1736,79 @@ function addExRow(diaVal, existing) {
 }
 
 function saveRutina() {
-  var editId = document.getElementById('rut_edit_id').value;
-  var userId = document.getElementById('rut_uid').value;
-  var semana = parseInt(document.getElementById('rut_semana').value) || 0;
-  var nombre = document.getElementById('rut_nombre').value || 'Semana ' + semana;
-  var fechaIni = document.getElementById('rut_fecha_ini').value || new Date().toISOString().split('T')[0];
-  var fechaFin = document.getElementById('rut_fecha_fin').value || '';
-  if (!userId || !semana) { toast('Selecciona usuaria y número de semana'); return; }
-  var dias = {
+  if (_saving['rutina']) return;
+  var editId   = document.getElementById('rut_edit_id').value;
+  var userId   = document.getElementById('rut_uid').value;
+  var semana   = parseInt(document.getElementById('rut_semana').value)||0;
+  var nombre   = document.getElementById('rut_nombre').value||'Semana '+semana;
+  var fechaIni = document.getElementById('rut_fecha_ini').value||new Date().toISOString().split('T')[0];
+  var fechaFin = document.getElementById('rut_fecha_fin').value||'';
+  if(!userId||!semana){toast('Selecciona usuaria y número de semana');return;}
+  var dias={
     dia1:{dia:'dia1',nombre:'Día 1',tipo:'',ejercicios:[]},
     dia2:{dia:'dia2',nombre:'Día 2',tipo:'',ejercicios:[]},
     dia3:{dia:'dia3',nombre:'Día 3',tipo:'',ejercicios:[]}
   };
-  var hasExs = false;
-  for (var i = 0; i < exCount; i++) {
-    var elN = document.getElementById('rex_nom_'+i);
-    if (!elN || !elN.value.trim()) continue;
-    var diaKey = (document.getElementById('rex_dia_'+i)||{value:'dia1'}).value;
-    var vidRaw = (document.getElementById('rex_vid_'+i)||{value:''}).value.trim();
-    var vid = vidRaw;
-    var ytM = vidRaw.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([^&\s]+)/);
-    if (ytM) vid = 'https://www.youtube.com/embed/' + ytM[1];
+  var hasExs=false;
+  for(var i=0;i<exCount;i++){
+    var elN=document.getElementById('rex_nom_'+i);
+    if(!elN||!elN.value.trim()) continue;
+    var diaKey=(document.getElementById('rex_dia_'+i)||{value:'dia1'}).value;
+    var vidRaw=(document.getElementById('rex_vid_'+i)||{value:''}).value.trim();
+    var vid=vidRaw;
+    var ytM=vidRaw.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([^&\s]+)/);
+    if(ytM) vid='https://www.youtube.com/embed/'+ytM[1];
     dias[diaKey].ejercicios.push({
-      nombre: elN.value.trim(),
-      dosis: (document.getElementById('rex_dos_'+i)||{value:''}).value,
-      carga: (document.getElementById('rex_car_'+i)||{value:''}).value,
-      descanso: (document.getElementById('rex_des_'+i)||{value:''}).value,
-      videoUrl: vid
+      nombre:elN.value.trim(),
+      dosis:(document.getElementById('rex_dos_'+i)||{value:''}).value,
+      carga:(document.getElementById('rex_car_'+i)||{value:''}).value,
+      descanso:(document.getElementById('rex_des_'+i)||{value:''}).value,
+      videoUrl:vid
     });
-    hasExs = true;
+    hasExs=true;
   }
-  if (!hasExs) { toast('Añade al menos un ejercicio'); return; }
-  var diasArr = [];
-  ['dia1','dia2','dia3'].forEach(function(k){ if(dias[k].ejercicios.length>0) diasArr.push(dias[k]); });
-  var d = db();
-  if (editId) {
-    for (var i = 0; i < d.rutinas.length; i++) {
-      if (d.rutinas[i].id === editId) {
-        d.rutinas[i].nombre = nombre;
-        d.rutinas[i].semana = semana;
-        d.rutinas[i].objetivo = document.getElementById('rut_obj').value;
-        d.rutinas[i].intensidad = document.getElementById('rut_int').value;
-        d.rutinas[i].fechaIni = fechaIni;
-        d.rutinas[i].fechaFin = fechaFin;
-        d.rutinas[i].dias = diasArr;
-        d.rutinas[i].fechaUpdate = new Date().toISOString().split('T')[0];
-        saveAndSync('saveRutina', d.rutinas[i], function(){
-          closeModal('m_rutina'); toast('✅ Rutina actualizada en Drive: ' + nombre); pgRutinas();
-        }); return;
+  if(!hasExs){toast('Añade al menos un ejercicio');return;}
+  var diasArr=[];
+  ['dia1','dia2','dia3'].forEach(function(k){if(dias[k].ejercicios.length>0)diasArr.push(dias[k]);});
+  var d=db();
+  var btn=document.querySelector('#m_rutina .btn-p');
+  _saving['rutina']=true;
+  if(btn){btn.disabled=true;btn.textContent='⏳ Guardando en Drive...';}
+  var done=function(res){
+    _saving['rutina']=false;
+    if(btn){btn.disabled=false;btn.textContent='💾 Guardar rutina';}
+    closeModal('m_rutina');
+    toast(res&&res.ok?'✅ Rutina guardada en Drive: '+nombre:'✅ Rutina guardada: '+nombre);
+    pgRutinas();
+  };
+  if(editId){
+    for(var i=0;i<d.rutinas.length;i++){
+      if(d.rutinas[i].id===editId){
+        d.rutinas[i].nombre=nombre; d.rutinas[i].semana=semana;
+        d.rutinas[i].objetivo=document.getElementById('rut_obj').value;
+        d.rutinas[i].intensidad=document.getElementById('rut_int').value;
+        d.rutinas[i].fechaIni=fechaIni; d.rutinas[i].fechaFin=fechaFin;
+        d.rutinas[i].dias=diasArr; d.rutinas[i].fechaUpdate=new Date().toISOString().split('T')[0];
+        saveAndSync('saveRutina',d.rutinas[i],done); return;
       }
     }
-    toast('Rutina no encontrada'); return;
+    toast('Rutina no encontrada'); _saving['rutina']=false; if(btn){btn.disabled=false;btn.textContent='💾 Guardar rutina';}
   } else {
-    var rutina = {
-      id: 'r'+Date.now(), userId: userId, semana: semana, nombre: nombre,
-      objetivo: document.getElementById('rut_obj').value,
-      intensidad: document.getElementById('rut_int').value,
-      fechaIni: fechaIni, fechaFin: fechaFin,
-      fechaCarga: new Date().toISOString().split('T')[0],
-      dias: diasArr
-    };
-    d.rutinas = d.rutinas.filter(function(r){ return !(r.userId===userId && r.semana===semana); });
+    // Check duplicate semana
+    var exists=d.rutinas.filter(function(r){return r.userId===userId&&r.semana===semana;});
+    if(exists.length>0){
+      if(!confirm('Ya existe una rutina para Semana '+semana+' de esta usuaria.\n¿Reemplazarla?')){
+        _saving['rutina']=false; if(btn){btn.disabled=false;btn.textContent='💾 Guardar rutina';} return;
+      }
+    }
+    var rutina={id:'r'+Date.now(),userId:userId,semana:semana,nombre:nombre,
+      objetivo:document.getElementById('rut_obj').value,
+      intensidad:document.getElementById('rut_int').value,
+      fechaIni:fechaIni,fechaFin:fechaFin,
+      fechaCarga:new Date().toISOString().split('T')[0],dias:diasArr};
+    d.rutinas=d.rutinas.filter(function(r){return!(r.userId===userId&&r.semana===semana);});
     d.rutinas.push(rutina);
-    saveAndSync('saveRutina', rutina, function(){
-      closeModal('m_rutina'); toast('✅ Rutina guardada en Drive: ' + nombre); pgRutinas();
-    });
+    saveAndSync('saveRutina',rutina,done);
   }
 }
 
@@ -2312,56 +2379,48 @@ function loadLogExs() {
 }
 
 function saveLog() {
+  if (_saving['log']) return; // prevent double-click
   var fecha = document.getElementById('log_fecha').value;
   if (!fecha) { toast('Selecciona la fecha'); return; }
-  var rutId   = (document.getElementById('log_rut')||{value:''}).value;
-  var dia     = (document.getElementById('log_dia')||{value:'dia1'}).value;
-  var duracion= parseInt((document.getElementById('log_dur')||{value:''}).value)||null;
-  var peso    = parseFloat((document.getElementById('log_peso')||{value:''}).value)||null;
-  var esfuerzo= (document.getElementById('log_esfuerzo')||{value:''}).value;
-  var dolor   = (document.getElementById('log_dolor')||{value:'no'}).value;
+  var rutId    = (document.getElementById('log_rut')||{value:''}).value;
+  var dia      = (document.getElementById('log_dia')||{value:'dia1'}).value;
+  var duracion = parseInt((document.getElementById('log_dur')||{value:''}).value)||null;
+  var peso     = parseFloat((document.getElementById('log_peso')||{value:''}).value)||null;
+  var esfuerzo = (document.getElementById('log_esfuerzo')||{value:''}).value;
+  var dolor    = (document.getElementById('log_dolor')||{value:'no'}).value;
   var comentario = (document.getElementById('log_comment')||{value:''}).value.trim();
+  // Check duplicate: same user + same date + same dia
   var d = db();
+  var dup = d.logs.filter(function(l){return l.userId===CU.id && l.fecha===fecha && l.dia===dia;});
+  if (dup.length > 0) {
+    if (!confirm('Ya registraste el '+dia.replace('dia','Día ')+' del '+fecha+'.\n¿Quieres guardar otra sesión de todas formas?')) return;
+  }
   var r = null;
-  for (var i=0;i<d.rutinas.length;i++){if(d.rutinas[i].id===rutId){r=d.rutinas[i];break;}}
+  for(var i=0;i<d.rutinas.length;i++){if(d.rutinas[i].id===rutId){r=d.rutinas[i];break;}}
   var diaData = null;
-  if (r){for(var i=0;i<r.dias.length;i++){if(r.dias[i].dia===dia){diaData=r.dias[i];break;}}}
+  if(r){for(var i=0;i<r.dias.length;i++){if(r.dias[i].dia===dia){diaData=r.dias[i];break;}}}
   var ejercicios = [];
-  if (diaData && diaData.ejercicios) {
-    diaData.ejercicios.forEach(function(e, i) {
-      var rEl = document.getElementById('lex_r_'+i);
-      var cEl = document.getElementById('lex_c_'+i);
-      var reps  = rEl ? rEl.value.trim() : '';
-      var carga = cEl ? cEl.value.trim() : '';
-      ejercicios.push({
-        nombre: e.nombre,
-        dosisPlaneada: e.dosis || '',
-        cargaPlaneada: e.carga || '',
-        reps: reps,
-        carga: carga,
-        completado: !!(reps || carga)
-      });
+  if(diaData&&diaData.ejercicios){
+    diaData.ejercicios.forEach(function(e,i){
+      var rEl=document.getElementById('lex_r_'+i);
+      var cEl=document.getElementById('lex_c_'+i);
+      var reps=rEl?rEl.value.trim():'';
+      var carga=cEl?cEl.value.trim():'';
+      ejercicios.push({nombre:e.nombre,dosisPlaneada:e.dosis||'',cargaPlaneada:e.carga||'',reps:reps,carga:carga,completado:!!(reps||carga)});
     });
   }
-  var log = {
-    id: 'l'+Date.now(),
-    userId: CU.id,
-    fecha: fecha,
-    rutId: rutId,
-    semana: r ? r.semana : 0,
-    dia: dia,
-    duracion: duracion,
-    peso: peso,
-    esfuerzo: esfuerzo,
-    dolor: dolor,
-    comentario: comentario,
-    ejercicios: ejercicios,
-    feedback: null,
-    fechaFeedback: null
-  };
+  var log = {id:'l'+Date.now(),userId:CU.id,fecha:fecha,rutId:rutId,semana:r?r.semana:0,
+    dia:dia,duracion:duracion,peso:peso,esfuerzo:esfuerzo,dolor:dolor,
+    comentario:comentario,ejercicios:ejercicios,feedback:null,fechaFeedback:null};
+  // Lock button
+  _saving['log'] = true;
+  var saveBtn = document.querySelector('#m_log .btn-p');
+  if (saveBtn) { saveBtn.disabled=true; saveBtn.textContent='⏳ Guardando en Drive...'; }
   saveAndSync('saveLog', log, function(res) {
+    _saving['log'] = false;
+    if (saveBtn) { saveBtn.disabled=false; saveBtn.textContent='✅ Guardar sesión'; }
     closeModal('m_log');
-    toast(res && res.ok ? '🔥 Sesión guardada en Drive' : '🔥 Sesión guardada localmente');
+    toast(res&&res.ok ? '🔥 Sesión guardada en Drive' : '🔥 Sesión guardada localmente');
     nav('miHistorial');
   });
 }
@@ -2470,7 +2529,10 @@ function pgMiHistorial() {
       html += '</div>';
     }
     html += '</div>';
-    html += '<div style="font-size:11px;color:var(--mag2);font-weight:600;padding:0 14px 0 0;align-self:center">Ver →</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;padding-right:4px">';
+    html += '<span style="font-size:11px;color:var(--mag2);font-weight:600">Ver →</span>';
+    html += '<button class="btn btn-g btn-sm edit-log-btn" data-lid="'+l.id+'" style="font-size:10px;padding:3px 8px">&#9998;</button>';
+    html += '</div>';
     html += '</div>';
     // Exercises mini summary
     if (l.ejercicios && l.ejercicios.length) {
@@ -2534,8 +2596,27 @@ function pgMiPerfil() {
 function showVideoModal(url, nombre) {
   document.getElementById('m_video_title').textContent = nombre ? nombre.toUpperCase() : 'VIDEO GUÍA';
   var wrap = document.getElementById('m_video_wrap');
-  wrap.innerHTML = '<iframe id="yt_frame" src="'+url+'?autoplay=1&rel=0" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allow="autoplay;fullscreen" allowfullscreen></iframe>';
+  // Build YouTube URL - ensure it's embed format
+  var embedUrl = url;
+  var ytId = '';
+  var m1 = url.match(/youtube\.com\/embed\/([^?&]+)/);
+  var m2 = url.match(/youtu\.be\/([^?&]+)/);
+  var m3 = url.match(/youtube\.com\/watch\?v=([^&]+)/);
+  if (m1) ytId = m1[1];
+  else if (m2) ytId = m2[1];
+  else if (m3) ytId = m3[1];
+  if (ytId) {
+    embedUrl = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&rel=0&modestbranding=1';
+    var extLink = document.getElementById('m_video_ext');
+    if (extLink) extLink.href = 'https://www.youtube.com/watch?v=' + ytId;
+  }
+  wrap.innerHTML = '<iframe src="'+embedUrl+'" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>';
   openModal('m_video');
+}
+
+function stopVideo() {
+  var wrap = document.getElementById('m_video_wrap');
+  if (wrap) wrap.innerHTML = '';
 }
 
 function stopVideo() {
@@ -2548,15 +2629,93 @@ function stopVideo() {
 // ═══════════════════════════════════════════════════════════
 db(); // Initialize / ensure coach exists
 
-// Global click handler for video play buttons
+// Global click handlers
 document.addEventListener('click', function(ev) {
-  var btn = ev.target.closest('.vid-play-btn');
-  if (!btn) return;
-  ev.stopPropagation();
-  var url = btn.getAttribute('data-url');
-  var nom = btn.getAttribute('data-nom') || 'Video';
-  if (url) showVideoModal(url, nom);
+  // Video buttons
+  var vBtn = ev.target.closest('.vid-play-btn');
+  if (vBtn) {
+    ev.stopPropagation();
+    var url = vBtn.getAttribute('data-url');
+    var nom = vBtn.getAttribute('data-nom') || 'Video';
+    if (url) showVideoModal(url, nom);
+    return;
+  }
+  // Edit log buttons
+  var eBtn = ev.target.closest('.edit-log-btn');
+  if (eBtn) {
+    ev.stopPropagation();
+    var lid = eBtn.getAttribute('data-lid');
+    if (lid) openEditLog(lid);
+    return;
+  }
 });
+
+// ── Save button lock helper ──
+var _saving = {};
+function lockBtn(id, label) {
+  var el = document.getElementById(id) || document.querySelector(id);
+  if (!el) return;
+  el.disabled = true;
+  el._origText = el.textContent;
+  el.textContent = label || '⏳ Guardando...';
+}
+function unlockBtn(id) {
+  var el = document.getElementById(id) || document.querySelector(id);
+  if (!el) return;
+  el.disabled = false;
+  if (el._origText) el.textContent = el._origText;
+}
+
+function openEditLog(logId) {
+  var d=db(); var l=null;
+  for(var i=0;i<d.logs.length;i++){if(d.logs[i].id===logId){l=d.logs[i];break;}}
+  if(!l){toast('Sesión no encontrada');return;}
+  document.getElementById('edit_log_id').value=logId;
+  document.getElementById('edit_log_fecha').value=l.fecha||'';
+  document.getElementById('edit_log_dur').value=l.duracion||'';
+  document.getElementById('edit_log_peso').value=l.peso||'';
+  document.getElementById('edit_log_esf').value=l.esfuerzo||'';
+  document.getElementById('edit_log_dolor').value=l.dolor||'no';
+  document.getElementById('edit_log_comment').value=l.comentario||'';
+  openModal('m_edit_log');
+}
+function updateLog() {
+  if(_saving['edit_log']) return;
+  var logId=document.getElementById('edit_log_id').value;
+  var d=db(); var idx=-1;
+  for(var i=0;i<d.logs.length;i++){if(d.logs[i].id===logId){idx=i;break;}}
+  if(idx<0){toast('Sesión no encontrada');return;}
+  d.logs[idx].fecha=document.getElementById('edit_log_fecha').value||d.logs[idx].fecha;
+  d.logs[idx].duracion=parseInt(document.getElementById('edit_log_dur').value)||null;
+  d.logs[idx].peso=parseFloat(document.getElementById('edit_log_peso').value)||null;
+  d.logs[idx].esfuerzo=document.getElementById('edit_log_esf').value;
+  d.logs[idx].dolor=document.getElementById('edit_log_dolor').value;
+  d.logs[idx].comentario=document.getElementById('edit_log_comment').value.trim();
+  _saving['edit_log']=true;
+  var btn=document.getElementById('edit_log_save_btn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Guardando...';}
+  saveAndSync('saveLog',d.logs[idx],function(res){
+    _saving['edit_log']=false;
+    if(btn){btn.disabled=false;btn.textContent='💾 Guardar cambios';}
+    closeModal('m_edit_log');
+    toast(res&&res.ok?'✅ Sesión actualizada en Drive':'✅ Sesión actualizada');
+    pgMiHistorial();
+  });
+}
+function deleteLog() {
+  var logId=document.getElementById('edit_log_id').value;
+  if(!confirm('¿Eliminar esta sesión? No se puede deshacer.')) return;
+  var d=db(); var l=null;
+  for(var i=0;i<d.logs.length;i++){if(d.logs[i].id===logId){l=d.logs[i];break;}}
+  if(!l) return;
+  d.logs=d.logs.filter(function(x){return x.id!==logId;});
+  save(d);
+  l.deleted=true;
+  saveAndSync('saveLog',l,function(){});
+  closeModal('m_edit_log');
+  toast('🗑️ Sesión eliminada');
+  pgMiHistorial();
+}
 </script>
 </body>
 </html>
