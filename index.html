@@ -443,6 +443,48 @@ tr:hover td{background:var(--s1)}
 </div>
 </div>
 
+<!-- Sesion libre (actividad extra) -->
+<div class="overlay" id="m_free_log">
+<div class="modal">
+  <div class="modal-title" id="m_free_log_title">REGISTRAR ACTIVIDAD<button class="close-btn" onclick="closeModal('m_free_log')">x</button></div>
+  <input type="hidden" id="free_log_id"/>
+  <div class="fg"><label>Tipo de actividad</label>
+    <select id="free_act_tipo">
+      <option value="">-- Selecciona o escribe abajo --</option>
+      <option>Caminata</option>
+      <option>Trote / Carrera</option>
+      <option>Tenis</option>
+      <option>Rumba / Zumba</option>
+      <option>Yoga</option>
+      <option>Natacion</option>
+      <option>Ciclismo</option>
+      <option>Clase grupal</option>
+      <option>Otra</option>
+    </select>
+  </div>
+  <div class="fg"><label>Nombre / descripcion</label>
+    <input type="text" id="free_act_nombre" placeholder="Ej: Caminata en el parque, Clase de tenis..."/>
+  </div>
+  <div class="fr">
+    <div class="fg"><label>Fecha</label><input type="date" id="free_act_fecha"/></div>
+    <div class="fg"><label>Duracion (min)</label><input type="number" id="free_act_dur" placeholder="45"/></div>
+  </div>
+  <div class="fg"><label>Como te sentiste?</label>
+    <textarea id="free_act_comment" placeholder="Cuenta como fue la actividad, como te sentiste, que lograste..." style="min-height:90px"></textarea>
+  </div>
+  <div class="fg"><label>Esfuerzo (1-10)</label>
+    <select id="free_act_esf">
+      <option value="">--</option>
+      <option value="1">1 - Muy facil</option><option value="2">2</option><option value="3">3</option>
+      <option value="4">4</option><option value="5">5 - Moderado</option><option value="6">6</option>
+      <option value="7">7</option><option value="8">8 - Intenso</option><option value="9">9</option>
+      <option value="10">10 - Maximo</option>
+    </select>
+  </div>
+  <button class="btn btn-p btn-full" id="free_log_save_btn" onclick="saveFreeLog()">Guardar actividad</button>
+</div>
+</div>
+
 <!-- Video Modal -->
 <div class="overlay" id="m_video" style="align-items:center;padding:16px">
 <div style="background:var(--negro);border:1px solid var(--brd);border-radius:18px;width:min(660px,95vw);overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8)">
@@ -524,7 +566,7 @@ tr:hover td{background:var(--s1)}
 //  STORAGE — Simple, directa, confiable
 // ═══════════════════════════════════════════════════════════
 var DB_KEY = 'iw_db_v1';
-var GAS_URL = 'https://script.google.com/macros/s/AKfycby7UgG9t0f3cnq6APz3vD_Ud4AKrr82SVMJI04pEvOe7kthr4kZIYzDb2ozgQOgqLrX/exec';
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbwhI-C--93IY0vWfh1jIeB36QL8t8NZ4O_yqppANZVOWxmIB7VXCQ7aNSjE18K8OMTm/exec';
 var GAS_SECRET = 'IvonneWellness2024';
 
 function db() {
@@ -929,7 +971,7 @@ function buildSidebar() {
 }
 
 var COACH_MOB = [{id:'dashboard',l:'Inicio',ic:'📊'},{id:'usuarias',l:'Usuarias',ic:'👥'},{id:'rutinas',l:'Rutinas',ic:'🏋️'},{id:'medidas',l:'Medidas',ic:'📏'},{id:'__more',l:'Más',ic:'☰'}];
-var USER_MOB = [{id:'miRutina',l:'Rutina',ic:'🏋️'},{id:'miProgreso',l:'Progreso',ic:'📈'},{id:'miHistorial',l:'Historial',ic:'📋'},{id:'registrar',l:'Sesión',ic:'✅'},{id:'__more',l:'Más',ic:'☰'}];
+var USER_MOB = [{id:'miRutina',l:'Rutina',ic:'🏋️'},{id:'miHistorial',l:'Historial',ic:'📋'},{id:'registrar',l:'Sesion',ic:'✅'},{id:'__free',l:'Extra',ic:'🏃'},{id:'__more',l:'Mas',ic:'☰'}];
 var COACH_MORE = [{id:'ejercicios',l:'Biblioteca',ic:'📚'},{id:'logs',l:'Registro',ic:'📋'},{id:'ajustes',l:'Ajustes',ic:'⚙️'}];
 var USER_MORE = [{id:'miPerfil',l:'Mi Perfil',ic:'👤'}];
 
@@ -943,7 +985,9 @@ function buildMobNav() {
     var b = document.createElement('button');
     b.className = 'mob-btn'; b.id = 'mb_' + item.id;
     b.innerHTML = '<span class="mob-icon">' + item.ic + '</span>' + item.l;
-    if (item.id === '__more') {
+    if (item.id === '__free') {
+      b.onclick = function() { openFreeLog(); };
+    } else if (item.id === '__more') {
       b.onclick = function() { more.classList.toggle('open'); };
     } else {
       b.onclick = (function(id) { return function() { more.classList.remove('open'); nav(id); }; })(item.id);
@@ -2057,60 +2101,48 @@ function saveFeedback(logId) {
 //  COACH: AJUSTES
 // ═══════════════════════════════════════════════════════════
 function pgAjustes() {
-  // Build HTML without interpolating GAS_URL (has special chars)
   var html = '';
-  html += '<div class="page-title">CONFIGURACI\u00d3N</div>';
+  html += '<div class="page-title">CONFIGURACION</div>';
   html += '<div class="page-sub">Sistema y Google Sheets</div>';
-
-  // Change password card
   html += '<div class="card">';
-  html += '<div class="card-title">\ud83d\udd10 Cambiar contrase\u00f1a coach</div>';
+  html += '<div class="card-title">Cambiar contrasena coach</div>';
   html += '<div class="fr">';
-  html += '<div class="fg"><label>Contrase\u00f1a actual</label><input type="password" id="cp_actual"/></div>';
-  html += '<div class="fg"><label>Nueva contrase\u00f1a</label><input type="password" id="cp_nueva"/></div>';
+  html += '<div class="fg"><label>Contrasena actual</label><input type="password" id="cp_actual"/></div>';
+  html += '<div class="fg"><label>Nueva contrasena</label><input type="password" id="cp_nueva"/></div>';
   html += '</div>';
   html += '<div class="fg"><label>Confirmar nueva</label><input type="password" id="cp_conf"/></div>';
   html += '<button class="btn btn-p btn-sm" onclick="changeCoachPass()">Actualizar</button>';
   html += '</div>';
-
-  // Google Sheets card
   html += '<div class="card">';
-  html += '<div class="card-title">\ud83d\udd17 Google Sheets</div>';
+  html += '<div class="card-title">Google Sheets</div>';
   html += '<div style="background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:12px;margin-bottom:14px">';
   html += '<div style="font-size:11px;color:var(--oro);font-weight:700;margin-bottom:6px">URL CONFIGURADA:</div>';
   html += '<div id="ajustes_url_display" style="font-size:10px;color:var(--gris);word-break:break-all;line-height:1.6"></div>';
   html += '</div>';
   html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
-  html += '<button class="btn btn-p btn-sm" onclick="testSheets()">\ud83d\udd0d Probar conexi\u00f3n</button>';
-  html += '<button class="btn btn-g btn-sm" onclick="pushAll()">\u2b06\ufe0f Subir todos los datos</button>';
-  html += '<button class="btn btn-g btn-sm" onclick="pullAll()">\u2b07\ufe0f Cargar desde Sheets</button>';
+  html += '<button class="btn btn-p btn-sm" onclick="testSheets()">Probar conexion</button>';
+  html += '<button class="btn btn-g btn-sm" onclick="pushAll()">Subir todos los datos</button>';
+  html += '<button class="btn btn-g btn-sm" onclick="pullAll()">Cargar desde Sheets</button>';
   html += '</div>';
   html += '<div id="sheets_status" style="margin-top:12px"></div>';
   html += '</div>';
-
-  // Apps Script code card
   html += '<div class="card">';
-  html += '<div class="card-title">\ud83d\udcc4 C\u00f3digo Apps Script</div>';
+  html += '<div class="card-title">Codigo Apps Script</div>';
   html += '<div style="font-size:11px;color:var(--gris);line-height:1.9;margin-bottom:12px">';
-  html += '1. Google Sheets \u2192 Extensiones \u2192 Apps Script \u2192 borra todo<br>';
-  html += '2. Pega el c\u00f3digo de abajo<br>';
-  html += '3. Implementar \u2192 Web App \u2192 Nueva versi\u00f3n \u2192 Cualquier persona';
+  html += '1. Google Sheets - Extensiones - Apps Script - borra todo<br>';
+  html += '2. Pega el codigo de abajo<br>';
+  html += '3. Implementar - Web App - Nueva version - Cualquier persona';
   html += '</div>';
-  html += '<button class="btn btn-g btn-sm" style="margin-bottom:10px" onclick="copyCode()">\ud83d\udccb Copiar c\u00f3digo</button>';
+  html += '<button class="btn btn-g btn-sm" style="margin-bottom:10px" onclick="copyCode()">Copiar codigo</button>';
   html += '<pre id="gas_code" style="background:rgba(0,0,0,0.4);border:1px solid var(--brd);border-radius:10px;padding:14px;font-size:10px;overflow:auto;color:var(--oro);line-height:1.8;max-height:360px;white-space:pre-wrap;word-break:break-all"></pre>';
   html += '</div>';
-
-  // Backup card
   html += '<div class="card">';
-  html += '<div class="card-title">\ud83d\udce4 Backup</div>';
+  html += '<div class="card-title">Backup</div>';
   html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
-  html += '<button class="btn btn-g btn-sm" onclick="exportData()">\u2b07\ufe0f Descargar JSON</button>';
-  html += '<button class="btn btn-d btn-sm" onclick="resetData()">\ud83d\uddd1\ufe0f Borrar datos locales</button>';
+  html += '<button class="btn btn-g btn-sm" onclick="exportData()">Descargar JSON</button>';
+  html += '<button class="btn btn-d btn-sm" onclick="resetData()">Borrar datos locales</button>';
   html += '</div></div>';
-
   setMain(html);
-
-  // Set values AFTER render to avoid special char issues
   setTimeout(function() {
     var urlDisplay = document.getElementById('ajustes_url_display');
     if (urlDisplay) urlDisplay.textContent = GAS_URL;
@@ -2503,81 +2535,113 @@ function pgMiProgreso() {
 // ═══════════════════════════════════════════════════════════
 function pgMiHistorial() {
   var d = db();
-  var logs = d.logs.filter(function(l){return l.userId===CU.id;}).sort(function(a,b){return b.fecha.localeCompare(a.fecha);});
-  var html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">';
-  html += '<div class="page-title">MI HISTORIAL</div>';
-  html += '<button class="btn btn-p" onclick="openLogModal()">+ Sesión</button></div>';
-  html += '<div class="page-sub">'+logs.length+' sesiones completadas</div>';
+  var allLogs = d.logs.filter(function(l) { return l.userId === CU.id; })
+    .sort(function(a,b) { return b.fecha.localeCompare(a.fecha); });
+  var rutLogs  = allLogs.filter(function(l) { return l.tipo !== 'libre'; });
+  var freeLogs = allLogs.filter(function(l) { return l.tipo === 'libre'; });
 
-  // Summary stats
-  if (logs.length) {
-    var totalMin = 0; var sesConFeedback = 0;
-    logs.forEach(function(l){ if(l.duracion) totalMin+=l.duracion; if(l.feedback) sesConFeedback++; });
+  // Header + buttons
+  var html = '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px">';
+  html += '<div class="page-title">MI HISTORIAL</div>';
+  html += '<div style="display:flex;gap:8px">';
+  html += '<button class="btn btn-p btn-sm" onclick="openLogModal()">+ Sesion rutina</button>';
+  html += '<button class="btn btn-gold btn-sm" onclick="openFreeLog()">+ Actividad extra</button>';
+  html += '</div></div>';
+  html += '<div class="page-sub">' + rutLogs.length + ' sesiones de rutina · ' + freeLogs.length + ' actividades extra</div>';
+
+  // Stats
+  if (allLogs.length) {
+    var totalMin = 0; var conFeedback = 0;
+    allLogs.forEach(function(l) { if(l.duracion) totalMin += l.duracion; if(l.feedback) conFeedback++; });
     html += '<div class="stats" style="margin-bottom:16px">';
-    html += '<div class="stat"><div class="stat-l">Sesiones</div><div class="stat-v">'+logs.length+'</div></div>';
-    html += '<div class="stat"><div class="stat-l">Minutos totales</div><div class="stat-v">'+totalMin+'</div></div>';
-    html += '<div class="stat"><div class="stat-l">Con feedback</div><div class="stat-v">'+sesConFeedback+'</div></div>';
+    html += '<div class="stat"><div class="stat-l">Total sesiones</div><div class="stat-v">' + allLogs.length + '</div></div>';
+    html += '<div class="stat"><div class="stat-l">Minutos totales</div><div class="stat-v">' + totalMin + '</div></div>';
+    html += '<div class="stat"><div class="stat-l">Con feedback</div><div class="stat-v">' + conFeedback + '</div></div>';
     html += '</div>';
   }
 
-  if (!logs.length) {
-    html += '<div class="empty"><div class="empty-icon">📋</div><div class="empty-t">SIN SESIONES</div><div class="empty-s">¡Empieza hoy tu primera sesión!</div></div>';
+  if (!allLogs.length) {
+    html += '<div class="empty"><div class="empty-icon">&#128203;</div><div class="empty-t">SIN SESIONES</div><div class="empty-s">Empieza hoy tu primera sesion!</div></div>';
     setMain(html); return;
   }
 
-  logs.forEach(function(l) {
-    var r = null;
-    for (var i=0;i<d.rutinas.length;i++){if(d.rutinas[i].id===l.rutId){r=d.rutinas[i];break;}}
-    var diaData = null;
-    if (r){for(var i=0;i<r.dias.length;i++){if(r.dias[i].dia===l.dia){diaData=r.dias[i];break;}}}
+  allLogs.forEach(function(l) {
     var dt = new Date(l.fecha);
-    var esfColor = l.esfuerzo >= 8 ? '#ff8080' : l.esfuerzo >= 6 ? '#ffaa44' : '#80d4a0';
-    var hasFeedback = !!l.feedback;
-    var hasDolor = l.dolor && l.dolor !== 'no';
+    var isLibre = l.tipo === 'libre';
 
-    html += '<div class="card" style="padding:0;margin-bottom:12px;cursor:pointer" onclick="showLogDetail(\''+l.id+'\')">';
-    html += '<div style="padding:13px 15px;display:flex;gap:10px;align-items:flex-start">';
-    html += '<div class="log-date"><div class="log-d">'+dt.getDate()+'</div><div class="log-m">'+dt.toLocaleDateString('es',{month:'short'})+'</div></div>';
-    html += '<div style="flex:1">';
-    html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">';
-    html += '<span style="font-weight:600;font-size:13px">'+(diaData?diaData.nombre:'Día '+l.dia.replace('dia',''))+'</span>';
-    if (r) html += '<span class="badge bg">'+(r.nombre||'Sem.'+r.semana)+'</span>';
-    if (hasFeedback) html += '<span class="badge bk">💬 Feedback de Ivonne</span>';
-    if (hasDolor) html += '<span class="badge bw">⚠️ Dolor</span>';
-    html += '</div>';
-    html += '<div style="display:flex;gap:10px;margin-top:5px;flex-wrap:wrap">';
-    if (l.duracion) html += '<span style="font-size:11px;color:var(--gris)">⏱ '+l.duracion+' min</span>';
-    if (l.peso) html += '<span style="font-size:11px;color:var(--gris)">⚖️ '+l.peso+' kg</span>';
-    if (l.esfuerzo) html += '<span style="font-size:11px;color:'+esfColor+'">💪 '+l.esfuerzo+'/10</span>';
-    if (l.ejercicios) {
-      var ok = l.ejercicios.filter(function(e){return e.completado;}).length;
-      html += '<span style="font-size:11px;color:var(--gris)">✅ '+ok+'/'+l.ejercicios.length+'</span>';
-    }
-    html += '</div>';
-    if (l.comentario) html += '<div class="log-c" style="margin-top:6px">'+l.comentario+'</div>';
-    // Show feedback preview
-    if (hasFeedback) {
-      html += '<div style="margin-top:8px;padding:8px 10px;background:rgba(119,0,105,0.1);border-radius:8px;border-left:3px solid var(--mag2)">';
-      html += '<div style="font-size:10px;font-weight:700;color:var(--mag2);margin-bottom:3px">IVONNE:</div>';
-      html += '<div style="font-size:12px;line-height:1.6">'+l.feedback.slice(0,120)+(l.feedback.length>120?'...':'')+'</div>';
+    if (isLibre) {
+      // Free activity card
+      var esfColor = l.esfuerzo >= 8 ? '#ff8080' : l.esfuerzo >= 6 ? '#ffaa44' : '#80d4a0';
+      html += '<div class="card" style="padding:0;margin-bottom:10px">';
+      html += '<div style="padding:12px 14px;display:flex;gap:10px;align-items:flex-start">';
+      html += '<div class="log-date" style="background:linear-gradient(135deg,#2D6A4F,#40916C)">';
+      html += '<div class="log-d">' + dt.getDate() + '</div>';
+      html += '<div class="log-m">' + dt.toLocaleDateString('es',{month:'short'}) + '</div></div>';
+      html += '<div style="flex:1">';
+      html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">';
+      html += '<span style="font-weight:600;font-size:13px">' + (l.actNombre || 'Actividad') + '</span>';
+      html += '<span class="badge" style="background:rgba(45,106,79,0.2);color:#80d4a0;border:1px solid rgba(45,106,79,0.4)">Actividad extra</span>';
+      if (l.actTipo) html += '<span class="badge bg">' + l.actTipo + '</span>';
+      html += '</div>';
+      html += '<div style="display:flex;gap:10px;margin-top:5px;flex-wrap:wrap">';
+      if (l.duracion) html += '<span style="font-size:11px;color:var(--gris)">&#9201; ' + l.duracion + ' min</span>';
+      if (l.esfuerzo) html += '<span style="font-size:11px;color:' + esfColor + '">Esfuerzo ' + l.esfuerzo + '/10</span>';
+      html += '</div>';
+      if (l.comentario) html += '<div class="log-c" style="margin-top:6px">' + l.comentario + '</div>';
+      html += '</div>';
+      html += '<button class="btn btn-g btn-sm edit-free-btn" data-lid="' + l.id + '" style="font-size:10px;align-self:flex-start">&#9998;</button>';
+      html += '</div></div>';
+    } else {
+      // Regular session card
+      var r = null;
+      for (var i=0;i<d.rutinas.length;i++){if(d.rutinas[i].id===l.rutId){r=d.rutinas[i];break;}}
+      var diaData = null;
+      if (r){for(var i=0;i<r.dias.length;i++){if(r.dias[i].dia===l.dia){diaData=r.dias[i];break;}}}
+      var esfColor2 = l.esfuerzo >= 8 ? '#ff8080' : l.esfuerzo >= 6 ? '#ffaa44' : '#80d4a0';
+      var hasFeedback = !!l.feedback;
+      var hasDolor = l.dolor && l.dolor !== 'no';
+      html += '<div class="card" style="padding:0;margin-bottom:10px;cursor:pointer" onclick="showLogDetail(\'' + l.id + '\')">';
+      html += '<div style="padding:12px 14px;display:flex;gap:10px;align-items:flex-start">';
+      html += '<div class="log-date"><div class="log-d">' + dt.getDate() + '</div><div class="log-m">' + dt.toLocaleDateString('es',{month:'short'}) + '</div></div>';
+      html += '<div style="flex:1">';
+      html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">';
+      html += '<span style="font-weight:600;font-size:13px">' + (diaData?diaData.nombre:'Dia '+l.dia.replace('dia','')) + '</span>';
+      if (r) html += '<span class="badge bg">' + (r.nombre||'Sem.'+r.semana) + '</span>';
+      if (hasFeedback) html += '<span class="badge bk">Feedback de Ivonne</span>';
+      if (hasDolor) html += '<span class="badge bw">Dolor</span>';
+      html += '</div>';
+      html += '<div style="display:flex;gap:10px;margin-top:5px;flex-wrap:wrap">';
+      if (l.duracion) html += '<span style="font-size:11px;color:var(--gris)">&#9201; ' + l.duracion + ' min</span>';
+      if (l.peso) html += '<span style="font-size:11px;color:var(--gris)">' + l.peso + ' kg</span>';
+      if (l.esfuerzo) html += '<span style="font-size:11px;color:' + esfColor2 + '">Esf. ' + l.esfuerzo + '/10</span>';
+      if (l.ejercicios) {
+        var ok = l.ejercicios.filter(function(e){return e.completado;}).length;
+        html += '<span style="font-size:11px;color:var(--gris)">' + ok + '/' + l.ejercicios.length + ' ejercicios</span>';
+      }
+      html += '</div>';
+      if (l.comentario) html += '<div class="log-c" style="margin-top:6px">' + l.comentario + '</div>';
+      if (hasFeedback) {
+        html += '<div style="margin-top:6px;padding:7px 9px;background:rgba(119,0,105,0.1);border-radius:7px;border-left:3px solid var(--mag2)">';
+        html += '<div style="font-size:10px;font-weight:700;color:var(--mag2);margin-bottom:2px">IVONNE:</div>';
+        html += '<div style="font-size:11px;line-height:1.5">' + l.feedback.slice(0,100) + (l.feedback.length>100?'...':'') + '</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+      html += '<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;padding:0 2px">';
+      html += '<span style="font-size:10px;color:var(--mag2);font-weight:600">Ver</span>';
+      html += '<button class="btn btn-g btn-sm edit-log-btn" data-lid="' + l.id + '" style="font-size:10px;padding:3px 7px">&#9998;</button>';
+      html += '</div>';
+      html += '</div>';
+      // Exercises summary
+      if (l.ejercicios && l.ejercicios.length) {
+        html += '<div style="border-top:1px solid var(--brd);padding:7px 14px;display:flex;flex-wrap:wrap;gap:4px">';
+        l.ejercicios.forEach(function(e) {
+          html += '<span class="badge ' + (e.completado?'bk':'bg') + '" style="font-size:10px">' + e.nombre.slice(0,18) + (e.reps?' ('+e.reps+')':'') + '</span>';
+        });
+        html += '</div>';
+      }
       html += '</div>';
     }
-    html += '</div>';
-    html += '<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;padding-right:4px">';
-    html += '<span style="font-size:11px;color:var(--mag2);font-weight:600">Ver →</span>';
-    html += '<button class="btn btn-g btn-sm edit-log-btn" data-lid="'+l.id+'" style="font-size:10px;padding:3px 8px">&#9998;</button>';
-    html += '</div>';
-    html += '</div>';
-    // Exercises mini summary
-    if (l.ejercicios && l.ejercicios.length) {
-      html += '<div style="border-top:1px solid var(--brd);padding:8px 14px;display:flex;flex-wrap:wrap;gap:5px">';
-      l.ejercicios.forEach(function(e) {
-        html += '<span class="badge '+(e.completado?'bk':'bg')+'" style="font-size:10px">';
-        html += e.nombre.slice(0,20)+(e.reps?' ('+e.reps+')':'')+'</span>';
-      });
-      html += '</div>';
-    }
-    html += '</div>';
   });
   setMain(html);
 }
@@ -2682,6 +2746,14 @@ document.addEventListener('click', function(ev) {
     if (lid) openEditLog(lid);
     return;
   }
+  // Edit free activity buttons
+  var fBtn = ev.target.closest('.edit-free-btn');
+  if (fBtn) {
+    ev.stopPropagation();
+    var flid = fBtn.getAttribute('data-lid');
+    if (flid) openFreeLog(flid);
+    return;
+  }
 });
 
 // ── Save button lock helper ──
@@ -2714,41 +2786,124 @@ function openEditLog(logId) {
   openModal('m_edit_log');
 }
 function updateLog() {
-  if(_saving['edit_log']) return;
-  var logId=document.getElementById('edit_log_id').value;
-  var d=db(); var idx=-1;
-  for(var i=0;i<d.logs.length;i++){if(d.logs[i].id===logId){idx=i;break;}}
-  if(idx<0){toast('Sesión no encontrada');return;}
-  d.logs[idx].fecha=document.getElementById('edit_log_fecha').value||d.logs[idx].fecha;
-  d.logs[idx].duracion=parseInt(document.getElementById('edit_log_dur').value)||null;
-  d.logs[idx].peso=parseFloat(document.getElementById('edit_log_peso').value)||null;
-  d.logs[idx].esfuerzo=document.getElementById('edit_log_esf').value;
-  d.logs[idx].dolor=document.getElementById('edit_log_dolor').value;
-  d.logs[idx].comentario=document.getElementById('edit_log_comment').value.trim();
-  _saving['edit_log']=true;
-  var btn=document.getElementById('edit_log_save_btn');
-  if(btn){btn.disabled=true;btn.textContent='⏳ Guardando...';}
-  saveAndSync('saveLog',d.logs[idx],function(res){
-    _saving['edit_log']=false;
-    if(btn){btn.disabled=false;btn.textContent='💾 Guardar cambios';}
+  if (_saving['edit_log']) return;
+  var logId = document.getElementById('edit_log_id').value;
+  if (!logId) { toast('Error: ID no encontrado'); return; }
+  var d = db();
+  var idx = -1;
+  for (var i = 0; i < d.logs.length; i++) {
+    if (d.logs[i].id === logId) { idx = i; break; }
+  }
+  if (idx < 0) { toast('Sesion no encontrada'); return; }
+  var fechaEl = document.getElementById('edit_log_fecha');
+  var durEl   = document.getElementById('edit_log_dur');
+  var pesoEl  = document.getElementById('edit_log_peso');
+  var esfEl   = document.getElementById('edit_log_esf');
+  var dolorEl = document.getElementById('edit_log_dolor');
+  var comEl   = document.getElementById('edit_log_comment');
+  if (fechaEl && fechaEl.value) d.logs[idx].fecha = fechaEl.value;
+  if (durEl)   d.logs[idx].duracion   = parseInt(durEl.value) || null;
+  if (pesoEl)  d.logs[idx].peso       = parseFloat(pesoEl.value) || null;
+  if (esfEl)   d.logs[idx].esfuerzo   = esfEl.value;
+  if (dolorEl) d.logs[idx].dolor      = dolorEl.value;
+  if (comEl)   d.logs[idx].comentario = comEl.value.trim();
+  save(d);
+  _saving['edit_log'] = true;
+  var btn = document.getElementById('edit_log_save_btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+  saveAndSync('saveLog', d.logs[idx], function(res) {
+    _saving['edit_log'] = false;
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
     closeModal('m_edit_log');
-    toast(res&&res.ok?'✅ Sesión actualizada en Drive':'✅ Sesión actualizada');
+    toast(res && res.ok ? 'Sesion actualizada en Drive' : 'Sesion actualizada');
     pgMiHistorial();
   });
 }
 function deleteLog() {
-  var logId=document.getElementById('edit_log_id').value;
-  if(!confirm('¿Eliminar esta sesión? No se puede deshacer.')) return;
-  var d=db(); var l=null;
-  for(var i=0;i<d.logs.length;i++){if(d.logs[i].id===logId){l=d.logs[i];break;}}
-  if(!l) return;
-  d.logs=d.logs.filter(function(x){return x.id!==logId;});
+  var logId = document.getElementById('edit_log_id').value;
+  if (!logId) { toast('Error: no se encontro la sesion'); return; }
+  if (!confirm('Eliminar esta sesion? No se puede deshacer.')) return;
+  var d = db();
+  var found = false;
+  for (var i = 0; i < d.logs.length; i++) {
+    if (d.logs[i].id === logId) { found = true; break; }
+  }
+  if (!found) { toast('Sesion no encontrada'); return; }
+  d.logs = d.logs.filter(function(x) { return x.id !== logId; });
   save(d);
-  l.deleted=true;
-  saveAndSync('saveLog',l,function(){});
+  saveAndSync('deleteLog', { id: logId }, function() {});
   closeModal('m_edit_log');
-  toast('🗑️ Sesión eliminada');
+  toast('Sesion eliminada');
   pgMiHistorial();
+}
+
+// ─────────────────────────────────────────
+// SESIONES LIBRES (actividad extra usuaria)
+// ─────────────────────────────────────────
+function openFreeLog(existingId) {
+  if (existingId) {
+    // Edit existing
+    var d = db();
+    var l = null;
+    for (var i = 0; i < d.logs.length; i++) {
+      if (d.logs[i].id === existingId && d.logs[i].tipo === 'libre') { l = d.logs[i]; break; }
+    }
+    if (!l) return;
+    document.getElementById('m_free_log_title').textContent = 'EDITAR ACTIVIDAD';
+    document.getElementById('free_log_id').value = existingId;
+    document.getElementById('free_act_tipo').value = l.actTipo || '';
+    document.getElementById('free_act_nombre').value = l.actNombre || '';
+    document.getElementById('free_act_fecha').value = l.fecha || '';
+    document.getElementById('free_act_dur').value = l.duracion || '';
+    document.getElementById('free_act_comment').value = l.comentario || '';
+    document.getElementById('free_act_esf').value = l.esfuerzo || '';
+  } else {
+    document.getElementById('m_free_log_title').textContent = 'REGISTRAR ACTIVIDAD';
+    document.getElementById('free_log_id').value = '';
+    document.getElementById('free_act_tipo').value = '';
+    document.getElementById('free_act_nombre').value = '';
+    document.getElementById('free_act_fecha').value = new Date().toISOString().split('T')[0];
+    document.getElementById('free_act_dur').value = '';
+    document.getElementById('free_act_comment').value = '';
+    document.getElementById('free_act_esf').value = '';
+  }
+  openModal('m_free_log');
+}
+
+function saveFreeLog() {
+  if (_saving['free_log']) return;
+  var editId  = document.getElementById('free_log_id').value;
+  var tipo    = document.getElementById('free_act_tipo').value;
+  var nombre  = document.getElementById('free_act_nombre').value.trim();
+  var fecha   = document.getElementById('free_act_fecha').value;
+  var dur     = parseInt(document.getElementById('free_act_dur').value) || null;
+  var comment = document.getElementById('free_act_comment').value.trim();
+  var esf     = document.getElementById('free_act_esf').value;
+  if (!nombre && !tipo) { toast('Ingresa el nombre o tipo de actividad'); return; }
+  if (!fecha) { toast('Selecciona la fecha'); return; }
+  var actNombre = nombre || tipo;
+  var log = {
+    id: editId || ('fl' + Date.now()),
+    userId: CU.id,
+    tipo: 'libre',
+    actTipo: tipo,
+    actNombre: actNombre,
+    fecha: fecha,
+    duracion: dur,
+    comentario: comment,
+    esfuerzo: esf,
+    semana: 0, dia: '', rutId: ''
+  };
+  _saving['free_log'] = true;
+  var btn = document.getElementById('free_log_save_btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+  saveAndSync('saveLog', log, function(res) {
+    _saving['free_log'] = false;
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar actividad'; }
+    closeModal('m_free_log');
+    toast(res && res.ok ? 'Actividad guardada en Drive' : 'Actividad guardada');
+    pgMiHistorial();
+  });
 }
 </script>
 </body>
