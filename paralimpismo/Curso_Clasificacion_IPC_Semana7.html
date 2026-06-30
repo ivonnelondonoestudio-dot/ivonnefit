@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clasificación IPC - Sistema de Clasificación Funcional</title>
+<style>
+:root{
+  --bg:#0e0f13; --bg2:#161821; --card:#1c1f2b; --gold:#d4a843; --gold2:#f0c869;
+  --txt:#eceef2; --txt2:#aab0c0; --green:#3ddc84; --red:#ff5c5c; --blue:#5cc9ff;
+  --border:#2a2e3d;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(160deg,var(--bg),var(--bg2));color:var(--txt);min-height:100vh;padding-bottom:80px;}
+header{padding:36px 20px 24px;text-align:center;border-bottom:2px solid var(--border);background:radial-gradient(circle at top,rgba(212,168,67,.12),transparent 70%);}
+header h1{margin:0 0 8px;font-size:1.9em;background:linear-gradient(90deg,var(--gold2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;}
+header p{color:var(--txt2);margin:0;}
+nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:16px 12px;position:sticky;top:0;background:rgba(14,15,19,.95);backdrop-filter:blur(6px);z-index:50;border-bottom:1px solid var(--border);}
+nav button{background:var(--card);border:1px solid var(--border);color:var(--txt2);padding:8px 14px;border-radius:20px;font-size:.85em;cursor:pointer;transition:.2s;}
+nav button:hover,nav button.active{background:var(--gold);color:#1a1500;border-color:var(--gold);}
+main{max-width:980px;margin:0 auto;padding:20px;}
+section{display:none;animation:fade .4s;}
+section.active{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+h2{color:var(--gold2);border-left:4px solid var(--gold);padding-left:12px;font-size:1.4em;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin:14px 0;line-height:1.55;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.92em;}
+th,td{border:1px solid var(--border);padding:10px;text-align:left;}
+th{background:#26293a;color:var(--gold2);}
+tr:nth-child(even){background:#191c27;}
+.flip-wrap{perspective:1200px;height:170px;cursor:pointer;}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d;}
+.flip-wrap.flipped .flip-inner{transform:rotateY(180deg);}
+.flip-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;padding:16px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+.flip-front{background:linear-gradient(135deg,#22263a,#1a1d29);border:1px solid var(--gold);}
+.flip-front .num{font-size:1.6em;color:var(--gold);font-weight:bold;}
+.flip-back{background:linear-gradient(135deg,#2a2440,#1a1d29);border:1px solid var(--blue);transform:rotateY(180deg);font-size:.86em;}
+.flip-back b{color:var(--blue);}
+.hint{color:var(--txt2);font-size:.75em;margin-top:6px;}
+.quiz-q{margin:18px 0;padding:16px;background:#181b26;border-radius:10px;border:1px solid var(--border);}
+.quiz-q p.qtext{font-weight:600;margin-top:0;}
+.opt{display:block;width:100%;text-align:left;background:#21253380;border:1px solid var(--border);color:var(--txt);padding:10px 12px;border-radius:8px;margin:6px 0;cursor:pointer;font-size:.92em;}
+.opt:hover{border-color:var(--gold);}
+.opt.correct{background:#1d3a2a;border-color:var(--green);color:var(--green);}
+.opt.wrong{background:#3a1d1d;border-color:var(--red);color:var(--red);}
+.fb{margin-top:8px;padding:10px;border-radius:8px;font-size:.85em;display:none;}
+.fb.show{display:block;}
+.fb.ok{background:#143524;color:var(--green);}
+.fb.bad{background:#3a1414;color:var(--red);}
+.scorebar{position:fixed;bottom:0;left:0;right:0;background:#11121a;border-top:2px solid var(--gold);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;font-size:.9em;z-index:60;}
+.scorebar b{color:var(--gold2);}
+.pill{background:var(--gold);color:#1a1500;padding:3px 10px;border-radius:12px;font-weight:bold;}
+code{background:#252838;padding:2px 6px;border-radius:4px;color:var(--gold2);}
+.steps{list-style:none;padding:0;}
+.steps li{background:var(--card);border-left:4px solid var(--blue);padding:14px;margin:10px 0;border-radius:0 10px 10px 0;}
+.steps li b{color:var(--blue);}
+.tag{display:inline-block;background:#26293a;color:var(--gold2);padding:2px 8px;border-radius:6px;font-size:.78em;margin:2px;}
+</style>
+</head>
+<body>
+<header>
+<h1>🏅 Sistema de Clasificación del Comité Paralímpico Internacional (IPC)</h1>
+<p>Semana 7 · Legislación Deportiva · UNINCCA</p>
+</header>
+
+<nav id="navbar"></nav>
+
+<main id="main"></main>
+
+<div class="scorebar">
+  <span>Progreso de quizzes: <span id="answeredCount">0</span>/<span id="totalCount">0</span></span>
+  <span>Puntaje: <span class="pill"><span id="scoreVal">0</span>%</span></span>
+</div>
+
+<script>
+// ---------- DATA ----------
+const sections = ["concepto","objetivos","proceso","componentes","tipos","verano","invierno","final"];
+const navLabels = {
+  concepto:"1. Concepto",
+  objetivos:"2. Objetivos",
+  proceso:"3. Proceso",
+  componentes:"4. Componentes",
+  tipos:"5. Tipos de discapacidad",
+  verano:"6. Deportes de verano",
+  invierno:"7. Deportes de invierno",
+  final:"🏆 Quiz Final"
+};
+
+const discapacidades = [
+ {n:1,t:"Pérdida o deficiencia de fuerza muscular",d:"Disminución significativa de la fuerza en uno o más grupos musculares.",e:"Lesión medular, distrofia muscular"},
+ {n:2,t:"Limitación del rango de movimiento articular",d:"Movimiento limitado de las articulaciones que impide gestos deportivos eficientes.",e:"Artrogriposis, anquilosis"},
+ {n:3,t:"Pérdida o deficiencia de extremidades",d:"Ausencia congénita o adquirida de extremidades o segmentos corporales.",e:"Amputaciones, malformaciones congénitas"},
+ {n:4,t:"Diferencia de longitud en las piernas",d:"Discrepancia significativa en la longitud de las extremidades inferiores.",e:"Acortamiento congénito o por cirugía"},
+ {n:5,t:"Hipertonía",d:"Aumento anormal del tono muscular que dificulta el movimiento voluntario.",e:"Parálisis cerebral, TCE"},
+ {n:6,t:"Ataxia",d:"Incoordinación de movimientos causada por daño en el sistema nervioso central.",e:"Lesión cerebelosa, ataxia hereditaria"},
+ {n:7,t:"Atetosis",d:"Movimientos involuntarios, continuos, lentos y descoordinados.",e:"Parálisis cerebral"},
+ {n:8,t:"Discapacidad visual",d:"Pérdida parcial o total de la visión, clasificada por agudeza y campo visual.",e:"Ceguera total (S11), baja visión (S12–S13)"},
+ {n:9,t:"Discapacidad intelectual",d:"Limitación significativa en el funcionamiento intelectual y adaptativo. Diagnóstico antes de los 18 años.",e:"Trastorno del desarrollo intelectual, Síndrome de Down"},
+ {n:10,t:"Talla baja",d:"Estatura reducida debido a condiciones genéticas o médicas específicas.",e:"Acondroplasia, hipocondroplasia"}
+];
+
+const deportesVerano = [
+ ["Atletismo","T/F 11–13 · 20 · 31–38 · 40–41 · 42–47 · 51–57","Visual · Intelectual · Física"],
+ ["Bádminton","WH1–WH2 · SL3–SL4 · SU5 · SH6","Física · Baja estatura"],
+ ["Baloncesto en silla","Sistema por puntos (1.0–4.5)","Física"],
+ ["Boccia","BC1 – BC4","Física severa"],
+ ["Ciclismo (ruta y pista)","B1–3 · C1–5 · T1–2 · H1–5","Visual · Física"],
+ ["Doma paralímpica (Ecuestre)","Grados I – V","Física · Visual"],
+ ["Esgrima en silla","Categorías A · B · C","Física"],
+ ["Fútbol para ciegos (5)","B1","Visual"],
+ ["Fútbol PC (7)","FT5 – FT8 (histórico)","Parálisis cerebral"],
+ ["Goalball","B1 (única clase)","Visual"],
+ ["Judo","J1 · J2","Visual"],
+ ["Powerlifting","Sin clases deportivas (solo peso corporal)","Física"],
+ ["Natación","S / SB / SM 1–14","Física · Visual · Intelectual"],
+ ["Paracanoe","KL1–KL3 · VL1–VL3","Física"],
+ ["Paratriatlón","PTS2–PTS5 · PTWC1–2 · PTVI","Física · Visual"],
+ ["Remo","PR1 · PR2 · PR3","Física"],
+ ["Rugby en silla","Sistema por puntos (0.5–3.5)","Física"],
+ ["Taekwondo","K44 · K43","Física"],
+ ["Tenis de mesa","Clases 1–11","Física · Intelectual"],
+ ["Tenis en silla","Open · Quad","Física"],
+ ["Tiro con arco","Open · W1","Física"],
+ ["Tiro deportivo","SH1 · SH2","Física"],
+ ["Voleibol sentado","VS (única clase)","Física"]
+];
+
+const deportesInvierno = [
+ ["Para esquí alpino","LW · ST · B","Física · Visual"],
+ ["Para esquí de fondo","LW · ST · B","Física · Visual"],
+ ["Para snowboard","SB-LL1 · SB-LL2 · SB-UL","Física"],
+ ["Para biatlón","LW · ST · B","Física · Visual"],
+ ["Para ice hockey","Una sola clase","Física"],
+ ["Curling en silla","Una sola clase","Física"]
+];
+
+// ---------- QUIZ DATA (each: q, opts[4], correctIndex, feedback per opt) ----------
+const quizzes = {
+ concepto:[
+  {q:"¿Qué determina principalmente el sistema de clasificación funcional del IPC?",
+   opts:["El tipo de uniforme que usa el atleta","Quién puede competir y en qué clase, según el impacto funcional de su discapacidad","La nacionalidad del deportista","El número de medallas previas del atleta"],
+   correct:1,
+   fb:["No, el uniforme no influye en la clasificación.","Correcto: agrupa a los atletas según el impacto funcional de su discapacidad en el deporte.","La nacionalidad no determina la clase deportiva.","El historial de medallas no es criterio de clasificación."]},
+  {q:"La clasificación funcional busca principalmente:",
+   opts:["Premiar a los atletas con mayor discapacidad","Garantizar equidad agrupando según impacto funcional","Eliminar a atletas con baja estatura","Definir el calendario de competencias"],
+   correct:1,
+   fb:["No es un sistema de 'premio' por severidad.","Correcto: el objetivo central es la equidad competitiva.","La baja estatura es un tipo reconocido, no un motivo de exclusión.","El calendario no se define por clasificación."]}
+ ],
+ objetivos:[
+  {q:"¿Cuál NO es un objetivo de la clasificación según el IPC?",
+   opts:["Garantizar equidad en la competencia","Minimizar ventajas relacionadas con el grado de discapacidad","Asegurar que el resultado dependa del rendimiento deportivo","Aumentar el número de patrocinadores del evento"],
+   correct:3,
+   fb:["Sí es un objetivo explícito del IPC.","También es un objetivo: reducir ventajas injustas.","También lo es: que gane quien rinde mejor, no quien tiene más 'ventaja'.","Correcto, el patrocinio no es un objetivo de la clasificación funcional."]},
+  {q:"Minimizar las ventajas relacionadas con el tipo o grado de discapacidad busca que:",
+   opts:["Todos los atletas reciban la misma clase","El resultado dependa del rendimiento y no de la condición","Solo compitan atletas con discapacidad leve","Se elimine la clasificación en deportes de equipo"],
+   correct:1,
+   fb:["No, las clases siguen siendo diferenciadas según impacto funcional.","Correcto: el rendimiento deportivo debe ser el factor decisivo.","Atletas con discapacidad severa también compiten, en sus propias clases.","Los deportes de equipo también aplican sistemas de clasificación (ej. puntos)."]}
+ ],
+ proceso:[
+  {q:"¿Cuál es el orden correcto del proceso de clasificación funcional?",
+   opts:["Reevaluación → Evaluación médica → Asignación de clase → Evaluación técnica",
+         "Evaluación médica → Evaluación técnica → Asignación de clase y estado → Reevaluación periódica",
+         "Asignación de clase → Evaluación técnica → Evaluación médica → Reevaluación",
+         "Evaluación técnica → Reevaluación → Evaluación médica → Asignación de clase"],
+   correct:1,
+   fb:["El orden está invertido.","Correcto: médica, técnica, asignación de clase/estado y luego reevaluación periódica.","La asignación no puede ir antes de las evaluaciones.","La reevaluación es el último paso, no el segundo."]},
+  {q:"La evaluación técnica del proceso de clasificación consiste en:",
+   opts:["Una entrevista psicológica","Observación del atleta durante competencia y/o entrenamientos","Una prueba de conocimientos sobre reglamento","Un examen de laboratorio clínico"],
+   correct:1,
+   fb:["No corresponde a esta etapa.","Correcto: se observa el desempeño en competencia o entrenamiento.","No es una prueba teórica.","Esa sería parte de la evaluación médica, no técnica."]},
+  {q:"¿Por qué se hace reevaluación periódica, especialmente en atletas jóvenes?",
+   opts:["Porque cambian de equipo cada año","Porque su condición física puede evolucionar con el tiempo","Porque lo exige el patrocinador","Porque deben pagar una tarifa anual"],
+   correct:1,
+   fb:["El cambio de equipo no determina la reevaluación.","Correcto: el desarrollo físico puede modificar el impacto funcional.","No es un tema comercial.","No se trata de un pago, sino de un criterio médico-técnico."]}
+ ],
+ componentes:[
+  {q:"Una clase deportiva como 'S7' o 'T12' es un ejemplo de:",
+   opts:["Estado de clasificación","Asignación de clase (numérica o alfanumérica)","Evaluación funcional","Tipo de discapacidad"],
+   correct:1,
+   fb:["El estado de clasificación es C, R o RM, no S7/T12.","Correcto: son ejemplos de clase deportiva alfanumérica.","La evaluación funcional es el análisis previo, no el código final.","El tipo de discapacidad es la condición de base, no el código de clase."]},
+  {q:"¿Qué significa que un atleta tenga estado de clasificación 'RM'?",
+   opts:["Clasificación confirmada de forma permanente","Revisable en el corto plazo","En Revisión Médica","Rechazado por el comité médico"],
+   correct:2,
+   fb:["Eso correspondería al estado 'C' (Confirmada).","Eso sería el estado 'R' (Revisable).","Correcto: RM significa en Revisión Médica.","No existe ese estado de 'rechazo'."]}
+ ],
+ tipos:[
+  {q:"¿Cuántos tipos principales de discapacidad reconoce el IPC?",
+   opts:["6","8","10","12"],
+   correct:2,
+   fb:["No, son más de 6.","No, son más de 8.","Correcto: el IPC reconoce 10 tipos principales.","No, son 10, no 12."]},
+  {q:"La parálisis cerebral se asocia comúnmente con:",
+   opts:["Diferencia de longitud en las piernas","Hipertonía y atetosis","Discapacidad visual","Talla baja"],
+   correct:1,
+   fb:["No es la causa típica de esa condición.","Correcto: la parálisis cerebral puede causar hipertonía y/o atetosis.","La discapacidad visual tiene otras causas.","La talla baja se asocia a condiciones genéticas, no a parálisis cerebral."]},
+  {q:"¿Qué tipo de discapacidad requiere diagnóstico validado antes de los 18 años?",
+   opts:["Ataxia","Discapacidad intelectual","Hipertonía","Pérdida de extremidades"],
+   correct:1,
+   fb:["La ataxia no tiene ese requisito de edad.","Correcto: debe documentarse antes de los 18 años.","La hipertonía no exige ese límite de edad.","La pérdida de extremidades puede ser congénita o adquirida a cualquier edad."]},
+  {q:"La acondroplasia es un ejemplo típico de:",
+   opts:["Ataxia","Talla baja","Atetosis","Deterioro visual"],
+   correct:1,
+   fb:["No se relaciona con incoordinación de movimientos.","Correcto: la acondroplasia es una causa genética de talla baja.","No produce movimientos involuntarios típicos de atetosis.","No afecta directamente la visión."]}
+ ],
+ verano:[
+  {q:"En natación, ¿qué rango de clases funcionales se utiliza?",
+   opts:["S/SB/SM 1–14","T/F 11–57","BC1–BC4","WH1–WH2"],
+   correct:0,
+   fb:["Correcto: natación usa S, SB y SM del 1 al 14.","Ese rango corresponde a atletismo (T/F).","Ese rango corresponde a boccia.","Ese rango corresponde a bádminton."]},
+  {q:"¿Qué deporte paralímpico de verano usa un sistema de puntos de 1.0 a 4.5 en vez de clases con letras?",
+   opts:["Goalball","Baloncesto en silla","Judo","Tiro con arco"],
+   correct:1,
+   fb:["Goalball tiene una única clase (B1).","Correcto: el baloncesto en silla usa un sistema de puntuación funcional.","Judo usa clases J1 y J2 (discapacidad visual).","Tiro con arco usa Open y W1."]},
+  {q:"¿Cuál de estos deportes NO utiliza clases deportivas, solo categorías de peso corporal?",
+   opts:["Powerlifting","Remo","Paracanoe","Esgrima en silla"],
+   correct:0,
+   fb:["Correcto: el powerlifting paralímpico se compite por peso corporal, sin clases de discapacidad.","Remo sí usa clases PR1, PR2 y PR3.","Paracanoe sí usa clases KL y VL.","Esgrima en silla sí usa categorías A, B y C."]}
+ ],
+ invierno:[
+  {q:"¿Qué tipos de discapacidad cubre la clasificación 'LW · ST · B' usada en esquí alpino?",
+   opts:["Solo discapacidad intelectual","Física y visual","Solo baja estatura","Solo discapacidad auditiva"],
+   correct:1,
+   fb:["No corresponde a discapacidad intelectual.","Correcto: el esquí alpino agrupa discapacidad física y visual.","No se relaciona con baja estatura.","La discapacidad auditiva no es reconocida en este sistema del IPC."]},
+  {q:"¿Cuál de estos deportes de invierno tiene una sola clase deportiva para todos los participantes?",
+   opts:["Para esquí alpino","Para snowboard","Curling en silla","Para biatlón"],
+   correct:2,
+   fb:["El esquí alpino tiene múltiples clases (LW, ST, B).","El snowboard usa SB-LL1, SB-LL2 y SB-UL.","Correcto: el curling en silla tiene una sola clase deportiva.","El biatlón también usa LW, ST y B."]}
+ ]
+};
+
+// flatten quizzes for final exam (subset, reordered)
+function buildFinalQuiz(){
+  const all=[];
+  for(const k of Object.keys(quizzes)){ quizzes[k].forEach(item=>all.push(item)); }
+  // simple shuffle with fixed seed-ish order (deterministic interleave)
+  const out=[];
+  for(let i=0;i<all.length;i+=2) out.push(all[i]);
+  for(let i=1;i<all.length;i+=2) out.push(all[i]);
+  return out;
+}
+quizzes.final = buildFinalQuiz();
+
+let totalQuestions=0, answeredQuestions=0, correctAnswers=0;
+
+function renderNav(){
+  const nav=document.getElementById('navbar');
+  sections.forEach(s=>{
+    const b=document.createElement('button');
+    b.textContent=navLabels[s];
+    b.onclick=()=>showSection(s);
+    b.id='nav-'+s;
+    nav.appendChild(b);
+  });
+}
+
+function showSection(id){
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('nav-'+id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function quizHTML(key,title){
+  let h = `<h2>📝 Quiz: ${title}</h2>`;
+  quizzes[key].forEach((item,idx)=>{
+    const qid = key+'_'+idx;
+    h += `<div class="quiz-q" id="q-${qid}">
+      <p class="qtext">${idx+1}. ${item.q}</p>`;
+    item.opts.forEach((opt,oi)=>{
+      h += `<button class="opt" onclick="answer('${qid}','${key}',${idx},${oi},this)">${String.fromCharCode(65+oi)}) ${opt}</button>`;
+    });
+    h += `<div class="fb" id="fb-${qid}"></div></div>`;
+  });
+  return h;
+}
+
+function answer(qid,key,idx,oi,btn){
+  const item = quizzes[key][idx];
+  const qdiv = document.getElementById('q-'+qid);
+  if(qdiv.dataset.answered) return;
+  qdiv.dataset.answered = "1";
+  const opts = qdiv.querySelectorAll('.opt');
+  opts.forEach((o,i)=>{
+    o.disabled=true;
+    if(i===item.correct) o.classList.add('correct');
+    else if(i===oi) o.classList.add('wrong');
+  });
+  const fb = document.getElementById('fb-'+qid);
+  fb.classList.add('show');
+  if(oi===item.correct){
+    fb.classList.add('ok');
+    fb.textContent = "✅ ¡Correcto! " + item.fb[oi];
+    correctAnswers++;
+  } else {
+    fb.classList.add('bad');
+    fb.textContent = "❌ " + item.fb[oi] + " — Respuesta correcta: " + String.fromCharCode(65+item.correct) + ") " + item.opts[item.correct];
+  }
+  answeredQuestions++;
+  updateScore();
+}
+
+function updateScore(){
+  document.getElementById('answeredCount').textContent = answeredQuestions;
+  document.getElementById('totalCount').textContent = totalQuestions;
+  const pct = answeredQuestions? Math.round((correctAnswers/answeredQuestions)*100):0;
+  document.getElementById('scoreVal').textContent = pct;
+}
+
+function countTotal(){
+  totalQuestions=0;
+  Object.keys(quizzes).forEach(k=>totalQuestions+=quizzes[k].length);
+}
+
+function flipCardsHTML(){
+  let h = '<div class="grid">';
+  discapacidades.forEach(d=>{
+    h += `<div class="flip-wrap" onclick="this.classList.toggle('flipped')">
+      <div class="flip-inner">
+        <div class="flip-face flip-front">
+          <div class="num">${d.n}</div>
+          <div>${d.t}</div>
+          <div class="hint">👆 toca para ver detalle</div>
+        </div>
+        <div class="flip-face flip-back">
+          <div>${d.d}</div>
+          <div style="margin-top:8px;"><b>Ejemplos:</b> ${d.e}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  h += '</div>';
+  return h;
+}
+
+function tableHTML(rows){
+  let h = '<table><tr><th>Deporte</th><th>Clasificación / Código IPC</th><th>Tipo de Discapacidad</th></tr>';
+  rows.forEach(r=>{
+    h += `<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`;
+  });
+  h += '</table>';
+  return h;
+}
+
+function buildMain(){
+  const main = document.getElementById('main');
+
+  main.innerHTML += `<section id="sec-concepto" class="card-section">
+    <h2>🧩 ¿Qué es la Clasificación Funcional?</h2>
+    <div class="card">
+      <p>La clasificación es un sistema que <b>determina quién puede competir y en qué clase</b>. Agrupa a los atletas según el <b>impacto funcional</b> de su discapacidad en la actividad deportiva específica, garantizando <b>equidad</b> en la competencia.</p>
+      <p>Es manejado por el <b>Comité Paralímpico Internacional (IPC)</b>, y cada disciplina deportiva lo aplica de forma específica según las habilidades requeridas en ese deporte.</p>
+      <p>📌 Tener una discapacidad elegible <b>no garantiza</b> competir: siempre debe evaluarse su impacto funcional en ese deporte particular.</p>
+      <p>Cada disciplina deportiva del IPC aplica esta clasificación de forma específica, dependiendo de las habilidades requeridas en ese deporte. No todos los deportes admiten todos los tipos de discapacidad. El proceso es realizado por profesionales certificados en medicina y evaluación deportiva.</p>
+    </div>
+    ${quizHTML('concepto','Concepto de Clasificación Funcional')}
+  </section>`;
+
+  main.innerHTML += `<section id="sec-objetivos" class="card-section">
+    <h2>🎯 Objetivos de la Clasificación</h2>
+    <div class="card grid">
+      <div><span class="tag">Equidad</span><p>Garantizar equidad en la competencia.</p></div>
+      <div><span class="tag">Sin ventajas injustas</span><p>Minimizar ventajas relacionadas con el tipo o grado de discapacidad.</p></div>
+      <div><span class="tag">Rendimiento</span><p>Asegurar que el resultado dependa del rendimiento deportivo y no de la condición.</p></div>
+    </div>
+    ${quizHTML('objetivos','Objetivos de la Clasificación')}
+  </section>`;
+
+  main.innerHTML += `<section id="sec-proceso" class="card-section">
+    <h2>⚙️ Proceso de Clasificación Funcional</h2>
+    <ol class="steps">
+      <li><b>1. Evaluación médica</b> — realizada por fisioterapeuta o médico clasificador.</li>
+      <li><b>2. Evaluación técnica</b> — observación durante competencia y/o entrenamientos.</li>
+      <li><b>3. Asignación de clase y estado</b> — puede ser temporal o confirmada.</li>
+      <li><b>4. Reevaluación periódica</b> — especialmente en atletas jóvenes o en evolución física.</li>
+    </ol>
+    ${quizHTML('proceso','Proceso de Clasificación')}
+  </section>`;
+
+  main.innerHTML += `<section id="sec-componentes" class="card-section">
+    <h2>🔑 Componentes Clave del Sistema</h2>
+    <table>
+      <tr><th>Ítem</th><th>Descripción</th></tr>
+      <tr><td><b>Tipo de discapacidad</b></td><td>Se reconocen 10 tipos principales por el IPC.</td></tr>
+      <tr><td><b>Evaluación funcional</b></td><td>Se analiza cómo la discapacidad afecta el rendimiento deportivo específico.</td></tr>
+      <tr><td><b>Asignación de clase</b></td><td>Se otorga una clase deportiva, numérica o alfanumérica (ej: S7, T12, F34).</td></tr>
+      <tr><td><b>Estado de clasificación</b></td><td>Confirmada (C), Revisable (R) o en Revisión Médica (RM).</td></tr>
+    </table>
+    ${quizHTML('componentes','Componentes Clave')}
+  </section>`;
+
+  main.innerHTML += `<section id="sec-tipos" class="card-section">
+    <h2>🧠 Tipos de Discapacidad Reconocidos por el IPC</h2>
+    <p style="color:var(--txt2)">Toca cada tarjeta para ver la descripción completa y ejemplos.</p>
+    ${flipCardsHTML()}
+    ${quizHTML('tipos','Tipos de Discapacidad')}
+  </section>`;
+
+  main.innerHTML += `<section id="sec-verano" class="card-section">
+    <h2>☀️ Deportes de Verano</h2>
+    ${tableHTML(deportesVerano)}
+    ${quizHTML('verano','Deportes de Verano')}
+  </section>`;
+
+  main.innerHTML += `<section id="sec-invierno" class="card-section">
+    <h2>❄️ Deportes de Invierno</h2>
+    ${tableHTML(deportesInvierno)}
+    ${quizHTML('invierno','Deportes de Invierno')}
+  </section>`;
+
+  main.innerHTML += `<section id="sec-final" class="card-section">
+    <h2>🏆 Quiz Final Integrador</h2>
+    <p style="color:var(--txt2)">Repaso de todos los temas del curso. ¡Mucho éxito!</p>
+    ${quizHTML('final','Quiz Final')}
+  </section>`;
+}
+
+renderNav();
+buildMain();
+countTotal();
+updateScore();
+showSection('concepto');
+</script>
+</body>
+</html>
