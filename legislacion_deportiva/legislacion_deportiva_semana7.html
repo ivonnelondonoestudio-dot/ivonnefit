@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Legislación Deportiva — Semana 7: Marco Normativo del Deporte en Colombia</title>
+<style>
+:root{
+  --bg:#121212; --bg2:#1a1a1a; --card:#1e1e1e; --card2:#252525;
+  --accent:#e8a33d; --accent2:#4da6ff; --green:#4caf50; --red:#e15c5c;
+  --text:#eaeaea; --muted:#a9a9a9; --border:#333;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+  background:linear-gradient(160deg,#141414,#1c1c1c 60%,#161616);
+  color:var(--text); line-height:1.6; min-height:100vh;
+}
+.layout{display:flex; min-height:100vh;}
+.sidebar{
+  width:270px; background:#0f0f0f; border-right:1px solid var(--border);
+  position:fixed; top:0; left:0; height:100vh; overflow-y:auto; padding:20px 0; z-index:100;
+  transition:transform .3s;
+}
+.sidebar h2{font-size:.95rem; color:var(--accent); padding:0 20px 14px; border-bottom:1px solid var(--border); margin-bottom:10px;}
+.nav-item{
+  display:block; padding:11px 20px; color:var(--muted); text-decoration:none;
+  cursor:pointer; font-size:.88rem; border-left:3px solid transparent; transition:.2s;
+}
+.nav-item:hover{background:#1c1c1c; color:var(--text);}
+.nav-item.active{color:var(--accent); border-left-color:var(--accent); background:#1c1c1c;}
+.main{margin-left:270px; flex:1; padding:30px 40px 100px; max-width:980px;}
+.menu-toggle{display:none; position:fixed; top:14px; left:14px; z-index:200; background:var(--accent); color:#111; border:none; padding:8px 12px; border-radius:6px; font-weight:bold;}
+section{margin-bottom:60px; scroll-margin-top:20px;}
+.hero{
+  background:linear-gradient(120deg,#1a1a1a,#262019); border:1px solid var(--border);
+  border-radius:16px; padding:40px; margin-bottom:20px;
+}
+.hero h1{font-size:1.9rem; color:#fff; margin-bottom:14px;}
+.hero p{color:var(--muted); font-size:1.02rem;}
+.badge{display:inline-block; background:var(--accent); color:#111; padding:3px 12px; border-radius:20px; font-size:.75rem; font-weight:700; margin-bottom:10px;}
+.badge.alt{background:var(--accent2); color:#111;}
+h2.section-title{font-size:1.5rem; color:#fff; margin-bottom:6px; display:flex; align-items:center; gap:10px;}
+.section-sub{color:var(--muted); font-size:.92rem; margin-bottom:22px;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:22px; margin-bottom:16px;}
+.card h3{color:var(--accent); font-size:1.05rem; margin-bottom:10px;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr;}}
+.info-box{background:#1c2733; border-left:4px solid var(--accent2); padding:14px 18px; border-radius:8px; font-size:.92rem; margin:14px 0;}
+.warn-box{background:#2a2018; border-left:4px solid var(--accent); padding:14px 18px; border-radius:8px; font-size:.92rem; margin:14px 0;}
+
+.flip-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:18px; margin:20px 0;}
+.flip-card{background:transparent; height:170px; perspective:1000px; cursor:pointer;}
+.flip-inner{position:relative; width:100%; height:100%; transition:transform .6s; transform-style:preserve-3d;}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg);}
+.flip-front,.flip-back{position:absolute; width:100%; height:100%; backface-visibility:hidden; border-radius:12px; padding:16px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;}
+.flip-front{background:linear-gradient(135deg,#2a2a2a,#1f1f1f); border:1px solid var(--border);}
+.flip-front .icon{font-size:1.8rem; margin-bottom:8px;}
+.flip-front span{font-weight:600; color:#fff; font-size:.95rem;}
+.flip-back{background:linear-gradient(135deg,#2d2412,#1f1f1f); border:1px solid var(--accent); transform:rotateY(180deg); font-size:.85rem; color:var(--text); overflow-y:auto;}
+.flip-hint{font-size:.7rem; color:var(--muted); margin-top:8px;}
+
+.timeline{position:relative; margin:30px 0; padding-left:30px; border-left:2px solid var(--accent);}
+.tl-item{position:relative; margin-bottom:28px; cursor:pointer;}
+.tl-item::before{content:''; position:absolute; left:-37px; top:4px; width:14px; height:14px; border-radius:50%; background:var(--accent); border:3px solid #121212;}
+.tl-year{color:var(--accent); font-weight:700; font-size:.95rem;}
+.tl-title{color:#fff; font-weight:600; margin:4px 0;}
+.tl-desc{color:var(--muted); font-size:.88rem; display:none; padding-top:6px;}
+.tl-item.open .tl-desc{display:block;}
+
+.quiz-box{background:var(--card2); border:1px solid var(--border); border-radius:12px; padding:24px; margin-top:24px;}
+.quiz-box h3{color:var(--accent2); margin-bottom:16px;}
+.q-item{margin-bottom:22px; padding-bottom:18px; border-bottom:1px solid var(--border);}
+.q-item:last-child{border-bottom:none;}
+.q-text{font-weight:600; margin-bottom:10px; color:#fff; font-size:.95rem;}
+.q-opts{display:flex; flex-direction:column; gap:8px;}
+.opt{
+  background:#1a1a1a; border:1px solid var(--border); border-radius:8px; padding:10px 14px;
+  cursor:pointer; font-size:.88rem; transition:.2s;
+}
+.opt:hover{border-color:var(--accent2);}
+.opt.correct{background:#1c3320; border-color:var(--green); color:#b9f6c4;}
+.opt.incorrect{background:#3a1f1f; border-color:var(--red); color:#ffb3b3;}
+.opt.disabled{pointer-events:none;}
+.feedback{margin-top:8px; font-size:.85rem; padding:10px; border-radius:6px; display:none;}
+.feedback.show{display:block;}
+.feedback.correct-fb{background:#142a18; color:#a8e6b0;}
+.feedback.incorrect-fb{background:#2e1717; color:#f0a8a8;}
+
+.score-tracker{
+  position:fixed; bottom:20px; right:20px; background:var(--card2); border:2px solid var(--accent);
+  border-radius:50px; padding:12px 22px; font-weight:700; z-index:150; box-shadow:0 4px 20px rgba(0,0,0,.5);
+  font-size:.9rem;
+}
+#total-score{color:var(--accent);}
+
+table.law-table{width:100%; border-collapse:collapse; margin:16px 0; font-size:.88rem;}
+table.law-table th{background:#262626; color:var(--accent); padding:10px; text-align:left; border-bottom:2px solid var(--border);}
+table.law-table td{padding:10px; border-bottom:1px solid var(--border); color:var(--text);}
+table.law-table tr:hover{background:#1c1c1c;}
+
+.deco-list{list-style:none; padding-left:0;}
+.deco-list li{padding:8px 0 8px 26px; position:relative; border-bottom:1px dashed var(--border); font-size:.9rem;}
+.deco-list li::before{content:'⚖'; position:absolute; left:0; color:var(--accent);}
+
+.final-cta{text-align:center; padding:40px; background:linear-gradient(120deg,#1a1a1a,#262019); border-radius:16px; border:1px solid var(--accent);}
+.final-cta h2{color:var(--accent); margin-bottom:10px;}
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰ Menú</button>
+
+<div class="layout">
+<nav class="sidebar">
+  <h2>📚 Legislación Deportiva</h2>
+  <a class="nav-item" data-target="s0">Introducción</a>
+  <a class="nav-item" data-target="s1">Fundamentos Constitucionales</a>
+  <a class="nav-item" data-target="s2">Ley 181 de 1995</a>
+  <a class="nav-item" data-target="s3">Conceptos Clave del Deporte</a>
+  <a class="nav-item" data-target="s4">Evolución Normativa (1971–1999)</a>
+  <a class="nav-item" data-target="s5">Ley 1967 de 2019 — Ministerio</a>
+  <a class="nav-item" data-target="s6">Decreto 1228 de 1995</a>
+  <a class="nav-item" data-target="s7">Inspección, Vigilancia y Control</a>
+  <a class="nav-item" data-target="s8">Decreto 0855 de 2025 (SUID)</a>
+  <a class="nav-item" data-target="s9">Apuntes de Clase</a>
+  <a class="nav-item" data-target="s10">Línea de Tiempo y Retos</a>
+  <a class="nav-item" data-target="s11">Quiz Final</a>
+</nav>
+
+<main class="main">
+
+<section id="s0">
+<div class="hero">
+  <span class="badge">SEMANA 7 · LEGISLACIÓN DEPORTIVA</span>
+  <h1>Marco Normativo del Deporte en Colombia</h1>
+  <p>El deporte en Colombia no es solo recreación o competencia: es una herramienta para la salud, la inclusión social y el desarrollo humano. El Estado ha construido un sistema jurídico que garantiza el acceso al deporte y regula las organizaciones deportivas.</p>
+</div>
+<div class="info-box">
+🎯 <strong>Objetivo de la semana:</strong> comprender la jerarquía normativa del deporte colombiano (Constitución → Leyes → Decretos), identificar los hitos legales desde 1971 hasta el Decreto 0855 de 2025, y entender la estructura y control de los organismos deportivos.
+</div>
+</section>
+
+<section id="s1">
+<h2 class="section-title">🏛️ 1. Fundamentos Constitucionales</h2>
+<p class="section-sub">Toda la legislación deportiva colombiana se sostiene sobre dos artículos clave de la Constitución Política de 1991.</p>
+<div class="grid2">
+  <div class="card">
+    <h3>Artículo 52 C.P.</h3>
+    <p>Reconoce el derecho de todas las personas a la recreación, la práctica del deporte y el aprovechamiento del tiempo libre. Establece que el Estado debe fomentar estas actividades, e inspeccionar, vigilar y controlar las organizaciones deportivas y recreativas, cuya estructura y propiedad deben ser <strong>democráticas</strong>.</p>
+  </div>
+  <div class="card">
+    <h3>Artículo 208 C.P.</h3>
+    <p>Define que los ministros son los jefes de la administración en su dependencia y, bajo la dirección del Presidente, les corresponde formular las políticas de su despacho, dirigir la actividad administrativa y ejecutar la ley. Es la base para que el Ministerio del Deporte regule el sector.</p>
+  </div>
+</div>
+<div class="warn-box">💡 De estos dos artículos nace toda la cadena normativa: Ley 181 de 1995 → Decreto 1085 de 2015 → Decreto 0855 de 2025, entre otras.</div>
+</section>
+
+<section id="s2">
+<h2 class="section-title">📜 2. Ley 181 de 1995 — "La Ley del Deporte"</h2>
+<p class="section-sub">Considerada la <strong>columna vertebral</strong> del deporte colombiano.</p>
+<div class="card">
+  <p>Crea el <strong>Sistema Nacional del Deporte</strong> (art. 2) e integra organismos deportivos, entidades públicas, instituciones educativas y organizaciones privadas para permitir el acceso de la comunidad al deporte, la recreación, el aprovechamiento del tiempo libre, la educación extraescolar y la educación física (art. 46).</p>
+  <p style="margin-top:10px;">El artículo 50 establece que hacen parte del Sistema: el Ministerio de Educación Nacional, el Instituto Colombiano del Deporte (Coldeportes), los entes departamentales, municipales y distritales, los organismos privados, las entidades mixtas, y demás entidades públicas y privadas relacionadas.</p>
+</div>
+<div class="grid3">
+  <div class="card"><h3>Fomentar</h3><p style="font-size:.88rem;">Impulsar la práctica deportiva en todo el país.</p></div>
+  <div class="card"><h3>Organizar</h3><p style="font-size:.88rem;">Estructurar el sistema deportivo nacional por niveles jerárquicos.</p></div>
+  <div class="card"><h3>Garantizar</h3><p style="font-size:.88rem;">Acceso a la actividad física, recreación y educación física para todos.</p></div>
+</div>
+<h3 style="margin-top:24px; color:var(--accent2);">Principios rectores (de tus apuntes — Art. 11,12,13,15,44 y 95 Ley 181)</h3>
+<p class="section-sub">Haz clic en cada tarjeta para ver la explicación (cascaritas).</p>
+<div class="flip-grid" id="principios-flip">
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">🌍</div><span>Universalidad</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">Todos tenemos el derecho al aprovechamiento del tiempo libre, la recreación y el deporte, sin distinción.</div>
+  </div></div>
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">🙋</div><span>Participación Ciudadana</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">La comunidad tiene derecho a intervenir en los procesos de organización, planificación, ejecución y control de la gestión deportiva.</div>
+  </div></div>
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">🔗</div><span>Integración Funcional</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">Los organismos deportivos deben concurrir de manera armónica y coordinada entre los distintos niveles jerárquicos del Sistema Nacional del Deporte (art. 20, Decreto 1228/1995).</div>
+  </div></div>
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">🗳️</div><span>Democratización</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">La estructura y propiedad de las organizaciones deportivas debe ser democrática (mandato directo del art. 52 C.P.), garantizando la participación de los afiliados en la toma de decisiones.</div>
+  </div></div>
+</div>
+</section>
+
+<section id="s3">
+<h2 class="section-title">🤸 3. Conceptos Clave: Tipos de Deporte</h2>
+<p class="section-sub">Según tus apuntes: "Deporte = conducta lúdica de recreación o desafío." Clasificación según su finalidad.</p>
+<div class="flip-grid" id="tipos-flip">
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">🌱</div><span>Formativo</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">Deporte que se practica en procesos de iniciación y formación de la persona, base para futuras etapas deportivas.</div>
+  </div></div>
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">👥</div><span>Social</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">Tiene fines de esparcimiento, recreación y desarrollo comunitario, sin fines competitivos formales.</div>
+  </div></div>
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">🎓</div><span>Universitario</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">Se practica como complemento a la formación académica dentro de las instituciones de educación superior.</div>
+  </div></div>
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">🏟️</div><span>Asociado</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">Deporte organizado y regulado por clubes, ligas y federaciones que conforman el sector asociado del Sistema Nacional del Deporte.</div>
+  </div></div>
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">🏆</div><span>Competitivo</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">Deporte que está en cabeza del sector asociado y se orienta hacia la competencia formal y reglamentada.</div>
+  </div></div>
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">🥇</div><span>De Alto Rendimiento</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">Nivel superior de preparación física y técnica orientado a representar al país en competencias nacionales e internacionales.</div>
+  </div></div>
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">❤️</div><span>Aficionado</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">Se practica sin ánimo de lucro; el deportista no recibe pago por su participación.</div>
+  </div></div>
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">💰</div><span>Remunerado</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">El deportista sí recibe pago (deporte profesional), regulado especialmente por el Capítulo IV del Decreto 1228 de 1995.</div>
+  </div></div>
+</div>
+<div class="quiz-box">
+<h3>✅ Autoevaluación rápida</h3>
+<div class="q-item">
+  <div class="q-text">1. Un club ofrece entrenamiento gratuito a niños iniciándose en el atletismo, sin competencias formales aún. ¿Qué tipo de deporte es?</div>
+  <div class="q-opts">
+    <div class="opt" data-correct="false">Competitivo</div>
+    <div class="opt" data-correct="true">Formativo</div>
+    <div class="opt" data-correct="false">Remunerado</div>
+    <div class="opt" data-correct="false">Asociado</div>
+  </div>
+  <div class="feedback"></div>
+</div>
+<div class="q-item">
+  <div class="q-text">2. Un futbolista profesional recibe salario de su club. ¿Bajo qué categoría se clasifica esta práctica?</div>
+  <div class="q-opts">
+    <div class="opt" data-correct="false">Social</div>
+    <div class="opt" data-correct="false">Universitario</div>
+    <div class="opt" data-correct="true">Remunerado</div>
+    <div class="opt" data-correct="false">Formativo</div>
+  </div>
+  <div class="feedback"></div>
+</div>
+</div>
+</section>
+
+<section id="s4">
+<h2 class="section-title">🕰️ 4. Evolución Normativa antes y después de la Ley 181</h2>
+<p class="section-sub">El país fue entendiendo progresivamente la importancia del deporte para la salud pública, la educación, la integración social y el desarrollo comunitario.</p>
+
+<div class="card">
+<h3><span class="badge">1971</span> Ley 30 de 1971 — Primeros Juegos Deportivos Nacionales</h3>
+<p><strong>¿Qué estableció?</strong> Permitió que la Nación contribuyera económicamente a la realización de los Juegos Deportivos Nacionales, fortaleciendo procesos competitivos e impulsando la participación de atletas de diferentes departamentos.</p>
+<p style="margin-top:8px;"><strong>¿Por qué importa?</strong> Marca el inicio del compromiso estatal con el desarrollo deportivo. Antes de esta ley, la organización dependía de esfuerzos regionales y recursos limitados.</p>
+<div class="info-box">📌 Muchos deportistas que representaron a Colombia internacionalmente iniciaron su proceso en los Juegos Nacionales.</div>
+</div>
+
+<div class="card">
+<h3><span class="badge">1990</span> Ley 50 de 1990 — Reforma Laboral y Deporte Profesional</h3>
+<p>Aunque no fue creada exclusivamente para el deporte, la Ley 50 reformó el Código Sustantivo del Trabajo (CST) y tiene enorme influencia sobre el sector profesional.</p>
+<div class="grid3" style="margin-top:12px;">
+  <div class="card"><h3 style="font-size:.95rem;">Contratación</h3><p style="font-size:.85rem;">Regula los vínculos laborales entre deportistas y organizaciones.</p></div>
+  <div class="card"><h3 style="font-size:.95rem;">Prestaciones</h3><p style="font-size:.85rem;">Garantiza salario, seguridad social y prestaciones para jugadores y entrenadores.</p></div>
+  <div class="card"><h3 style="font-size:.95rem;">Empleo</h3><p style="font-size:.85rem;">El deporte genera empleo y requiere protección jurídica.</p></div>
+</div>
+<div class="warn-box">📝 Apunte propio: "Las empresas deben ofrecer actividades de recreación y deporte si cuentan con cierto número de empleados."</div>
+</div>
+
+<div class="card">
+<h3><span class="badge">1994</span> Ley 115 de 1994 — Ley General de Educación</h3>
+<p>Aunque pertenece al sector educativo, se relaciona con el deporte al integrar la educación física como componente formativo dentro del currículo escolar, conectando el deporte formativo con el sistema educativo nacional.</p>
+</div>
+
+<div class="card">
+<h3><span class="badge">1997</span> Ley 361 de 1997 — Inclusión de Personas con Discapacidad</h3>
+<p><strong>¿Qué garantiza?</strong> Establece mecanismos de integración social para personas con discapacidad, garantizando igualdad de oportunidades independientemente de sus condiciones físicas, sensoriales o cognitivas.</p>
+<div class="info-box">♿ Los Juegos Paranacionales son una expresión concreta de los principios de inclusión promovidos por esta ley.</div>
+<div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+  <span class="badge alt">Deporte adaptado</span>
+  <span class="badge alt">Recreación inclusiva</span>
+  <span class="badge alt">Participación paralímpica</span>
+</div>
+</div>
+
+<div class="card">
+<h3><span class="badge">1999</span> Ley 494 de 1999 — Actualización del Sistema</h3>
+<p><strong>¿Qué modificó?</strong> Adiciona y actualiza aspectos de la Ley 181 de 1995, fortaleciendo procedimientos administrativos y mejorando la coordinación entre organismos deportivos.</p>
+<p style="margin-top:8px;"><strong>Idea principal:</strong> Las federaciones y ligas deportivas debieron adaptar sus procedimientos internos conforme a estas modificaciones.</p>
+<div class="info-box">🔄 El marco normativo deportivo es dinámico y requiere ajustes constantes para responder a nuevas necesidades del sector.</div>
+</div>
+</section>
+
+<section id="s5">
+<h2 class="section-title">🏛️ 5. Ley 1967 de 2019 — Creación del Ministerio del Deporte</h2>
+<p class="section-sub">Una de las transformaciones más importantes del deporte colombiano: Coldeportes dejó de ser un departamento administrativo para convertirse en Ministerio.</p>
+<div class="grid3">
+  <div class="card"><h3>🏢 Mayor capacidad institucional</h3><p style="font-size:.88rem;">Se fortaleció la formulación de políticas públicas deportivas.</p></div>
+  <div class="card"><h3>💼 Mayor presupuesto y autonomía</h3><p style="font-size:.88rem;">Mejor coordinación nacional y visibilidad dentro del Gobierno.</p></div>
+  <div class="card"><h3>🏅 Alto rendimiento</h3><p style="font-size:.88rem;">Programas de apoyo a deportistas olímpicos recibieron fortalecimiento institucional.</p></div>
+</div>
+<div class="card" style="margin-top:16px;">
+<h3>Funciones asignadas al Ministerio del Deporte (Art. 4, Ley 1967/2019)</h3>
+<ul class="deco-list">
+  <li>Dirigir y orientar la formulación, adopción y evaluación de políticas, planes, programas y proyectos del sector deporte, recreación, actividad física y aprovechamiento del tiempo libre.</li>
+  <li>Dirigir, organizar, coordinar y evaluar el Sistema Nacional del Deporte: el deporte colombiano, el Comité Olímpico Colombiano, el Comité Paralímpico Colombiano, las federaciones, institutos y ligas departamentales y municipales, para apoyar a los nuevos talentos deportivos de todas las regiones del país.</li>
+</ul>
+</div>
+</section>
+
+<section id="s6">
+<h2 class="section-title">📋 6. Decreto 1228 de 1995 — Estructura del Sector Asociado</h2>
+<p class="section-sub">Reglamenta la organización jerárquica de los organismos deportivos del sector asociado (privado), integrantes del Sistema Nacional del Deporte.</p>
+
+<table class="law-table">
+<tr><th>Nivel</th><th>Organismos</th></tr>
+<tr><td>Municipal</td><td>Clubes deportivos, clubes promotores, clubes con deportistas profesionales</td></tr>
+<tr><td>Departamental / Distrito Capital</td><td>Ligas deportivas departamentales, asociaciones deportivas departamentales</td></tr>
+<tr><td>Nacional</td><td>Comité Olímpico Colombiano (COC), federaciones deportivas nacionales</td></tr>
+</table>
+
+<div class="grid2">
+  <div class="card">
+    <h3>Clubes deportivos (Art. 2)</h3>
+    <p style="font-size:.9rem;">Organismos de derecho privado constituidos por afiliados, mayoritariamente deportistas, para fomentar y patrocinar la práctica de un deporte en el municipio. Mínimo <strong>10 deportistas inscritos</strong>.</p>
+  </div>
+  <div class="card">
+    <h3>Clubes promotores (Art. 3)</h3>
+    <p style="font-size:.9rem;">Fomentan disciplinas que no alcanzan el mínimo de deportistas exigido. Pueden inscribir cualquier número plural de deportistas.</p>
+  </div>
+  <div class="card">
+    <h3>Ligas deportivas (Art. 7)</h3>
+    <p style="font-size:.9rem;">Constituidas por un número mínimo de clubes, fomentan UN deporte en el ámbito departamental. No puede existir más de una liga por deporte en la misma jurisdicción.</p>
+  </div>
+  <div class="card">
+    <h3>Federaciones deportivas (Art. 11)</h3>
+    <p style="font-size:.9rem;">Constituidas por ligas o asociaciones departamentales, fomentan un deporte a nivel nacional y manejan la representación internacional.</p>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px;">
+<h3>Estructura mínima de los organismos deportivos (Art. 21)</h3>
+<p class="section-sub">Toda organización del nivel nacional, departamental o del Distrito Capital debe tener, como mínimo:</p>
+<div class="flip-grid" id="estructura-flip">
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">🗳️</div><span>Órgano de Dirección</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">Se ejerce a través de una asamblea de afiliados.</div>
+  </div></div>
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">🧑‍💼</div><span>Órgano de Administración</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">Colegiado, mínimo 3 miembros incluido el Presidente (representante legal). Período de 4 años, reelegible hasta por 2 períodos sucesivos.</div>
+  </div></div>
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">🔍</div><span>Órgano de Control</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">Ejercido mediante revisoría fiscal.</div>
+  </div></div>
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">⚖️</div><span>Órgano de Disciplina</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">Mediante un tribunal deportivo encargado de resolver conflictos disciplinarios.</div>
+  </div></div>
+  <div class="flip-card"><div class="flip-inner">
+    <div class="flip-front"><div class="icon">🛠️</div><span>Comisiones Técnica y de Juzgamiento</span><div class="flip-hint">Toca para ver</div></div>
+    <div class="flip-back">Encargadas de los aspectos técnicos y de arbitraje/juzgamiento de la disciplina deportiva.</div>
+  </div></div>
+</div>
+</div>
+
+<div class="info-box">🗳️ <strong>Voto ponderado (Art. 23):</strong> en organismos de nivel departamental y nacional, las decisiones se aprueban con voto ponderado según la participación en competencias oficiales. Nunca puede equivaler a más de <strong>4 votos</strong>, incluido el voto de afiliación.</div>
+</section>
+
+<section id="s7">
+<h2 class="section-title">🕵️ 7. Inspección, Vigilancia y Control (IVC)</h2>
+<p class="section-sub">Coldeportes ejerce, por delegación del Presidente, la IVC sobre los organismos deportivos y demás entidades del Sistema Nacional del Deporte (Art. 34–40, Decreto 1228/1995).</p>
+
+<div class="grid2">
+<div class="card">
+<h3>¿Sobre quién? (Art. 36)</h3>
+<ul class="deco-list">
+  <li>Organismos deportivos y clubes profesionales (nacional y departamental).</li>
+  <li>Instituciones educativas públicas y privadas (solo en lo relativo a sus obligaciones bajo la Ley 181).</li>
+  <li>Cajas de compensación familiar y otros organismos, solo en los aspectos relacionados con el deporte.</li>
+</ul>
+</div>
+<div class="card">
+<h3>¿Con qué medios? (Art. 39)</h3>
+<ul class="deco-list">
+  <li>Requerimiento de informes.</li>
+  <li>Solicitud de información jurídica, financiera y contable.</li>
+  <li>Visitas de inspección.</li>
+  <li>Solicitud de suspensión de eventos deportivos por riesgos de seguridad.</li>
+  <li>Solicitud de suspensión temporal de directivos investigados.</li>
+</ul>
+</div>
+</div>
+
+<div class="card" style="margin-top:16px;">
+<h3>⚠️ Régimen sancionatorio (Art. 38)</h3>
+<p class="section-sub">Sanciones que puede imponer Coldeportes, según la gravedad de la infracción:</p>
+<div class="grid2">
+  <div><strong>1.</strong> Amonestación pública</div>
+  <div><strong>2.</strong> Multa hasta 100 SMMLV</div>
+  <div><strong>3.</strong> Suspensión o cancelación de la personería jurídica</div>
+  <div><strong>4.</strong> Suspensión o revocatoria del reconocimiento deportivo</div>
+</div>
+<div class="warn-box">⚖️ Todo proceso sancionatorio debe garantizar el derecho de defensa, conforme al Código Contencioso Administrativo.</div>
+</div>
+</section>
+
+<section id="s8">
+<h2 class="section-title">💻 8. Decreto 0855 de 2025 — Sistema Único de Información del Deporte (SUID)</h2>
+<p class="section-sub">Firmado el 30 de julio de 2025 por la Ministra del Deporte Patricia Duque Cruz. Adiciona la Parte 18 del Libro 2 del Decreto 1085 de 2015, en desarrollo del artículo 119 de la Ley 2294 de 2023 (Plan Nacional de Desarrollo "Colombia Potencia Mundial de la Vida").</p>
+
+<div class="card">
+<h3>Artículo 2.18.1 — Creación</h3>
+<p>Crea el Sistema Único de Información del Deporte (SUID) como una <strong>plataforma tecnológica centralizada</strong>, administrada por el Ministerio del Deporte, que integrará la información del sector.</p>
+</div>
+<div class="card">
+<h3>Artículo 2.18.2 — Finalidad</h3>
+<p>Permitir el acceso a la información de los organismos del Sistema Nacional del Deporte: estructura de los organismos, infraestructura deportiva y recreativa, atletas, y demás datos del sector, con el fin de facilitar la toma de decisiones en políticas públicas.</p>
+</div>
+<div class="card">
+<h3>Artículo 2.18.3 — Fuentes de información</h3>
+<p>Todos los organismos del Sistema Nacional del Deporte (públicos en todos los niveles jerárquicos y privados/mixtos) son responsables de suministrar y actualizar continuamente la información, en los plazos que fije el Ministerio.</p>
+</div>
+<div class="grid2">
+<div class="card">
+<h3>Art. 2.18.4 — Implementación</h3>
+<p style="font-size:.9rem;">A cargo del Ministerio del Deporte, que garantiza el funcionamiento de los componentes informáticos (servidores, almacenamiento, bases de datos, redes) y formula un plan de trabajo por fases.</p>
+</div>
+<div class="card">
+<h3>Art. 2.18.5 — Seguridad de los datos</h3>
+<p style="font-size:.9rem;">Debe regirse por las Leyes 1266 de 2008 (habeas data), 1581 de 2012 (protección de datos personales), 1712 de 2014 (transparencia) y la Ley 2335 de 2023.</p>
+</div>
+<div class="card">
+<h3>Art. 2.18.6 — Financiamiento</h3>
+<p style="font-size:.9rem;">Sujeto a las disponibilidades presupuestales, al Marco Fiscal de Mediano Plazo y al Marco de Gasto de Mediano Plazo.</p>
+</div>
+<div class="card">
+<h3>Art. 2.18.8 — Vigencia</h3>
+<p style="font-size:.9rem;">Rige a partir del día siguiente de su publicación (31 de julio de 2025).</p>
+</div>
+</div>
+<div class="info-box">🔑 <strong>Idea central:</strong> el SUID busca cerrar una brecha histórica del sector — la falta de datos centralizados y confiables — para apoyar la planeación de políticas públicas deportivas con criterios de oportunidad, veracidad, confiabilidad y seguridad.</div>
+</section>
+
+<section id="s9">
+<h2 class="section-title">✍️ 9. Apuntes de Clase (digitalizados)</h2>
+<p class="section-sub">Recreación digital de tus notas manuscritas de la Semana 7, para que las repases junto con el contenido del curso.</p>
+<div class="card">
+<p><strong>Artículos resaltados:</strong> Art. 11, 12, 13, 15, 44 y 95 de la Ley 181 de 1995.</p>
+<p style="margin-top:8px;"><strong>Ideas principales (Main Ideas / Evidences / Examples):</strong> tener claros los principios de la Ley 181 de 1995, considerada la columna vertebral del deporte colombiano.</p>
+<h3 style="margin-top:14px;">Principios destacados en tus notas:</h3>
+<ul class="deco-list">
+  <li>3 → Universalidad: todos tenemos el derecho al aprovechamiento del tiempo libre.</li>
+  <li>4 → Participación ciudadana.</li>
+  <li>5 → Integración funcional.</li>
+  <li>6 → Democratización.</li>
+</ul>
+<p style="margin-top:10px;"><strong>Ley 115 de 1994</strong> → Ley general de educación.</p>
+<p style="margin-top:6px;"><strong>Deporte</strong> → conducta lúdica de recreación o desafío.</p>
+</div>
+<div class="card">
+<h3>Sistema Nacional del Deporte — Título VI (apunte propio)</h3>
+<p>Conjunto de organismos públicos y privados organizados jerárquicamente para llevar el deporte al país. Aquí encontramos: COC, CPC, ligas deportivas, clubes deportivos — y por encima, el Ministerio del Deporte.</p>
+<p style="margin-top:8px;">Título VIII: Financiación del deporte. Título XI: Varios.</p>
+</div>
+</section>
+
+<section id="s10">
+<h2 class="section-title">📅 10. Línea de Tiempo y Retos Actuales</h2>
+<p class="section-sub">Haz clic en cada hito para expandir el detalle.</p>
+<div class="timeline" id="timeline">
+  <div class="tl-item"><div class="tl-year">1971</div><div class="tl-title">Apoyo a los Juegos Deportivos Nacionales (Ley 30)</div><div class="tl-desc">Primer paso del Estado colombiano hacia el financiamiento estructurado del deporte competitivo nacional.</div></div>
+  <div class="tl-item"><div class="tl-year">1990–1993</div><div class="tl-title">Protección laboral y disciplina (Ley 50 de 1990 y antecedentes al Decreto 1228)</div><div class="tl-desc">Se reconoce el deporte como generador de empleo y se sientan bases laborales para deportistas profesionales.</div></div>
+  <div class="tl-item"><div class="tl-year">1995–1999</div><div class="tl-title">Organización e inclusión (Ley 181, Decreto 1228, Ley 361, Ley 494)</div><div class="tl-desc">Se crea el Sistema Nacional del Deporte, se reglamenta la estructura de los organismos deportivos y se garantiza la inclusión de personas con discapacidad.</div></div>
+  <div class="tl-item"><div class="tl-year">2019</div><div class="tl-title">Ministerio del Deporte (Ley 1967)</div><div class="tl-desc">Coldeportes se transforma en Ministerio, ganando autonomía presupuestal y mayor jerarquía institucional.</div></div>
+  <div class="tl-item"><div class="tl-year">2025</div><div class="tl-title">Sistema Único de Información del Deporte (Decreto 0855)</div><div class="tl-desc">Se crea una plataforma tecnológica centralizada para integrar datos del sector deportivo y apoyar la toma de decisiones de política pública.</div></div>
+</div>
+<div class="card">
+<h3>Retos actuales del sector</h3>
+<ul class="deco-list">
+  <li>Mejorar infraestructura deportiva.</li>
+  <li>Incrementar la financiación del sector.</li>
+  <li>Fortalecer el deporte escolar.</li>
+  <li>Promover mayor inclusión.</li>
+  <li>Garantizar transparencia administrativa (clave para el SUID).</li>
+</ul>
+</div>
+<div class="warn-box">📌 El marco normativo no es solo un conjunto de leyes: es la base que garantiza derechos, organiza instituciones y promueve el desarrollo integral del deporte colombiano.</div>
+</section>
+
+<section id="s11">
+<h2 class="section-title">🏁 11. Quiz Final Integrador</h2>
+<p class="section-sub">10 preguntas que abarcan todo el contenido de la semana. ¡Responde con calma!</p>
+<div class="quiz-box" id="final-quiz">
+
+<div class="q-item">
+<div class="q-text">1. ¿Qué artículo de la Constitución Política establece el derecho de todas las personas a la recreación, el deporte y el aprovechamiento del tiempo libre?</div>
+<div class="q-opts">
+  <div class="opt" data-correct="false">Artículo 44</div>
+  <div class="opt" data-correct="true">Artículo 52</div>
+  <div class="opt" data-correct="false">Artículo 67</div>
+  <div class="opt" data-correct="false">Artículo 208</div>
+</div>
+<div class="feedback"></div>
+</div>
+
+<div class="q-item">
+<div class="q-text">2. ¿Por qué se considera a la Ley 181 de 1995 la "columna vertebral" del deporte colombiano?</div>
+<div class="q-opts">
+  <div class="opt" data-correct="false">Porque reformó el Código Sustantivo del Trabajo</div>
+  <div class="opt" data-correct="false">Porque creó el Ministerio del Deporte</div>
+  <div class="opt" data-correct="true">Porque creó el Sistema Nacional del Deporte e integró todos los organismos del sector</div>
+  <div class="opt" data-correct="false">Porque reglamentó el Decreto 1085 de 2015</div>
+</div>
+<div class="feedback"></div>
+</div>
+
+<div class="q-item">
+<div class="q-text">3. Un club deportivo municipal necesita un número mínimo de deportistas inscritos según el Decreto 1228 de 1995. ¿Cuál es?</div>
+<div class="q-opts">
+  <div class="opt" data-correct="false">5 deportistas</div>
+  <div class="opt" data-correct="false">15 deportistas</div>
+  <div class="opt" data-correct="true">10 deportistas</div>
+  <div class="opt" data-correct="false">20 deportistas</div>
+</div>
+<div class="feedback"></div>
+</div>
+
+<div class="q-item">
+<div class="q-text">4. ¿Cuál es la diferencia clave entre una liga deportiva y una asociación deportiva (Decreto 1228/1995)?</div>
+<div class="q-opts">
+  <div class="opt" data-correct="false">La liga es de nivel nacional y la asociación de nivel municipal</div>
+  <div class="opt" data-correct="true">La liga fomenta un solo deporte; la asociación fomenta varios deportes</div>
+  <div class="opt" data-correct="false">La asociación puede tener deportistas profesionales y la liga no</div>
+  <div class="opt" data-correct="false">No existe diferencia, son sinónimos</div>
+</div>
+<div class="feedback"></div>
+</div>
+
+<div class="q-item">
+<div class="q-text">5. ¿Qué ley garantiza la inclusión de personas con discapacidad en el deporte colombiano?</div>
+<div class="q-opts">
+  <div class="opt" data-correct="false">Ley 494 de 1999</div>
+  <div class="opt" data-correct="false">Ley 115 de 1994</div>
+  <div class="opt" data-correct="false">Ley 30 de 1971</div>
+  <div class="opt" data-correct="true">Ley 361 de 1997</div>
+</div>
+<div class="feedback"></div>
+</div>
+
+<div class="q-item">
+<div class="q-text">6. ¿Qué transformación institucional trajo la Ley 1967 de 2019?</div>
+<div class="q-opts">
+  <div class="opt" data-correct="false">Creó el Sistema Nacional del Deporte</div>
+  <div class="opt" data-correct="true">Transformó a Coldeportes (departamento administrativo) en Ministerio del Deporte</div>
+  <div class="opt" data-correct="false">Creó el Sistema Único de Información del Deporte</div>
+  <div class="opt" data-correct="false">Reglamentó el voto ponderado</div>
+</div>
+<div class="feedback"></div>
+</div>
+
+<div class="q-item">
+<div class="q-text">7. Según el Art. 21 del Decreto 1228 de 1995, ¿cuántos miembros mínimo debe tener el órgano de administración de un organismo deportivo, incluido el Presidente?</div>
+<div class="q-opts">
+  <div class="opt" data-correct="false">5 miembros</div>
+  <div class="opt" data-correct="true">3 miembros</div>
+  <div class="opt" data-correct="false">7 miembros</div>
+  <div class="opt" data-correct="false">No tiene mínimo establecido</div>
+</div>
+<div class="feedback"></div>
+</div>
+
+<div class="q-item">
+<div class="q-text">8. ¿Cuál de las siguientes NO es una sanción contemplada en el régimen sancionatorio del Art. 38 del Decreto 1228 de 1995?</div>
+<div class="q-opts">
+  <div class="opt" data-correct="false">Amonestación pública</div>
+  <div class="opt" data-correct="false">Multa hasta 100 SMMLV</div>
+  <div class="opt" data-correct="true">Pena privativa de la libertad</div>
+  <div class="opt" data-correct="false">Suspensión del reconocimiento deportivo</div>
+</div>
+<div class="feedback"></div>
+</div>
+
+<div class="q-item">
+<div class="q-text">9. ¿Cuál es el propósito principal del Decreto 0855 de 2025?</div>
+<div class="q-opts">
+  <div class="opt" data-correct="false">Crear el Ministerio del Deporte</div>
+  <div class="opt" data-correct="false">Regular el deporte para personas con discapacidad</div>
+  <div class="opt" data-correct="true">Crear y reglamentar el Sistema Único de Información del Deporte (SUID)</div>
+  <div class="opt" data-correct="false">Establecer el régimen sancionatorio de Coldeportes</div>
+</div>
+<div class="feedback"></div>
+</div>
+
+<div class="q-item">
+<div class="q-text">10. El voto ponderado en los organismos deportivos de nivel nacional y departamental NO puede equivaler a más de:</div>
+<div class="q-opts">
+  <div class="opt" data-correct="false">2 votos</div>
+  <div class="opt" data-correct="false">3 votos</div>
+  <div class="opt" data-correct="true">4 votos, incluido el voto de afiliación</div>
+  <div class="opt" data-correct="false">6 votos</div>
+</div>
+<div class="feedback"></div>
+</div>
+
+</div>
+
+<div class="final-cta" style="margin-top:30px;">
+  <h2>🎉 ¡Curso completado!</h2>
+  <p>Repasa las secciones donde tuviste más fallos y vuelve a intentar el quiz final cuando quieras. ¡Éxitos en tu evaluación de Legislación Deportiva!</p>
+</div>
+</section>
+
+</main>
+</div>
+
+<div class="score-tracker">⭐ Puntaje: <span id="total-score">0</span> / <span id="max-score">0</span></div>
+
+<script>
+let totalScore = 0;
+let maxScore = 0;
+
+function countMax(){
+  maxScore = document.querySelectorAll('.q-item').length;
+  document.getElementById('max-score').textContent = maxScore;
+}
+countMax();
+
+function updateScoreDisplay(){
+  document.getElementById('total-score').textContent = totalScore;
+}
+
+document.querySelectorAll('.q-item').forEach(item=>{
+  const opts = item.querySelectorAll('.opt');
+  const fb = item.querySelector('.feedback');
+  let answered = false;
+  opts.forEach(opt=>{
+    opt.addEventListener('click', ()=>{
+      if(answered) return;
+      answered = true;
+      const isCorrect = opt.dataset.correct === 'true';
+      opts.forEach(o=>{
+        o.classList.add('disabled');
+        if(o.dataset.correct === 'true') o.classList.add('correct');
+      });
+      if(!isCorrect) opt.classList.add('incorrect');
+      fb.classList.add('show');
+      if(isCorrect){
+        fb.classList.add('correct-fb');
+        fb.textContent = '✅ ¡Correcto!';
+        totalScore++;
+      } else {
+        fb.classList.add('incorrect-fb');
+        fb.textContent = '❌ No es la opción correcta. La respuesta correcta está resaltada en verde.';
+      }
+      updateScoreDisplay();
+    });
+  });
+});
+
+document.querySelectorAll('.flip-card').forEach(card=>{
+  card.addEventListener('click', ()=>{
+    card.classList.toggle('flipped');
+  });
+});
+
+document.querySelectorAll('.tl-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    item.classList.toggle('open');
+  });
+});
+
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    const target = document.getElementById(item.dataset.target);
+    if(target){
+      target.scrollIntoView({behavior:'smooth', block:'start'});
+      document.querySelector('.sidebar').classList.remove('open');
+    }
+  });
+});
+
+const sections = document.querySelectorAll('main section');
+const navItems = document.querySelectorAll('.nav-item');
+window.addEventListener('scroll', ()=>{
+  let current = '';
+  sections.forEach(sec=>{
+    const rect = sec.getBoundingClientRect();
+    if(rect.top <= 150 && rect.bottom >= 150) current = sec.id;
+  });
+  navItems.forEach(item=>{
+    item.classList.toggle('active', item.dataset.target === current);
+  });
+});
+
+const style = document.createElement('style');
+style.textContent = `
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0; padding:70px 18px 100px;}
+  .menu-toggle{display:block;}
+}`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>
