@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aparato Locomotor · Curso interactivo de anatomía</title>
+<style>
+:root{
+  --bg:#0b0f1a; --bg2:#111726; --panel:#151c2e; --panel2:#1b2438;
+  --line:#25304a; --ink:#e8eefc; --mut:#9fb0d0; --dim:#6b7a9c;
+  --brand:#6ee7ff; --brand2:#8a7bff; --ok:#4ade80; --bad:#fb7185;
+  --warn:#fbbf24; --key:#6ee7ff; --data:#a78bfa;
+  --radius:16px; --sh:0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:radial-gradient(1200px 600px at 80% -10%,#16203a 0,transparent 60%),var(--bg);
+  color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.layout{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:280px;flex-shrink:0;background:linear-gradient(180deg,var(--bg2),#0c1120);
+  border-right:1px solid var(--line);padding:22px 16px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 8px 18px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.brand .logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--brand2));
+  display:grid;place-items:center;font-size:22px;box-shadow:var(--sh)}
+.brand h1{font-size:15px;margin:0;line-height:1.2}
+.brand span{font-size:11px;color:var(--mut)}
+.nav-link{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;color:var(--mut);
+  font-size:14px;font-weight:600;cursor:pointer;margin-bottom:3px;transition:.15s;border:1px solid transparent}
+.nav-link:hover{background:var(--panel);color:var(--ink)}
+.nav-link.active{background:linear-gradient(135deg,rgba(110,231,255,.16),rgba(138,123,255,.16));
+  color:var(--ink);border-color:var(--line)}
+.nav-done{margin-left:auto;font-size:11px;color:var(--ok)}
+
+/* Content */
+.content{flex:1;min-width:0;padding:34px 40px 120px;max-width:960px;margin:0 auto}
+.page{animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Hero */
+.hero{background:linear-gradient(135deg,var(--panel),var(--panel2));border:1px solid var(--line);
+  border-radius:24px;padding:38px 34px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(110,231,255,.22),transparent 70%)}
+.hero-badge{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.4px;color:var(--brand);
+  background:rgba(110,231,255,.12);border:1px solid rgba(110,231,255,.3);padding:5px 12px;border-radius:999px}
+.hero h1{font-size:40px;margin:16px 0 6px;letter-spacing:-.5px;
+  background:linear-gradient(135deg,#fff,var(--brand));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-sub{color:var(--mut);max-width:560px;margin:0 0 22px}
+.hero-stats{display:flex;gap:28px;margin-bottom:24px;flex-wrap:wrap}
+.hero-stats div{display:flex;flex-direction:column}
+.hero-stats b{font-size:26px;color:var(--brand)}
+.hero-stats span{font-size:12px;color:var(--dim)}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+
+.grid-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:22px}
+.feature{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
+.feature .fi{font-size:24px}
+.feature h4{margin:8px 0 4px;font-size:15px}
+.feature p{margin:0;color:var(--mut);font-size:13px}
+
+/* Buttons */
+.btn{border:0;border-radius:12px;padding:12px 18px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#08101f;box-shadow:var(--sh)}
+.btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+.btn-ghost:hover{background:var(--panel2)}
+
+/* Page head */
+.page-head{margin-bottom:20px}
+.chip{display:inline-block;font-size:12px;font-weight:700;color:var(--brand2);
+  background:rgba(138,123,255,.12);border:1px solid rgba(138,123,255,.3);padding:4px 12px;border-radius:999px}
+.page-head h2{font-size:30px;margin:12px 0 4px;letter-spacing:-.3px}
+.page-sub{color:var(--mut);margin:0}
+
+/* Theory */
+.theory{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px 28px;box-shadow:var(--sh)}
+.theory .lead{font-size:17px;color:var(--ink)}
+.theory h3{font-size:19px;margin:26px 0 10px;color:#fff;border-left:3px solid var(--brand);padding-left:10px}
+.theory p{color:#d5def5}
+.theory ul{padding-left:22px;color:#d5def5}
+.theory li{margin:5px 0}
+.theory b{color:#fff}
+.theory code{background:#0c1220;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:13px;color:var(--brand)}
+.svg-wrap{background:#0c1220;border:1px solid var(--line);border-radius:14px;padding:16px;margin:18px 0;text-align:center}
+.svg-wrap svg{max-width:100%;height:auto}
+
+.tbl{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+.tbl th{background:var(--panel2);text-align:left;padding:10px 12px;border-bottom:2px solid var(--line);color:var(--brand)}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--line);color:#d5def5}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+
+.callout{border-radius:14px;padding:14px 16px;margin:16px 0;font-size:14px;border:1px solid var(--line);background:var(--panel2)}
+.callout b{color:#fff}
+.callout.warn{border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08)}
+.callout.key{border-color:rgba(110,231,255,.4);background:rgba(110,231,255,.08)}
+.callout.data{border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.08)}
+
+/* Block titles */
+.block-title{margin:34px 0 14px}
+.block-title h3{font-size:20px;margin:0}
+.block-title p{margin:2px 0 0;color:var(--mut);font-size:13px}
+
+/* Flip cards */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.flip{perspective:1200px;height:170px;cursor:pointer}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.flip.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;padding:18px;
+  display:flex;align-items:center;justify-content:center;text-align:center;border:1px solid var(--line);
+  font-size:15px;box-shadow:var(--sh)}
+.flip-front{background:linear-gradient(135deg,var(--panel),var(--panel2));font-weight:700}
+.flip-front:before{content:"?";position:absolute;top:10px;left:14px;color:var(--brand);font-weight:800;opacity:.5}
+.flip-back{background:linear-gradient(135deg,#122033,#0e2a2e);transform:rotateY(180deg);color:#eafff6;font-size:14px}
+.flip-back b{color:var(--brand)}
+.flip .tag{position:absolute;bottom:8px;right:12px;font-size:10px;color:var(--dim)}
+.flip.seen .flip-front{border-color:rgba(74,222,128,.4)}
+
+/* Quiz */
+.quiz{display:flex;flex-direction:column;gap:16px}
+.qcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--sh)}
+.qnum{font-size:12px;color:var(--brand2);font-weight:700}
+.qtext{font-weight:700;margin:6px 0 14px;font-size:15px}
+.opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;
+  padding:11px 14px;margin-bottom:9px;cursor:pointer;transition:.15s;background:var(--bg2)}
+.opt:hover{border-color:var(--brand);background:var(--panel2)}
+.opt .lt{font-weight:800;color:var(--brand);flex-shrink:0;width:18px}
+.opt.correct{border-color:var(--ok);background:rgba(74,222,128,.12)}
+.opt.wrong{border-color:var(--bad);background:rgba(251,113,133,.12)}
+.opt.disabled{cursor:default;pointer-events:none;opacity:.95}
+.fb{font-size:13px;margin-top:8px;padding:10px 12px;border-radius:10px;display:none}
+.fb.show{display:block}
+.fb.ok{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.35);color:#bff5d3}
+.fb.no{background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.35);color:#ffd0d8}
+.quiz-score{margin-top:16px;font-weight:700;color:var(--mut);text-align:center}
+.quiz-score.big{font-size:18px}
+
+/* Page nav */
+.page-nav{display:flex;justify-content:space-between;gap:12px;margin-top:34px;padding-top:20px;border-top:1px solid var(--line)}
+
+/* Repaso */
+.repaso-bar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--panel);
+  border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:18px}
+.rp-opt{font-size:14px;color:var(--mut);display:flex;align-items:center;gap:6px;cursor:pointer}
+.rp-count{color:var(--dim);font-size:13px;margin-left:auto}
+.repaso-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px}
+.rp-progress{color:var(--mut);font-weight:700}
+
+/* HUD */
+.hud{position:fixed;right:20px;bottom:20px;background:linear-gradient(135deg,var(--panel),var(--panel2));
+  border:1px solid var(--line);border-radius:18px;padding:14px 16px;box-shadow:var(--sh);z-index:50;width:210px}
+.hud h5{margin:0 0 8px;font-size:12px;color:var(--mut);display:flex;justify-content:space-between}
+.hud h5 b{color:var(--brand);font-size:15px}
+.ring-wrap{display:flex;align-items:center;gap:12px}
+.ring{--p:0;width:56px;height:56px;border-radius:50%;flex-shrink:0;
+  background:conic-gradient(var(--brand) calc(var(--p)*1%),#243049 0);display:grid;place-items:center}
+.ring i{width:42px;height:42px;border-radius:50%;background:var(--panel);display:grid;place-items:center;
+  font-style:normal;font-weight:800;font-size:13px;color:#fff}
+.hud-stats{font-size:11px;color:var(--dim);line-height:1.5}
+.hud-stats b{color:var(--ink)}
+.hud-reset{margin-top:10px;width:100%;background:transparent;border:1px solid var(--line);color:var(--mut);
+  border-radius:10px;padding:7px;font-size:12px;cursor:pointer;font-family:inherit}
+.hud-reset:hover{border-color:var(--bad);color:var(--bad)}
+
+/* Mobile */
+.topbar{display:none}
+@media(max-width:860px){
+  .layout{flex-direction:column}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:200;transform:translateX(-100%);transition:.25s;width:270px}
+  .sidebar.open{transform:none}
+  .topbar{display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;
+    background:var(--bg2);border-bottom:1px solid var(--line);padding:12px 16px}
+  .topbar .burger{font-size:22px;background:none;border:0;color:var(--ink);cursor:pointer}
+  .topbar b{font-size:15px}
+  .content{padding:20px 18px 140px}
+  .hero h1{font-size:30px}
+  .scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150}
+  .scrim.show{display:block}
+  .hud{right:12px;bottom:12px;width:170px;padding:12px}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button class="burger" aria-label="menú">☰</button>
+  <b>🦴 Aparato Locomotor</b>
+</div>
+<div class="scrim"></div>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">🦴</div>
+      <div><h1>Aparato Locomotor</h1><span>Anatomía · Ciencias del deporte</span></div>
+    </div>
+    <nav><a class="nav-link active" data-target="intro">🏠 <span>Inicio</span></a>
+<a class="nav-link" data-target="m0">🧭 <span>0. Orientación anatómica</span></a>
+<a class="nav-link" data-target="m1">🦴 <span>1. Sistema óseo</span></a>
+<a class="nav-link" data-target="m2">🔗 <span>2. Sistema articular</span></a>
+<a class="nav-link" data-target="m3">💪 <span>3. Sistema muscular</span></a>
+<a class="nav-link" data-target="final">🎯 <span>Examen final</span></a>
+<a class="nav-link" data-target="repaso">🔀 <span>Repaso aleatorio</span></a></nav>
+  </aside>
+  <main class="content">
+    <section class="page" id="intro">
+<div class="hero">
+  <div class="hero-badge">Anatomía · Ciencias del deporte</div>
+  <h1>Aparato Locomotor</h1>
+  <p class="hero-sub">Sistema óseo · articular · muscular. Un curso interactivo para estudiar, repasar y medir tu progreso.</p>
+  <div class="hero-stats">
+    <div><b id="hs-mod">4</b><span>módulos</span></div>
+    <div><b id="hs-card">36</b><span>cascaritas</span></div>
+    <div><b id="hs-q">51</b><span>preguntas</span></div>
+  </div>
+  <div class="hero-cta">
+    <button class="btn btn-primary" data-go="m0">▶ Empezar</button>
+    <button class="btn btn-ghost" data-go="repaso">🔀 Ir a repaso aleatorio</button>
+  </div>
+</div>
+<div class="grid-cards">
+  <div class="feature"><span class="fi">📖</span><h4>Teoría con diagramas</h4><p>Cada sistema explicado con esquemas SVG originales y cuadros de alerta de examen.</p></div>
+  <div class="feature"><span class="fi">🃏</span><h4>Cascaritas</h4><p>Tarjetas que se voltean con preguntas trampa para memoria activa.</p></div>
+  <div class="feature"><span class="fi">✅</span><h4>Quizzes con feedback</h4><p>Explicación del porqué de cada opción, correcta o no.</p></div>
+  <div class="feature"><span class="fi">💾</span><h4>Progreso guardado</h4><p>Tu avance se guarda en el navegador; retomas donde quedaste.</p></div>
+</div>
+<div class="callout data" style="margin-top:22px">
+  <b>💡 Cómo se guarda tu progreso</b><br>
+  Este archivo guarda tu avance con <code>localStorage</code> del navegador. <b>Descárgalo y ábrelo desde tu computador</b> (doble clic) para que persista al cerrar. Usa el botón <b>Reiniciar</b> del medidor flotante para empezar de cero.
+</div>
+</section>
+
+<section class="page" id="m0" hidden>
+  <div class="page-head">
+    <span class="chip">Módulo 0</span>
+    <h2>🧭 Orientación anatómica</h2>
+    <p class="page-sub">Posición, planos, términos y movimientos</p>
+  </div>
+  <div class="theory">
+<p class="lead">Antes de nombrar un solo hueso o músculo hay que ponerse de acuerdo en <b>cómo mirar el cuerpo</b>. Toda la anatomía se describe desde una referencia única: la posición anatómica.</p>
+
+<h3>Posición anatómica</h3>
+<p>Persona <b>de pie, mirando al frente, brazos a los lados y palmas hacia adelante</b>, pies juntos. Todos los términos de dirección (arriba/abajo, adelante/atrás) se dicen <i>como si la persona estuviera así</i>, sin importar la posición real. Por eso "la palma" siempre está adelante aunque tú tengas la mano en el bolsillo.</p>
+
+<div class="svg-wrap">
+<svg viewBox="0 0 460 300" role="img" aria-label="Planos anatómicos">
+  <defs>
+    <linearGradient id="pl1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6ee7ff" stop-opacity=".28"/><stop offset="1" stop-color="#6ee7ff" stop-opacity=".05"/>
+    </linearGradient>
+    <linearGradient id="pl2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffb86e" stop-opacity=".28"/><stop offset="1" stop-color="#ffb86e" stop-opacity=".05"/>
+    </linearGradient>
+    <linearGradient id="pl3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b58bff" stop-opacity=".28"/><stop offset="1" stop-color="#b58bff" stop-opacity=".05"/>
+    </linearGradient>
+  </defs>
+  <!-- Sagital -->
+  <polygon points="230,30 245,45 245,255 230,270 215,255 215,45" fill="url(#pl1)" stroke="#6ee7ff" stroke-width="1.5"/>
+  <!-- Frontal -->
+  <polygon points="150,60 310,60 300,255 160,255" fill="url(#pl2)" stroke="#ffb86e" stroke-width="1.5"/>
+  <!-- Transversal -->
+  <polygon points="150,150 310,150 285,175 175,175" fill="url(#pl3)" stroke="#b58bff" stroke-width="1.5"/>
+  <!-- Figura -->
+  <circle cx="230" cy="70" r="18" fill="#e8eefc" stroke="#0c1020" stroke-width="2"/>
+  <rect x="214" y="90" width="32" height="70" rx="10" fill="#e8eefc" stroke="#0c1020" stroke-width="2"/>
+  <line x1="214" y1="100" x2="188" y2="150" stroke="#e8eefc" stroke-width="9" stroke-linecap="round"/>
+  <line x1="246" y1="100" x2="272" y2="150" stroke="#e8eefc" stroke-width="9" stroke-linecap="round"/>
+  <line x1="222" y1="160" x2="214" y2="235" stroke="#e8eefc" stroke-width="10" stroke-linecap="round"/>
+  <line x1="238" y1="160" x2="246" y2="235" stroke="#e8eefc" stroke-width="10" stroke-linecap="round"/>
+  <text x="255" y="42" fill="#6ee7ff" font-size="12" font-weight="700">Sagital</text>
+  <text x="315" y="70" fill="#ffb86e" font-size="12" font-weight="700">Frontal</text>
+  <text x="315" y="160" fill="#b58bff" font-size="12" font-weight="700">Transversal</text>
+</svg>
+</div>
+
+<h3>Planos y ejes</h3>
+<p>El cuerpo se corta imaginariamente con tres planos:</p>
+<ul>
+<li><b>Sagital:</b> divide en <b>izquierda y derecha</b>. El <i>plano medio</i> (mediosagital) parte justo por la mitad.</li>
+<li><b>Frontal (coronal):</b> divide en <b>adelante (anterior) y atrás (posterior)</b>.</li>
+<li><b>Transversal (horizontal):</b> divide en <b>arriba (superior) y abajo (inferior)</b>.</li>
+</ul>
+
+<div class="callout key"><b>🔑 Clave</b><br>Cada movimiento articular ocurre en un plano y alrededor de un eje. Flexión/extensión → plano sagital. Abducción/aducción → plano frontal. Rotaciones → plano transversal. Esto lo vas a reusar en todo entrenamiento y biomecánica.</div>
+
+<h3>Términos de posición</h3>
+<table class="tbl">
+<tr><th>Término</th><th>Significado</th><th>Ejemplo</th></tr>
+<tr><td>Superior / Inferior</td><td>Hacia la cabeza / hacia los pies</td><td>El corazón es superior al diafragma</td></tr>
+<tr><td>Anterior / Posterior</td><td>Hacia adelante / hacia atrás</td><td>El esternón es anterior a la columna</td></tr>
+<tr><td>Medial / Lateral</td><td>Hacia la línea media / hacia afuera</td><td>El pulgar es lateral al meñique</td></tr>
+<tr><td>Proximal / Distal</td><td>Cerca / lejos del tronco (en extremidades)</td><td>El codo es proximal a la muñeca</td></tr>
+<tr><td>Superficial / Profundo</td><td>Cerca / lejos de la superficie</td><td>La piel es superficial al músculo</td></tr>
+</table>
+
+<h3>Movimientos del cuerpo</h3>
+<ul>
+<li><b>Flexión:</b> disminuye el ángulo de una articulación. <b>Extensión:</b> lo aumenta.</li>
+<li><b>Abducción:</b> aleja de la línea media. <b>Aducción:</b> acerca a la línea media.</li>
+<li><b>Rotación:</b> giro sobre un eje longitudinal (interna/externa).</li>
+<li><b>Circunducción:</b> combinación circular (flexión+abducción+extensión+aducción), como dibujar un cono con el brazo.</li>
+<li><b>Pronación / Supinación:</b> del antebrazo: palma abajo / palma arriba.</li>
+<li><b>Dorsiflexión / Flexión plantar:</b> del tobillo: punta arriba / punta abajo.</li>
+<li><b>Inversión / Eversión:</b> planta del pie hacia adentro / hacia afuera.</li>
+</ul>
+
+<div class="callout warn"><b>⚠️ Ojo en examen</b><br>"Extensión" no es "estirar". Es <i>abrir</i> el ángulo. Y en el tobillo la nomenclatura cambia: no se dice flexión/extensión sino <b>dorsiflexión</b> y <b>flexión plantar</b>.</div>
+</div>
+
+  <div class="block-title"><h3>🃏 Cascaritas — Orientación anatómica</h3><p>Toca cada tarjeta para voltearla.</p></div>
+  <div class="cards-grid" data-cards="m0"></div>
+
+  <div class="block-title"><h3>✅ Quiz — Orientación anatómica</h3><p>Elige y lee el feedback de cada opción.</p></div>
+  <div class="quiz" data-quiz="m0"></div>
+  <div class="quiz-score" data-quizscore="m0"></div>
+
+  <div class="page-nav">
+    <button class="btn btn-ghost" data-go="intro">◀ Anterior</button>
+    <button class="btn btn-primary" data-go="m1">Siguiente ▶</button>
+  </div>
+</section>
+
+
+<section class="page" id="m1" hidden>
+  <div class="page-head">
+    <span class="chip">Módulo 1</span>
+    <h2>🦴 Sistema óseo</h2>
+    <p class="page-sub">Huesos, tejido óseo y esqueleto</p>
+  </div>
+  <div class="theory">
+<p class="lead">El esqueleto adulto tiene <b>206 huesos</b>. No es una estructura muerta: es tejido vivo que se remodela toda la vida y responde al entrenamiento de fuerza.</p>
+
+<h3>Funciones del hueso</h3>
+<ul>
+<li><b>Sostén</b> y forma del cuerpo.</li>
+<li><b>Protección</b> de órganos (cráneo, tórax, columna).</li>
+<li><b>Movimiento:</b> son las palancas sobre las que traccionan los músculos.</li>
+<li><b>Reserva mineral</b> (calcio y fósforo) y <b>hematopoyesis</b> (producción de células sanguíneas en la médula roja).</li>
+</ul>
+
+<h3>Clasificación por forma</h3>
+<table class="tbl">
+<tr><th>Tipo</th><th>Descripción</th><th>Ejemplo</th></tr>
+<tr><td>Largo</td><td>Más largo que ancho, con diáfisis y epífisis</td><td>Fémur, húmero</td></tr>
+<tr><td>Corto</td><td>Cúbicos, aproximadamente iguales en sus dimensiones</td><td>Carpo, tarso</td></tr>
+<tr><td>Plano</td><td>Delgados, protegen o dan superficie de inserción</td><td>Cráneo, esternón, escápula</td></tr>
+<tr><td>Irregular</td><td>Forma compleja</td><td>Vértebras, huesos de la cara</td></tr>
+<tr><td>Sesamoideo</td><td>Dentro de un tendón</td><td>Rótula (patela)</td></tr>
+</table>
+
+<div class="svg-wrap">
+<svg viewBox="0 0 460 260" role="img" aria-label="Estructura de un hueso largo">
+  <defs>
+    <linearGradient id="bone" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3e9d2"/><stop offset="1" stop-color="#d9c9a3"/>
+    </linearGradient>
+  </defs>
+  <!-- epífisis prox -->
+  <path d="M60,40 q-30,0 -30,30 q0,25 25,25 l40,0 0,-55 z" fill="url(#bone)" stroke="#8a7b56" stroke-width="2"/>
+  <!-- diáfisis -->
+  <rect x="95" y="55" width="270" height="40" fill="url(#bone)" stroke="#8a7b56" stroke-width="2"/>
+  <!-- cavidad medular -->
+  <rect x="110" y="66" width="240" height="18" rx="9" fill="#f2c14e" stroke="#c99a2e" stroke-width="1.5"/>
+  <!-- epífisis dist -->
+  <path d="M400,40 q30,0 30,30 q0,25 -25,25 l-40,0 0,-55 z" fill="url(#bone)" stroke="#8a7b56" stroke-width="2"/>
+  <!-- esponjoso puntos -->
+  <g fill="#b9a271" opacity=".8">
+    <circle cx="55" cy="60" r="3"/><circle cx="68" cy="72" r="3"/><circle cx="50" cy="78" r="3"/><circle cx="72" cy="55" r="2.5"/>
+    <circle cx="410" cy="60" r="3"/><circle cx="397" cy="72" r="3"/><circle cx="415" cy="78" r="3"/><circle cx="393" cy="55" r="2.5"/>
+  </g>
+  <!-- cartílago -->
+  <path d="M60,40 q-30,0 -30,30" fill="none" stroke="#7fd7ff" stroke-width="4"/>
+  <path d="M400,40 q30,0 30,30" fill="none" stroke="#7fd7ff" stroke-width="4"/>
+  <!-- etiquetas -->
+  <text x="35" y="120" fill="#7fd7ff" font-size="11">Cartílago articular</text>
+  <line x1="45" y1="115" x2="45" y2="70" stroke="#7fd7ff" stroke-width="1"/>
+  <text x="20" y="160" fill="#cbd5f5" font-size="11" font-weight="700">Epífisis</text>
+  <line x1="45" y1="150" x2="55" y2="95" stroke="#cbd5f5" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="205" y="140" fill="#cbd5f5" font-size="11" font-weight="700">Diáfisis</text>
+  <line x1="225" y1="130" x2="225" y2="95" stroke="#cbd5f5" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="150" y="170" fill="#f2c14e" font-size="11">Cavidad medular</text>
+  <line x1="200" y1="160" x2="230" y2="84" stroke="#f2c14e" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="120" y="35" fill="#9fe0a3" font-size="11">Metáfisis</text>
+  <line x1="135" y1="40" x2="100" y2="60" stroke="#9fe0a3" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="300" y="35" fill="#9fe0a3" font-size="11">Metáfisis</text>
+  <line x1="315" y1="40" x2="360" y2="60" stroke="#9fe0a3" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="300" y="200" fill="#ff9db1" font-size="11">Periostio (membrana externa)</text>
+  <line x1="298" y1="196" x2="250" y2="95" stroke="#ff9db1" stroke-width="1" stroke-dasharray="3 2"/>
+</svg>
+</div>
+
+<h3>Anatomía de un hueso largo</h3>
+<ul>
+<li><b>Diáfisis:</b> el cuerpo o caña central.</li>
+<li><b>Epífisis:</b> los extremos ensanchados (proximal y distal).</li>
+<li><b>Metáfisis:</b> zona entre diáfisis y epífisis; contiene la <b>placa/línea epifisaria</b> (cartílago de crecimiento en niños).</li>
+<li><b>Cartílago articular:</b> cubre la epífisis donde el hueso forma articulación.</li>
+<li><b>Periostio:</b> membrana externa (crecimiento en grosor, inserción de tendones, reparación).</li>
+<li><b>Endostio:</b> reviste la cavidad medular.</li>
+<li><b>Cavidad medular:</b> aloja médula amarilla (grasa) en el adulto.</li>
+</ul>
+
+<h3>Tejido óseo: compacto y esponjoso</h3>
+<p>El hueso <b>compacto</b> (denso) forma la capa externa; su unidad es la <b>osteona</b> (sistema de Havers): laminillas concéntricas alrededor de un conducto central con vasos. El hueso <b>esponjoso</b> (trabecular) está dentro de las epífisis: red de trabéculas que aloja médula roja y resiste fuerzas en múltiples direcciones ahorrando peso.</p>
+
+<h3>Células óseas</h3>
+<ul>
+<li><b>Osteoblastos:</b> forman hueso (depositan matriz).</li>
+<li><b>Osteocitos:</b> osteoblastos maduros atrapados en la matriz; mantienen el tejido.</li>
+<li><b>Osteoclastos:</b> reabsorben (destruyen) hueso. Junto con los osteoblastos permiten el <b>remodelado</b>.</li>
+</ul>
+
+<div class="callout data"><b>💡 Dato para deporte</b><br>La carga mecánica del entrenamiento de fuerza estimula a los osteoblastos → mayor densidad ósea (ley de Wolff). Por eso el ejercicio con impacto/resistencia previene osteoporosis.</div>
+
+<h3>El esqueleto en dos grandes partes</h3>
+<p><b>Esqueleto axial (80 huesos):</b> el eje central.</p>
+<ul>
+<li><b>Cráneo</b> (neurocráneo + huesos de la cara).</li>
+<li><b>Columna vertebral:</b> 7 cervicales, 12 torácicas, 5 lumbares, sacro (5 fusionadas) y cóccix.</li>
+<li><b>Caja torácica:</b> esternón + 12 pares de costillas.</li>
+</ul>
+<p><b>Esqueleto apendicular (126 huesos):</b> las extremidades y sus cinturas.</p>
+<ul>
+<li><b>Cintura escapular:</b> clavícula + escápula.</li>
+<li><b>Miembro superior:</b> húmero; cúbito (ulna) y radio; carpo (8), metacarpo (5), falanges (14).</li>
+<li><b>Cintura pélvica:</b> los dos coxales (ilion + isquion + pubis).</li>
+<li><b>Miembro inferior:</b> fémur; rótula; tibia y peroné (fíbula); tarso (7), metatarso (5), falanges (14).</li>
+</ul>
+
+<div class="callout warn"><b>⚠️ Ojo en examen</b><br>Trampa clásica: la <b>clavícula y la escápula son apendiculares</b> (parte de la cintura escapular), NO axiales. El eje axial es cráneo + columna + tórax.</div>
+</div>
+
+  <div class="block-title"><h3>🃏 Cascaritas — Sistema óseo</h3><p>Toca cada tarjeta para voltearla.</p></div>
+  <div class="cards-grid" data-cards="m1"></div>
+
+  <div class="block-title"><h3>✅ Quiz — Sistema óseo</h3><p>Elige y lee el feedback de cada opción.</p></div>
+  <div class="quiz" data-quiz="m1"></div>
+  <div class="quiz-score" data-quizscore="m1"></div>
+
+  <div class="page-nav">
+    <button class="btn btn-ghost" data-go="m0">◀ Anterior</button>
+    <button class="btn btn-primary" data-go="m2">Siguiente ▶</button>
+  </div>
+</section>
+
+
+<section class="page" id="m2" hidden>
+  <div class="page-head">
+    <span class="chip">Módulo 2</span>
+    <h2>🔗 Sistema articular</h2>
+    <p class="page-sub">Articulaciones, tipos y estructura sinovial</p>
+  </div>
+  <div class="theory">
+<p class="lead">Una <b>articulación</b> es la unión entre dos o más huesos. Determina cuánto y cómo te puedes mover, y es donde ocurren muchas lesiones deportivas.</p>
+
+<h3>Clasificación funcional (por movilidad)</h3>
+<ul>
+<li><b>Sinartrosis:</b> inmóvil (suturas del cráneo).</li>
+<li><b>Anfiartrosis:</b> semimóvil (sínfisis del pubis, discos entre vértebras).</li>
+<li><b>Diartrosis:</b> móvil = <b>articulaciones sinoviales</b> (hombro, rodilla, cadera…). Son las importantes para el movimiento.</li>
+</ul>
+
+<h3>Clasificación estructural (por material de unión)</h3>
+<ul>
+<li><b>Fibrosas:</b> unidas por tejido fibroso (suturas). Poco o nada móviles.</li>
+<li><b>Cartilaginosas:</b> unidas por cartílago (sínfisis púbica, discos intervertebrales). Semimóviles.</li>
+<li><b>Sinoviales:</b> con cavidad articular llena de líquido. Muy móviles.</li>
+</ul>
+
+<div class="svg-wrap">
+<svg viewBox="0 0 460 270" role="img" aria-label="Articulación sinovial en corte">
+  <defs>
+    <linearGradient id="bn2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3e9d2"/><stop offset="1" stop-color="#d9c9a3"/>
+    </linearGradient>
+  </defs>
+  <!-- hueso superior -->
+  <path d="M150,20 h160 v70 q-80,35 -160,0 z" fill="url(#bn2)" stroke="#8a7b56" stroke-width="2"/>
+  <!-- hueso inferior -->
+  <path d="M150,250 h160 v-70 q-80,-35 -160,0 z" fill="url(#bn2)" stroke="#8a7b56" stroke-width="2"/>
+  <!-- cartílagos -->
+  <path d="M150,90 q80,35 160,0" fill="none" stroke="#7fd7ff" stroke-width="6"/>
+  <path d="M150,180 q80,-35 160,0" fill="none" stroke="#7fd7ff" stroke-width="6"/>
+  <!-- líquido sinovial -->
+  <path d="M152,100 q78,32 156,0 v70 q-78,32 -156,0 z" fill="#5ad1c9" opacity=".28"/>
+  <!-- cápsula / membrana -->
+  <path d="M150,88 q-14,45 0,94" fill="none" stroke="#ff9db1" stroke-width="4"/>
+  <path d="M310,88 q14,45 0,94" fill="none" stroke="#ff9db1" stroke-width="4"/>
+  <!-- ligamentos -->
+  <line x1="138" y1="95" x2="138" y2="175" stroke="#c7a4ff" stroke-width="6" stroke-linecap="round"/>
+  <line x1="322" y1="95" x2="322" y2="175" stroke="#c7a4ff" stroke-width="6" stroke-linecap="round"/>
+  <!-- etiquetas -->
+  <text x="325" y="70" fill="#cbd5f5" font-size="11" font-weight="700">Hueso</text>
+  <text x="330" y="140" fill="#7fd7ff" font-size="11">Cartílago articular</text>
+  <line x1="328" y1="136" x2="305" y2="93" stroke="#7fd7ff" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="345" y="160" fill="#5ad1c9" font-size="11">Líquido sinovial</text>
+  <line x1="343" y1="156" x2="300" y2="140" stroke="#5ad1c9" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="18" y="140" fill="#ff9db1" font-size="11">Cápsula / membrana</text>
+  <line x1="115" y1="136" x2="150" y2="135" stroke="#ff9db1" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="60" y="210" fill="#c7a4ff" font-size="11">Ligamento</text>
+  <line x1="95" y1="205" x2="135" y2="150" stroke="#c7a4ff" stroke-width="1" stroke-dasharray="3 2"/>
+</svg>
+</div>
+
+<h3>Estructura de una articulación sinovial</h3>
+<ul>
+<li><b>Cartílago articular (hialino):</b> cubre los extremos óseos, reduce fricción y absorbe impacto.</li>
+<li><b>Cápsula articular:</b> envuelve la articulación. Su capa interna es la <b>membrana sinovial</b>.</li>
+<li><b>Líquido sinovial:</b> lubrica y nutre el cartílago.</li>
+<li><b>Ligamentos:</b> unen hueso con hueso; dan estabilidad.</li>
+<li><b>Meniscos / discos:</b> (en algunas, como la rodilla) mejoran el encaje y reparten cargas.</li>
+<li><b>Bolsas (bursas):</b> sacos de líquido que reducen roce de tendones.</li>
+</ul>
+
+<div class="callout key"><b>🔑 Clave</b><br>No confundas: <b>ligamento</b> une hueso con hueso; <b>tendón</b> une músculo con hueso. Ambos son tejido conectivo denso, pero conectan cosas distintas.</div>
+
+<h3>Tipos de articulaciones sinoviales</h3>
+<table class="tbl">
+<tr><th>Tipo</th><th>Movimiento</th><th>Ejemplo</th></tr>
+<tr><td>Esferoidea (enartrosis)</td><td>Todos los ejes (multiaxial)</td><td>Hombro, cadera</td></tr>
+<tr><td>Troclear / gínglimo (bisagra)</td><td>Flexión-extensión (un eje)</td><td>Codo, rodilla, tobillo</td></tr>
+<tr><td>Trocoide (pivote)</td><td>Rotación</td><td>Atlas-axis, radio-cúbito proximal</td></tr>
+<tr><td>Condílea (elipsoidea)</td><td>Dos ejes (sin rotación)</td><td>Muñeca (radiocarpiana)</td></tr>
+<tr><td>En silla de montar</td><td>Dos ejes, gran movilidad</td><td>Base del pulgar (carpometacarpiana)</td></tr>
+<tr><td>Plana (artrodia)</td><td>Deslizamiento</td><td>Entre huesos del carpo</td></tr>
+</table>
+
+<h3>Articulaciones clave para el deporte</h3>
+<ul>
+<li><b>Hombro (glenohumeral):</b> la más móvil → la más inestable. Estabilizada por el manguito rotador.</li>
+<li><b>Rodilla:</b> bisagra reforzada por ligamentos cruzados (LCA/LCP) y colaterales, con dos meniscos.</li>
+<li><b>Tobillo:</b> los esguinces por inversión (ligamento lateral) son la lesión deportiva más común.</li>
+</ul>
+
+<div class="callout warn"><b>⚠️ Ojo en examen</b><br>El hombro y la cadera son <b>esferoideas</b>, pero la cadera es mucho más estable (cavidad profunda) mientras el hombro sacrifica estabilidad por movilidad. Más movilidad casi siempre = menos estabilidad.</div>
+</div>
+
+  <div class="block-title"><h3>🃏 Cascaritas — Sistema articular</h3><p>Toca cada tarjeta para voltearla.</p></div>
+  <div class="cards-grid" data-cards="m2"></div>
+
+  <div class="block-title"><h3>✅ Quiz — Sistema articular</h3><p>Elige y lee el feedback de cada opción.</p></div>
+  <div class="quiz" data-quiz="m2"></div>
+  <div class="quiz-score" data-quizscore="m2"></div>
+
+  <div class="page-nav">
+    <button class="btn btn-ghost" data-go="m1">◀ Anterior</button>
+    <button class="btn btn-primary" data-go="m3">Siguiente ▶</button>
+  </div>
+</section>
+
+
+<section class="page" id="m3" hidden>
+  <div class="page-head">
+    <span class="chip">Módulo 3</span>
+    <h2>💪 Sistema muscular</h2>
+    <p class="page-sub">Tejido muscular, contracción y grupos principales</p>
+  </div>
+  <div class="theory">
+<p class="lead">Hay más de <b>600 músculos esqueléticos</b>. Convierten energía química en movimiento y son la parte de la anatomía que más directamente entrenas.</p>
+
+<h3>Tres tipos de tejido muscular</h3>
+<table class="tbl">
+<tr><th>Tipo</th><th>Control</th><th>Aspecto</th><th>Ubicación</th></tr>
+<tr><td>Esquelético</td><td>Voluntario</td><td>Estriado</td><td>Unido a huesos</td></tr>
+<tr><td>Cardíaco</td><td>Involuntario</td><td>Estriado, ramificado</td><td>Corazón</td></tr>
+<tr><td>Liso</td><td>Involuntario</td><td>Liso (no estriado)</td><td>Vísceras, vasos</td></tr>
+</table>
+
+<h3>Propiedades del músculo</h3>
+<p><b>Excitabilidad</b> (responde a estímulos), <b>contractilidad</b> (se acorta), <b>extensibilidad</b> (se estira) y <b>elasticidad</b> (vuelve a su forma).</p>
+
+<h3>Organización del músculo esquelético (de fuera hacia dentro)</h3>
+<ul>
+<li>Músculo → envuelto por <b>epimisio</b>.</li>
+<li><b>Fascículos</b> (haces de fibras) → envueltos por <b>perimisio</b>.</li>
+<li><b>Fibra muscular</b> (la célula) → envuelta por <b>endomisio</b>.</li>
+<li>Dentro de la fibra: <b>miofibrillas</b>.</li>
+<li>Unidad funcional: el <b>sarcómero</b> (de línea Z a línea Z).</li>
+</ul>
+
+<div class="svg-wrap">
+<svg viewBox="0 0 460 220" role="img" aria-label="Sarcómero">
+  <!-- líneas Z -->
+  <line x1="70" y1="40" x2="70" y2="160" stroke="#ff6e6e" stroke-width="4"/>
+  <line x1="390" y1="40" x2="390" y2="160" stroke="#ff6e6e" stroke-width="4"/>
+  <line x1="230" y1="45" x2="230" y2="155" stroke="#8aa0d8" stroke-width="2" stroke-dasharray="4 3"/>
+  <!-- actina (fino) desde Z -->
+  <g stroke="#6ee7ff" stroke-width="3">
+    <line x1="70" y1="60" x2="200" y2="60"/><line x1="70" y1="80" x2="200" y2="80"/>
+    <line x1="70" y1="100" x2="200" y2="100"/><line x1="70" y1="120" x2="200" y2="120"/><line x1="70" y1="140" x2="200" y2="140"/>
+    <line x1="390" y1="60" x2="260" y2="60"/><line x1="390" y1="80" x2="260" y2="80"/>
+    <line x1="390" y1="100" x2="260" y2="100"/><line x1="390" y1="120" x2="260" y2="120"/><line x1="390" y1="140" x2="260" y2="140"/>
+  </g>
+  <!-- miosina (grueso, centro) -->
+  <g stroke="#ffb86e" stroke-width="7">
+    <line x1="150" y1="70" x2="310" y2="70"/><line x1="150" y1="100" x2="310" y2="100"/><line x1="150" y1="130" x2="310" y2="130"/>
+  </g>
+  <!-- cabezas de miosina -->
+  <g fill="#ffb86e">
+    <circle cx="170" cy="62" r="3"/><circle cx="290" cy="62" r="3"/>
+    <circle cx="170" cy="138" r="3"/><circle cx="290" cy="138" r="3"/>
+  </g>
+  <!-- etiquetas -->
+  <text x="52" y="180" fill="#ff6e6e" font-size="12" font-weight="700">Línea Z</text>
+  <text x="372" y="180" fill="#ff6e6e" font-size="12" font-weight="700">Línea Z</text>
+  <text x="90" y="30" fill="#6ee7ff" font-size="12">Actina (fino)</text>
+  <text x="270" y="30" fill="#ffb86e" font-size="12">Miosina (grueso)</text>
+  <text x="150" y="200" fill="#cbd5f5" font-size="11">◄——— un sarcómero (de Z a Z) ———►</text>
+</svg>
+</div>
+
+<h3>El sarcómero y la contracción</h3>
+<p>El sarcómero contiene filamentos finos (<b>actina</b>) y gruesos (<b>miosina</b>). Según la <b>teoría del filamento deslizante</b>, las cabezas de miosina se enganchan a la actina y tiran de ella hacia el centro: los filamentos no se acortan, <b>se deslizan</b> unos sobre otros y el sarcómero se acorta. El calcio (liberado del retículo sarcoplásmico tras el impulso nervioso) es el disparador, y el ATP la energía.</p>
+
+<div class="callout key"><b>🔑 Clave</b><br>Secuencia mínima: impulso nervioso → unión neuromuscular (acetilcolina) → liberación de Ca²⁺ → la miosina se une a la actina → deslizamiento → acortamiento. Sin ATP, las cabezas no se sueltan (esto explica el rigor mortis).</div>
+
+<h3>Tipos de contracción</h3>
+<ul>
+<li><b>Isométrica:</b> el músculo genera tensión sin cambiar de longitud (plancha, sostener un peso).</li>
+<li><b>Isotónica concéntrica:</b> el músculo se acorta venciendo la carga (subir en un curl de bíceps).</li>
+<li><b>Isotónica excéntrica:</b> el músculo se alarga controlando la carga (bajar el curl). Genera más fuerza y más agujetas.</li>
+</ul>
+
+<h3>Tipos de fibra (clave en deporte)</h3>
+<table class="tbl">
+<tr><th>Fibra</th><th>Velocidad</th><th>Fatiga</th><th>Uso</th></tr>
+<tr><td>Tipo I (lentas, rojas)</td><td>Lentas</td><td>Resistentes</td><td>Resistencia (maratón)</td></tr>
+<tr><td>Tipo IIa (intermedias)</td><td>Rápidas</td><td>Media</td><td>Esfuerzos mixtos</td></tr>
+<tr><td>Tipo IIx (rápidas, blancas)</td><td>Muy rápidas</td><td>Se fatigan pronto</td><td>Potencia/velocidad (sprint)</td></tr>
+</table>
+
+<h3>Roles de un músculo en un movimiento</h3>
+<ul>
+<li><b>Agonista (motor primario):</b> el que genera el movimiento.</li>
+<li><b>Antagonista:</b> el que se opone / controla (se relaja o frena).</li>
+<li><b>Sinergista:</b> ayuda al agonista.</li>
+<li><b>Fijador (estabilizador):</b> fija el origen para que el movimiento sea eficiente.</li>
+</ul>
+
+<div class="callout data"><b>💡 Dato para deporte</b><br>Origen = inserción fija (normalmente proximal). Inserción = extremo que se mueve (normalmente distal). El músculo tira acercando la inserción al origen.</div>
+
+<h3>Grupos musculares principales del movimiento</h3>
+<ul>
+<li><b>Tren superior:</b> deltoides (abduce el hombro), pectoral mayor (flexiona/aduce), dorsal ancho (extiende/aduce), bíceps (flexiona el codo), tríceps (lo extiende).</li>
+<li><b>Core:</b> recto abdominal, oblicuos, transverso, erectores de la columna.</li>
+<li><b>Tren inferior:</b> glúteo mayor (extiende la cadera), cuádriceps (extiende la rodilla), isquiotibiales (flexionan rodilla / extienden cadera), gastrocnemio y sóleo (flexión plantar).</li>
+</ul>
+
+<div class="callout warn"><b>⚠️ Ojo en examen</b><br>En un curl de bíceps: subir = contracción <b>concéntrica</b> del bíceps (agonista); bajar controlado = contracción <b>excéntrica</b> del mismo bíceps (¡no del tríceps!). El tríceps es el antagonista y está relajado.</div>
+</div>
+
+  <div class="block-title"><h3>🃏 Cascaritas — Sistema muscular</h3><p>Toca cada tarjeta para voltearla.</p></div>
+  <div class="cards-grid" data-cards="m3"></div>
+
+  <div class="block-title"><h3>✅ Quiz — Sistema muscular</h3><p>Elige y lee el feedback de cada opción.</p></div>
+  <div class="quiz" data-quiz="m3"></div>
+  <div class="quiz-score" data-quizscore="m3"></div>
+
+  <div class="page-nav">
+    <button class="btn btn-ghost" data-go="m2">◀ Anterior</button>
+    <button class="btn btn-primary" data-go="final">Siguiente ▶</button>
+  </div>
+</section>
+
+<section class="page" id="final" hidden>
+  <div class="page-head">
+    <span class="chip">Evaluación</span>
+    <h2>🎯 Examen final integrador</h2>
+    <p class="page-sub">15 preguntas que mezclan los cuatro módulos. Ideal antes del parcial.</p>
+  </div>
+  <div class="quiz" data-quiz="final"></div>
+  <div class="quiz-score big" data-quizscore="final"></div>
+  <div class="page-nav">
+    <button class="btn btn-ghost" data-go="m3">◀ Volver a músculos</button>
+    <button class="btn btn-primary" data-go="repaso">🔀 Repaso aleatorio ▶</button>
+  </div>
+</section>
+
+<section class="page" id="repaso" hidden>
+  <div class="page-head">
+    <span class="chip">Repaso</span>
+    <h2>🔀 Repaso aleatorio</h2>
+    <p class="page-sub">Baraja todas las cascaritas y preguntas del curso en orden aleatorio. Lo que respondas aquí también cuenta para tu progreso.</p>
+  </div>
+  <div class="repaso-bar">
+    <button class="btn btn-primary" id="btn-shuffle">🔀 Barajar y empezar</button>
+    <label class="rp-opt"><input type="checkbox" id="rp-cards" checked> Cascaritas</label>
+    <label class="rp-opt"><input type="checkbox" id="rp-quiz" checked> Preguntas</label>
+    <span id="rp-count" class="rp-count"></span>
+  </div>
+  <div id="repaso-stage"></div>
+  <div id="repaso-controls" class="repaso-controls" hidden>
+    <button class="btn btn-ghost" id="rp-prev">◀ Anterior</button>
+    <span id="rp-progress" class="rp-progress"></span>
+    <button class="btn btn-primary" id="rp-next">Siguiente ▶</button>
+  </div>
+</section>
+
+  </main>
+</div>
+
+<div class="hud">
+  <h5>Progreso <b id="hud-pct"></b></h5>
+  <div class="ring-wrap">
+    <div class="ring" id="ring"><i>0%</i></div>
+    <div class="hud-stats" id="hud-stats"></div>
+  </div>
+  <button class="hud-reset" id="hud-reset">↺ Reiniciar progreso</button>
+</div>
+
+<script>
+const DATA = {"modules": [{"id": "m0", "cards": [{"id": "card:m0:0", "f": "¿Qué es la posición anatómica?", "b": "De pie, mirando al frente, brazos a los lados y <b>palmas hacia adelante</b>, pies juntos. Es la referencia para todos los términos direccionales."}, {"id": "card:m0:1", "f": "Plano que divide en izquierda y derecha", "b": "<b>Sagital</b> (el que pasa justo por la mitad es el mediosagital o plano medio)."}, {"id": "card:m0:2", "f": "Plano que divide en anterior y posterior", "b": "<b>Frontal</b> o coronal."}, {"id": "card:m0:3", "f": "Plano que divide en superior e inferior", "b": "<b>Transversal</b> u horizontal."}, {"id": "card:m0:4", "f": "Proximal vs distal", "b": "<b>Proximal</b> = más cerca del tronco; <b>distal</b> = más lejos. El codo es proximal a la muñeca."}, {"id": "card:m0:5", "f": "Flexión vs extensión", "b": "<b>Flexión</b> disminuye el ángulo articular; <b>extensión</b> lo aumenta. No confundir extensión con 'estirar'."}, {"id": "card:m0:6", "f": "Abducción vs aducción", "b": "<b>Abducción</b> aleja de la línea media; <b>aducción</b> la acerca (aDucción → aDentro/aDosar)."}, {"id": "card:m0:7", "f": "Pronación vs supinación del antebrazo", "b": "<b>Pronación</b>: palma hacia abajo/atrás. <b>Supinación</b>: palma hacia arriba/adelante (la mano 'sopa')."}], "quiz": [{"id": "q:m0:0", "q": "En posición anatómica, ¿cómo están las palmas de las manos?", "opts": ["Hacia abajo", "Enfrentadas entre sí", "Hacia atrás", "Hacia adelante"], "correct": 3, "fb": ["No; palmas abajo es pronación.", "No; enfrentadas es la posición de reposo natural, no la anatómica.", "No; hacia atrás sería pronación, que NO es la posición anatómica.", "Correcto: palmas hacia adelante (antebrazos supinados) es parte de la definición."]}, {"id": "q:m0:1", "q": "Un corte que separa la cabeza en mitad derecha y mitad izquierda usa el plano…", "opts": ["Sagital", "Transversal", "Oblicuo", "Frontal"], "correct": 0, "fb": ["Correcto: el plano sagital separa izquierda de derecha.", "No; el transversal separa superior de inferior.", "No; oblicuo es cualquier corte en ángulo, no el descrito.", "No; el frontal separa anterior de posterior."]}, {"id": "q:m0:2", "q": "La muñeca, respecto al codo, es…", "opts": ["Superior", "Proximal", "Distal", "Medial"], "correct": 2, "fb": ["No; superior/inferior no es el término adecuado dentro de una extremidad.", "No; proximal sería más cerca del tronco, y la muñeca está más lejos.", "Correcto: la muñeca está más lejos del tronco que el codo → distal.", "No; medial se refiere a la línea media, no a extremidades."]}, {"id": "q:m0:3", "q": "El movimiento de 'abrir' el ángulo de la rodilla al patear se llama…", "opts": ["Rotación", "Flexión", "Abducción", "Extensión"], "correct": 3, "fb": ["No; la rodilla casi no rota en extensión.", "No; flexión cierra el ángulo (llevar el talón al glúteo).", "No; abducción es alejar de la línea media, no ocurre así en rodilla.", "Correcto: aumentar el ángulo articular es extensión."]}, {"id": "q:m0:4", "q": "Levantar el brazo lateralmente hasta la horizontal es…", "opts": ["Rotación en plano transversal", "Abducción en plano frontal", "Flexión en plano frontal", "Aducción en plano sagital"], "correct": 1, "fb": ["No; ese movimiento no es rotación.", "Correcto: alejar de la línea media = abducción, y ocurre en el plano frontal.", "No; la flexión de hombro ocurre en plano sagital (elevar al frente).", "No; aducción sería acercar el brazo al cuerpo."]}, {"id": "q:m0:5", "q": "Girar la palma de arriba hacia abajo es…", "opts": ["Circunducción", "Eversión", "Pronación", "Supinación"], "correct": 2, "fb": ["No; circunducción es un movimiento circular combinado.", "No; eversión es del pie.", "Correcto: pronación lleva la palma hacia abajo/atrás.", "No; supinación es lo contrario (palma arriba)."]}, {"id": "q:m0:6", "q": "Llevar la punta del pie hacia arriba (acercarla a la tibia) es…", "opts": ["Inversión", "Dorsiflexión", "Extensión", "Flexión plantar"], "correct": 1, "fb": ["No; inversión gira la planta hacia adentro.", "Correcto: dorsiflexión lleva el dorso del pie hacia la tibia.", "No; en el tobillo no se usa 'extensión'.", "No; flexión plantar es lo contrario (punta hacia abajo, como pisar el acelerador)."]}, {"id": "q:m0:7", "q": "La piel respecto al músculo es…", "opts": ["Superficial", "Medial", "Profunda", "Distal"], "correct": 0, "fb": ["Correcto: la piel es superficial (más cerca de la superficie) al músculo.", "No; medial se refiere a la línea media.", "No; profundo es hacia el interior, y la piel está por fuera.", "No; distal se usa en extremidades por distancia al tronco."]}]}, {"id": "m1", "cards": [{"id": "card:m1:0", "f": "¿Cuántos huesos tiene el esqueleto adulto?", "b": "<b>206</b> huesos: 80 axiales + 126 apendiculares."}, {"id": "card:m1:1", "f": "Partes de un hueso largo", "b": "<b>Diáfisis</b> (caña), <b>epífisis</b> (extremos), <b>metáfisis</b> (entre ambas, con la placa epifisaria)."}, {"id": "card:m1:2", "f": "¿Qué célula FORMA hueso?", "b": "El <b>osteoblasto</b>. El que lo destruye/reabsorbe es el <b>osteoclasto</b> (Clast → Come)."}, {"id": "card:m1:3", "f": "¿Qué es la osteona?", "b": "La unidad del hueso <b>compacto</b>: laminillas concéntricas alrededor de un conducto de Havers con vasos."}, {"id": "card:m1:4", "f": "Membrana externa del hueso vs interna", "b": "<b>Periostio</b> (externa) y <b>endostio</b> (reviste la cavidad medular)."}, {"id": "card:m1:5", "f": "¿Qué huesos forman el esqueleto axial?", "b": "<b>Cráneo, columna vertebral y caja torácica</b> (esternón + costillas). Total 80."}, {"id": "card:m1:6", "f": "Regiones de la columna vertebral (nº)", "b": "<b>7 cervicales, 12 torácicas, 5 lumbares</b>, sacro (5 fusionadas) y cóccix."}, {"id": "card:m1:7", "f": "Huesos del antebrazo", "b": "<b>Cúbito (ulna)</b> y <b>radio</b>. El radio queda del lado del pulgar."}, {"id": "card:m1:8", "f": "Huesos de la pierna (rodilla a tobillo)", "b": "<b>Tibia</b> (medial, soporta el peso) y <b>peroné/fíbula</b> (lateral)."}, {"id": "card:m1:9", "f": "Ejemplo de hueso sesamoideo", "b": "La <b>rótula (patela)</b>: hueso dentro del tendón del cuádriceps."}], "quiz": [{"id": "q:m1:0", "q": "¿Cuál de estos NO es una función del hueso?", "opts": ["Reserva de calcio", "Producción de células sanguíneas", "Secreción de bilis", "Palanca para el movimiento"], "correct": 2, "fb": ["Sí es función: el hueso almacena calcio y fósforo.", "Sí es función: la médula roja hace hematopoyesis.", "Correcto: la bilis la produce el hígado, no el hueso.", "Sí es función: los huesos son palancas del sistema muscular."]}, {"id": "q:m1:1", "q": "La zona que contiene la placa de crecimiento en un hueso largo es la…", "opts": ["Metáfisis", "Cavidad medular", "Periostio", "Diáfisis"], "correct": 0, "fb": ["Correcto: la metáfisis contiene la placa/línea epifisaria.", "No; ahí está la médula, no la placa de crecimiento.", "No; el periostio es la membrana externa.", "No; la diáfisis es la caña central."]}, {"id": "q:m1:2", "q": "La célula que REABSORBE hueso es el…", "opts": ["Condrocito", "Osteoclasto", "Osteoblasto", "Osteocito"], "correct": 1, "fb": ["No; el condrocito es del cartílago.", "Correcto: el osteoclasto reabsorbe (destruye) hueso.", "No; el osteoblasto forma hueso.", "No; el osteocito es la célula madura de mantenimiento."]}, {"id": "q:m1:3", "q": "El hueso compacto se organiza en unidades llamadas…", "opts": ["Osteonas", "Trabéculas", "Nefronas", "Sarcómeros"], "correct": 0, "fb": ["Correcto: la osteona (sistema de Havers) es la unidad del compacto.", "No; las trabéculas son del hueso esponjoso.", "No; la nefrona es del riñón.", "No; el sarcómero es del músculo."]}, {"id": "q:m1:4", "q": "¿Cuál de estos huesos pertenece al esqueleto APENDICULAR?", "opts": ["Esternón", "Costilla", "Escápula", "Vértebra lumbar"], "correct": 2, "fb": ["No; el esternón es axial (caja torácica).", "No; las costillas son axiales.", "Correcto: la escápula es parte de la cintura escapular → apendicular.", "No; las vértebras son axiales."]}, {"id": "q:m1:5", "q": "La columna vertebral tiene, en la región torácica…", "opts": ["12 vértebras", "7 vértebras", "4 vértebras", "5 vértebras"], "correct": 0, "fb": ["Correcto: 12 vértebras torácicas (una por par de costillas).", "No; 7 es la región cervical.", "No; el cóccix suele tener 4 fusionadas, pero no es la torácica.", "No; 5 es la región lumbar."]}, {"id": "q:m1:6", "q": "El entrenamiento de fuerza aumenta la densidad ósea porque…", "opts": ["Elimina osteoclastos para siempre", "La carga mecánica estimula a los osteoblastos", "Detiene el remodelado óseo", "Reduce el calcio en sangre"], "correct": 1, "fb": ["No; los osteoclastos siguen existiendo; se equilibra la balanza hacia formación.", "Correcto: según la ley de Wolff, la carga estimula la formación ósea (osteoblastos).", "No; el remodelado continúa; justamente favorece la fase de formación.", "No; no funciona por reducir calcio sanguíneo."]}, {"id": "q:m1:7", "q": "El radio, en el antebrazo, se ubica…", "opts": ["Del lado del meñique", "En la palma", "En el brazo, no en el antebrazo", "Del lado del pulgar"], "correct": 3, "fb": ["No; ese es el lado del cúbito (ulna).", "No; la palma tiene metacarpianos y carpianos.", "No; el radio sí es del antebrazo.", "Correcto: el radio queda lateral, del lado del pulgar."]}, {"id": "q:m1:8", "q": "La rótula es un ejemplo de hueso…", "opts": ["Plano", "Sesamoideo", "Irregular", "Largo"], "correct": 1, "fb": ["No; plano sería como la escápula.", "Correcto: la rótula es sesamoidea (dentro del tendón del cuádriceps).", "No; irregular sería como una vértebra.", "No; los largos tienen diáfisis y epífisis."]}, {"id": "q:m1:9", "q": "La médula ROJA, responsable de producir células sanguíneas, se aloja sobre todo en…", "opts": ["El cartílago articular", "El periostio", "La cavidad medular de la diáfisis en el adulto", "El hueso esponjoso de las epífisis"], "correct": 3, "fb": ["No; el cartílago no produce sangre.", "No; el periostio es membrana de recubrimiento.", "No; en el adulto la cavidad diafisaria tiene médula amarilla (grasa).", "Correcto: la médula roja hematopoyética está en el hueso esponjoso."]}]}, {"id": "m2", "cards": [{"id": "card:m2:0", "f": "Clasificación funcional de articulaciones", "b": "<b>Sinartrosis</b> (inmóvil), <b>anfiartrosis</b> (semimóvil), <b>diartrosis</b> (móvil = sinovial)."}, {"id": "card:m2:1", "f": "¿Qué diferencia un ligamento de un tendón?", "b": "<b>Ligamento</b>: hueso ↔ hueso. <b>Tendón</b>: músculo ↔ hueso."}, {"id": "card:m2:2", "f": "¿Qué contiene la cavidad de una articulación sinovial?", "b": "<b>Líquido sinovial</b>, que lubrica y nutre el cartílago articular."}, {"id": "card:m2:3", "f": "Función del cartílago articular", "b": "Recubre los extremos óseos: <b>reduce fricción y absorbe impacto</b>."}, {"id": "card:m2:4", "f": "Tipo de articulación del hombro y la cadera", "b": "<b>Esferoidea (enartrosis)</b>: multiaxial, se mueve en todos los ejes."}, {"id": "card:m2:5", "f": "Tipo de articulación del codo", "b": "<b>Troclear / gínglimo (bisagra)</b>: solo flexión-extensión."}, {"id": "card:m2:6", "f": "Ejemplo de articulación en silla de montar", "b": "La base del <b>pulgar</b> (carpometacarpiana del 1er dedo)."}, {"id": "card:m2:7", "f": "¿Qué es la membrana sinovial?", "b": "La capa <b>interna</b> de la cápsula articular; produce el líquido sinovial."}], "quiz": [{"id": "q:m2:0", "q": "Las suturas del cráneo son articulaciones…", "opts": ["Sinartrosis (inmóviles)", "Esferoideas", "Anfiartrosis", "Sinoviales muy móviles"], "correct": 0, "fb": ["Correcto: son sinartrosis, unión fibrosa inmóvil.", "No; esferoidea es un tipo de sinovial multiaxial.", "No; anfiartrosis es semimóvil (p. ej. sínfisis púbica).", "No; las suturas prácticamente no se mueven."]}, {"id": "q:m2:1", "q": "Estructura que une HUESO con HUESO:", "opts": ["Fascia", "Ligamento", "Tendón", "Aponeurosis"], "correct": 1, "fb": ["No; la fascia envuelve músculos.", "Correcto: el ligamento une hueso con hueso y da estabilidad.", "No; el tendón une músculo con hueso.", "No; la aponeurosis es un tendón ancho y plano (músculo-hueso)."]}, {"id": "q:m2:2", "q": "El codo se clasifica como articulación…", "opts": ["Esferoidea", "En silla", "Plana", "Troclear (bisagra)"], "correct": 3, "fb": ["No; esferoidea es hombro/cadera.", "No; en silla es la base del pulgar.", "No; plana es de deslizamiento (carpo).", "Correcto: el codo es una bisagra (flexión-extensión)."]}, {"id": "q:m2:3", "q": "El líquido sinovial es producido por…", "opts": ["El periostio", "La membrana sinovial", "El cartílago articular", "Los meniscos"], "correct": 1, "fb": ["No; el periostio recubre el hueso.", "Correcto: la membrana sinovial secreta el líquido sinovial.", "No; el cartílago no produce el líquido.", "No; los meniscos reparten cargas, no producen líquido."]}, {"id": "q:m2:4", "q": "¿Por qué el hombro se luxa más fácil que la cadera si ambos son esferoideos?", "opts": ["La cadera no es esferoidea", "El hombro no tiene ligamentos", "El hombro no tiene cartílago", "El hombro prioriza movilidad y su cavidad es poco profunda"], "correct": 3, "fb": ["No; la cadera también es esferoidea, pero más estable.", "No; sí tiene ligamentos, pero la cavidad glenoidea es superficial.", "No; sí tiene cartílago.", "Correcto: gran movilidad = menos estabilidad; su cavidad es poco profunda."]}, {"id": "q:m2:5", "q": "Los discos intervertebrales corresponden a articulaciones…", "opts": ["Sinoviales", "Fibrosas inmóviles", "Cartilaginosas (anfiartrosis)", "Esferoideas"], "correct": 2, "fb": ["No; no tienen cavidad sinovial.", "No; sí permiten algo de movimiento.", "Correcto: son cartilaginosas y semimóviles (anfiartrosis).", "No; esferoidea es un tipo de sinovial."]}, {"id": "q:m2:6", "q": "El esguince deportivo más común afecta al…", "opts": ["Ligamento lateral del tobillo (por inversión)", "Menisco medial", "Ligamento cruzado anterior de la rodilla", "Ligamento del codo"], "correct": 0, "fb": ["Correcto: el esguince lateral de tobillo por inversión es la lesión más común.", "No; el menisco es una lesión distinta y menos frecuente que el esguince de tobillo.", "El LCA es grave pero menos frecuente que el esguince de tobillo.", "No; el codo se lesiona menos por esguince."]}, {"id": "q:m2:7", "q": "La muñeca (radiocarpiana), que flexiona/extiende y abduce/aduce pero no rota, es una articulación…", "opts": ["Troclear", "Trocoide (pivote)", "Condílea (elipsoidea)", "Esferoidea"], "correct": 2, "fb": ["No; la troclear es de un solo eje.", "No; el pivote solo rota.", "Correcto: la condílea permite dos ejes de movimiento, sin rotación.", "No; la esferoidea permite rotación además de los otros ejes."]}]}, {"id": "m3", "cards": [{"id": "card:m3:0", "f": "Los tres tipos de tejido muscular", "b": "<b>Esquelético</b> (voluntario, estriado), <b>cardíaco</b> (involuntario, estriado) y <b>liso</b> (involuntario, no estriado)."}, {"id": "card:m3:1", "f": "Capas de tejido conectivo del músculo", "b": "<b>Epimisio</b> (todo el músculo), <b>perimisio</b> (fascículos), <b>endomisio</b> (cada fibra)."}, {"id": "card:m3:2", "f": "¿Cuál es la unidad funcional del músculo?", "b": "El <b>sarcómero</b> (de línea Z a línea Z). Contiene actina y miosina."}, {"id": "card:m3:3", "f": "Filamentos del sarcómero", "b": "<b>Actina</b> (fino) y <b>miosina</b> (grueso). La miosina tira de la actina."}, {"id": "card:m3:4", "f": "¿Qué dice la teoría del filamento deslizante?", "b": "Los filamentos no se acortan: <b>se deslizan</b> uno sobre otro; la miosina tira de la actina y el sarcómero se acorta."}, {"id": "card:m3:5", "f": "¿Qué ion dispara la contracción?", "b": "El <b>calcio (Ca²⁺)</b>, liberado del retículo sarcoplásmico. La energía la da el <b>ATP</b>."}, {"id": "card:m3:6", "f": "Contracción concéntrica vs excéntrica", "b": "<b>Concéntrica</b>: el músculo se acorta (subir el peso). <b>Excéntrica</b>: se alarga controlando (bajar el peso)."}, {"id": "card:m3:7", "f": "¿Qué es una contracción isométrica?", "b": "Genera tensión <b>sin cambiar de longitud</b> (plancha, sostener un peso quieto)."}, {"id": "card:m3:8", "f": "Tipos de fibra por velocidad", "b": "<b>Tipo I</b> (lentas, resistentes, maratón) y <b>Tipo II</b> (rápidas, potentes, sprint; IIa intermedias, IIx muy rápidas)."}, {"id": "card:m3:9", "f": "Agonista vs antagonista", "b": "<b>Agonista</b>: genera el movimiento. <b>Antagonista</b>: se opone/controla. También hay sinergistas y fijadores."}], "quiz": [{"id": "q:m3:0", "q": "¿Qué tejido muscular es voluntario y estriado?", "opts": ["Cardíaco", "Esquelético", "Liso", "Ninguno"], "correct": 1, "fb": ["No; el cardíaco es estriado pero involuntario.", "Correcto: el esquelético es voluntario y estriado.", "No; el liso es involuntario y no estriado.", "No; sí existe uno que cumple ambas condiciones."]}, {"id": "q:m3:1", "q": "La unidad funcional contráctil del músculo es…", "opts": ["El epimisio", "El fascículo", "El sarcómero", "La miofibrilla"], "correct": 2, "fb": ["No; el epimisio es la envoltura externa.", "No; el fascículo es un haz de fibras.", "Correcto: el sarcómero, de línea Z a línea Z, es la unidad funcional.", "No; la miofibrilla contiene muchos sarcómeros."]}, {"id": "q:m3:2", "q": "Según la teoría del filamento deslizante, durante la contracción…", "opts": ["Desaparece la miosina", "Los filamentos se deslizan y el sarcómero se acorta", "El sarcómero se alarga", "La actina y la miosina se acortan"], "correct": 1, "fb": ["No; la miosina no desaparece.", "Correcto: se deslizan uno sobre otro; el sarcómero se acorta.", "No; se acorta, no se alarga, al contraerse.", "No; los filamentos no cambian de longitud."]}, {"id": "q:m3:3", "q": "El disparador iónico de la contracción es…", "opts": ["El calcio", "El cloro", "El sodio", "El potasio"], "correct": 0, "fb": ["Correcto: el calcio liberado del retículo sarcoplásmico dispara la unión actina-miosina.", "No; el cloro no cumple ese papel.", "El sodio participa en el impulso nervioso, pero no es el disparador directo del acoplamiento.", "No; el potasio interviene en la repolarización."]}, {"id": "q:m3:4", "q": "Bajar el peso de forma controlada en un curl de bíceps es una contracción…", "opts": ["Isométrica", "Excéntrica del bíceps", "Concéntrica del bíceps", "Concéntrica del tríceps"], "correct": 1, "fb": ["No; sí hay cambio de longitud, no es isométrica.", "Correcto: el bíceps se alarga controlando la carga → excéntrica.", "No; concéntrica sería subir (acortarse).", "No; el tríceps es antagonista y está relajado."]}, {"id": "q:m3:5", "q": "Un corredor de maratón depende sobre todo de fibras…", "opts": ["Tipo I (lentas, resistentes)", "Tipo IIx (rápidas)", "Lisas", "Cardíacas"], "correct": 0, "fb": ["Correcto: las Tipo I son lentas y muy resistentes a la fatiga.", "No; las IIx se fatigan rápido, sirven para sprint.", "No; las lisas son viscerales.", "No; las cardíacas son del corazón."]}, {"id": "q:m3:6", "q": "En un movimiento, el músculo que se OPONE o controla al motor principal es el…", "opts": ["Agonista", "Sinergista", "Fijador", "Antagonista"], "correct": 3, "fb": ["No; el agonista genera el movimiento.", "No; el sinergista ayuda al agonista.", "No; el fijador estabiliza el origen.", "Correcto: el antagonista se opone o frena el movimiento."]}, {"id": "q:m3:7", "q": "La capa de tejido conectivo que envuelve a CADA fibra muscular es el…", "opts": ["Periostio", "Epimisio", "Endomisio", "Perimisio"], "correct": 2, "fb": ["No; el periostio es del hueso.", "No; el epimisio envuelve todo el músculo.", "Correcto: el endomisio envuelve cada fibra individual.", "No; el perimisio envuelve los fascículos."]}, {"id": "q:m3:8", "q": "El glúteo mayor es el principal músculo que…", "opts": ["Flexiona la rodilla", "Hace flexión plantar", "Flexiona el codo", "Extiende la cadera"], "correct": 3, "fb": ["No; eso lo hacen los isquiotibiales.", "No; eso lo hacen gastrocnemio y sóleo.", "No; eso es el bíceps.", "Correcto: el glúteo mayor es el gran extensor de la cadera."]}, {"id": "q:m3:9", "q": "Sostener una plancha (posición fija) es una contracción…", "opts": ["Isométrica", "Isotónica", "Excéntrica", "Concéntrica"], "correct": 0, "fb": ["Correcto: tensión sin cambio de longitud = isométrica.", "No; isotónica implica movimiento (concéntrica o excéntrica).", "No; no hay alargamiento controlado.", "No; no hay acortamiento con movimiento."]}]}], "final": [{"id": "q:final:0", "q": "En posición anatómica, la relación correcta es:", "opts": ["El pulgar es medial al meñique", "El pulgar es lateral al meñique", "El codo es distal a la muñeca", "El esternón es posterior a la columna"], "correct": 1, "fb": ["No; con las palmas al frente el pulgar queda lateral.", "Correcto: en posición anatómica el pulgar queda lateral.", "No; el codo es proximal a la muñeca.", "No; el esternón es anterior."]}, {"id": "q:final:1", "q": "Relaciona plano y movimiento: la abducción de hombro ocurre en el plano…", "opts": ["Frontal", "Ningún plano", "Transversal", "Sagital"], "correct": 0, "fb": ["Correcto: abducción/aducción ocurren en el plano frontal.", "No; todo movimiento articular ocurre en un plano.", "No; el transversal es para rotaciones.", "No; el sagital es para flexión/extensión."]}, {"id": "q:final:2", "q": "¿Cuál es axial?", "opts": ["Fémur", "Costilla", "Clavícula", "Escápula"], "correct": 1, "fb": ["No; el fémur es apendicular.", "Correcto: la costilla forma parte de la caja torácica (axial).", "No; la clavícula es apendicular (cintura escapular).", "No; la escápula es apendicular."]}, {"id": "q:final:3", "q": "La célula ósea que se queda atrapada en la matriz y mantiene el tejido es el…", "opts": ["Osteocito", "Osteoclasto", "Osteoblasto", "Condrocito"], "correct": 0, "fb": ["Correcto: el osteocito es el osteoblasto maduro que mantiene el hueso.", "No; el osteoclasto reabsorbe.", "No; el osteoblasto forma matriz activamente.", "No; el condrocito es del cartílago."]}, {"id": "q:final:4", "q": "El sistema de Havers (osteona) es propio del…", "opts": ["Cartílago", "Periostio", "Hueso compacto", "Hueso esponjoso"], "correct": 2, "fb": ["No; el cartílago no tiene osteonas.", "No; el periostio es membrana de recubrimiento.", "Correcto: la osteona es la unidad del hueso compacto.", "No; el esponjoso se organiza en trabéculas."]}, {"id": "q:final:5", "q": "¿Qué une músculo con hueso?", "opts": ["Tendón", "Menisco", "Cápsula", "Ligamento"], "correct": 0, "fb": ["Correcto: el tendón une músculo con hueso.", "No; el menisco reparte cargas en la rodilla.", "No; la cápsula envuelve la articulación.", "No; el ligamento une hueso con hueso."]}, {"id": "q:final:6", "q": "La rodilla es funcionalmente una articulación de tipo…", "opts": ["Esferoidea", "Plana", "Bisagra (troclear)", "Pivote"], "correct": 2, "fb": ["No; esferoidea es hombro/cadera.", "No; plana es de deslizamiento.", "Correcto: la rodilla actúa como bisagra (flexión-extensión).", "No; el pivote solo rota."]}, {"id": "q:final:7", "q": "¿Qué estructura NO pertenece a una articulación sinovial?", "opts": ["Cápsula articular", "Cartílago articular", "Líquido sinovial", "Sutura fibrosa"], "correct": 3, "fb": ["Sí pertenece: envuelve la articulación.", "Sí pertenece: recubre los extremos óseos.", "Sí pertenece: lubrica la articulación.", "Correcto: la sutura fibrosa es de una articulación inmóvil, no sinovial."]}, {"id": "q:final:8", "q": "La unidad funcional del músculo, de línea Z a línea Z, es el…", "opts": ["Endomisio", "Fascículo", "Sarcómero", "Miofilamento"], "correct": 2, "fb": ["No; el endomisio es tejido conectivo.", "No; el fascículo es un haz de fibras.", "Correcto: el sarcómero es la unidad funcional.", "No; el miofilamento es actina o miosina."]}, {"id": "q:final:9", "q": "Durante la contracción, la miosina…", "opts": ["Se acorta ella misma", "Tira de la actina hacia el centro del sarcómero", "Se convierte en actina", "Se separa de la fibra"], "correct": 1, "fb": ["No; los filamentos no cambian de longitud.", "Correcto: las cabezas de miosina tiran de la actina (deslizamiento).", "No; son proteínas distintas.", "No; permanece en el sarcómero."]}, {"id": "q:final:10", "q": "Subir el peso en una sentadilla (extender rodilla y cadera) implica contracción concéntrica de…", "opts": ["Isquiotibiales", "Gastrocnemio solamente", "Bíceps braquial", "Cuádriceps y glúteos"], "correct": 3, "fb": ["No; los isquiotibiales flexionan la rodilla.", "No; el gastrocnemio hace flexión plantar, no es el motor principal aquí.", "No; el bíceps braquial es del brazo.", "Correcto: cuádriceps (extiende rodilla) y glúteos (extiende cadera) se acortan."]}, {"id": "q:final:11", "q": "Un velocista de 100 m recluta preferentemente fibras…", "opts": ["Lisas", "Tipo IIx rápidas", "Tipo I lentas", "Cardíacas"], "correct": 1, "fb": ["No; las lisas son viscerales.", "Correcto: las Tipo IIx son muy rápidas y potentes (se fatigan pronto).", "No; las Tipo I son para resistencia.", "No; las cardíacas son del corazón."]}, {"id": "q:final:12", "q": "El músculo que se relaja o frena mientras el agonista trabaja se llama…", "opts": ["Antagonista", "Fijador", "Sinergista", "Motor primario"], "correct": 0, "fb": ["Correcto: el antagonista se opone o controla.", "No; el fijador estabiliza el origen.", "No; el sinergista ayuda.", "No; el motor primario es el agonista."]}, {"id": "q:final:13", "q": "La ley de Wolff aplicada al entrenamiento indica que…", "opts": ["El músculo no influye en el hueso", "El cartílago se convierte en hueso al entrenar", "El hueso se debilita con la carga", "El hueso se adapta y se refuerza según la carga mecánica"], "correct": 3, "fb": ["No; la tracción muscular sí estimula el hueso.", "No; eso describe mal la osificación.", "No; es al revés: la carga fortalece.", "Correcto: el hueso remodela y aumenta densidad según las cargas que recibe."]}, {"id": "q:final:14", "q": "El esguince deportivo más frecuente y su mecanismo:", "opts": ["Muñeca por pronación", "Rodilla por hiperextensión", "Tobillo por inversión", "Hombro por abducción"], "correct": 2, "fb": ["No; no es el más frecuente.", "La rodilla se lesiona, pero el esguince más común no es ahí.", "Correcto: el esguince lateral de tobillo por inversión es el más frecuente.", "No; el hombro se luxa, no es el esguince típico."]}], "totals": {"read": 4, "cards": 36, "quiz": 51}};
+const KEY = "curso_locomotor_v1";
+const ORDER = ["intro", "m0", "m1", "m2", "m3", "final", "repaso"];
+
+// ---- persistencia segura ----
+let mem = {read:{},cards:{},quiz:{}};
+function load(){
+  try{ const s = localStorage.getItem(KEY); if(s){ mem = Object.assign({read:{},cards:{},quiz:{}}, JSON.parse(s)); } }
+  catch(e){ /* file:// o preview sin storage: usa memoria */ }
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(mem)); }catch(e){}
+}
+load();
+
+// ---- navegación ----
+function go(id){
+  document.querySelectorAll('.page').forEach(p=>{ p.hidden = (p.id!==id); });
+  document.querySelectorAll('.nav-link').forEach(a=>a.classList.toggle('active', a.dataset.target===id));
+  if(id!=='intro' && id!=='final' && id!=='repaso'){ mem.read[id]=true; save(); }
+  updateHUD();
+  window.scrollTo({top:0,behavior:'smooth'});
+  closeMenu();
+}
+document.addEventListener('click', e=>{
+  const nl = e.target.closest('.nav-link'); if(nl){ go(nl.dataset.target); }
+  const g = e.target.closest('[data-go]'); if(g){ go(g.dataset.go); }
+});
+
+// ---- render cascaritas ----
+function makeCard(c){
+  const d = document.createElement('div');
+  d.className = 'flip' + (mem.cards[c.id]?' seen flipped':'');
+  d.innerHTML = `<div class="flip-inner">
+    <div class="flip-face flip-front">${c.f}<span class="tag">toca para voltear</span></div>
+    <div class="flip-face flip-back">${c.b}</div></div>`;
+  d.addEventListener('click', ()=>{
+    d.classList.toggle('flipped');
+    if(!mem.cards[c.id]){ mem.cards[c.id]=true; d.classList.add('seen'); save(); updateHUD(); }
+  });
+  return d;
+}
+
+// ---- render pregunta ----
+const LETTERS = ['A','B','C','D','E'];
+function makeQuestion(q, index){
+  const wrap = document.createElement('div');
+  wrap.className = 'qcard';
+  const prev = mem.quiz[q.id];
+  let opts = q.opts.map((o,i)=>`<div class="opt" data-i="${i}"><span class="lt">${LETTERS[i]}</span><span>${o}</span></div>`).join('');
+  wrap.innerHTML = `<div class="qnum">Pregunta ${index}</div>
+    <div class="qtext">${q.q}</div>
+    <div class="opts">${opts}</div>
+    <div class="fb"></div>`;
+  const fb = wrap.querySelector('.fb');
+  const optEls = [...wrap.querySelectorAll('.opt')];
+  function reveal(chosen){
+    optEls.forEach((el,i)=>{
+      el.classList.add('disabled');
+      if(i===q.correct) el.classList.add('correct');
+      if(i===chosen && chosen!==q.correct) el.classList.add('wrong');
+    });
+    const ok = chosen===q.correct;
+    fb.className = 'fb show ' + (ok?'ok':'no');
+    fb.innerHTML = (ok?'✅ ':'✗ ') + q.fb[chosen];
+  }
+  optEls.forEach(el=>{
+    el.addEventListener('click', ()=>{
+      if(mem.quiz[q.id]) return;
+      const chosen = +el.dataset.i;
+      mem.quiz[q.id] = {answered:true, correct:chosen===q.correct, chosen};
+      save(); reveal(chosen); updateHUD(); refreshQuizScores();
+    });
+  });
+  if(prev && prev.answered){ reveal(prev.chosen); }
+  return wrap;
+}
+
+// ---- montar módulos ----
+function mount(){
+  DATA.modules.forEach(m=>{
+    const cc = document.querySelector(`[data-cards="${m.id}"]`);
+    if(cc){ m.cards.forEach(c=> cc.appendChild(makeCard(c))); }
+    const qc = document.querySelector(`[data-quiz="${m.id}"]`);
+    if(qc){ m.quiz.forEach((q,i)=> qc.appendChild(makeQuestion(q,i+1))); }
+  });
+  const fq = document.querySelector('[data-quiz="final"]');
+  if(fq){ DATA.final.forEach((q,i)=> fq.appendChild(makeQuestion(q,i+1))); }
+  document.querySelectorAll('.nav-link').forEach(a=>{
+    const t=a.dataset.target; if(mem.read[t]){ /* marca leído */ }
+  });
+  refreshQuizScores();
+}
+
+function refreshQuizScores(){
+  DATA.modules.forEach(m=>{
+    const el = document.querySelector(`[data-quizscore="${m.id}"]`);
+    if(!el) return;
+    let ans=0, ok=0;
+    m.quiz.forEach(q=>{ const s=mem.quiz[q.id]; if(s&&s.answered){ans++; if(s.correct)ok++;} });
+    el.textContent = ans? `Respondidas ${ans}/${m.quiz.length} · Aciertos ${ok}` : '';
+  });
+  const fe = document.querySelector('[data-quizscore="final"]');
+  if(fe){ let ans=0,ok=0; DATA.final.forEach(q=>{const s=mem.quiz[q.id]; if(s&&s.answered){ans++; if(s.correct)ok++;}});
+    fe.textContent = ans? `Respondidas ${ans}/${DATA.final.length} · Aciertos ${ok} (${Math.round(ok/DATA.final.length*100)}%)` : ''; }
+}
+
+// ---- HUD / progreso ----
+function counts(){
+  const T = DATA.totals;
+  const read = Object.keys(mem.read).length;
+  const cards = Object.keys(mem.cards).length;
+  const quiz = Object.values(mem.quiz).filter(x=>x&&x.answered).length;
+  let ok=0; Object.values(mem.quiz).forEach(x=>{if(x&&x.correct)ok++;});
+  const done = read + cards + quiz;
+  const total = T.read + T.cards + T.quiz;
+  return {done,total,read,cards,quiz,ok,T,pct: total? Math.round(done/total*100):0};
+}
+function updateHUD(){
+  const c = counts();
+  const ring = document.getElementById('ring');
+  if(ring){ ring.style.setProperty('--p', c.pct); ring.querySelector('i').textContent = c.pct+'%'; }
+  const st = document.getElementById('hud-stats');
+  if(st){ st.innerHTML = `Teoría <b>${c.read}/${c.T.read}</b> · Cascaritas <b>${c.cards}/${c.T.cards}</b><br>Preguntas <b>${c.quiz}/${c.T.quiz}</b> · Aciertos <b>${c.ok}</b>`; }
+  // marca nav
+  document.querySelectorAll('.nav-link').forEach(a=>{
+    const t=a.dataset.target;
+    let done=false;
+    if(mem.read[t]) done=true;
+    let badge=a.querySelector('.nav-done');
+    if(done && !badge){ badge=document.createElement('span'); badge.className='nav-done'; badge.textContent='✓'; a.appendChild(badge); }
+  });
+}
+function resetAll(){
+  if(!confirm('¿Reiniciar todo tu progreso? Esto borra secciones leídas, cascaritas y respuestas.')) return;
+  mem = {read:{},cards:{},quiz:{}}; save();
+  location.reload();
+}
+
+// ---- repaso aleatorio ----
+let rpItems=[], rpIdx=0;
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function buildRepaso(){
+  const useCards=document.getElementById('rp-cards').checked;
+  const useQuiz=document.getElementById('rp-quiz').checked;
+  let pool=[];
+  DATA.modules.forEach(m=>{
+    if(useCards) m.cards.forEach(c=>pool.push({type:'card',data:c}));
+    if(useQuiz) m.quiz.forEach(q=>pool.push({type:'quiz',data:q}));
+  });
+  if(useQuiz) DATA.final.forEach(q=>pool.push({type:'quiz',data:q}));
+  rpItems = shuffle(pool); rpIdx=0;
+  document.getElementById('rp-count').textContent = rpItems.length+' ítems listos';
+  showRepaso();
+  document.getElementById('repaso-controls').hidden = rpItems.length===0;
+}
+function showRepaso(){
+  const stage=document.getElementById('repaso-stage');
+  stage.innerHTML='';
+  if(!rpItems.length){ stage.innerHTML='<p style="color:var(--mut)">Activa al menos una opción y pulsa «Barajar y empezar».</p>'; return; }
+  const it=rpItems[rpIdx];
+  if(it.type==='card'){ const g=document.createElement('div'); g.className='cards-grid'; g.style.maxWidth='340px'; g.style.margin='0 auto'; g.appendChild(makeCard(it.data)); stage.appendChild(g); }
+  else{ stage.appendChild(makeQuestion(it.data, rpIdx+1)); }
+  document.getElementById('rp-progress').textContent = `${rpIdx+1} / ${rpItems.length}`;
+}
+function bindRepaso(){
+  document.getElementById('btn-shuffle').addEventListener('click', buildRepaso);
+  document.getElementById('rp-next').addEventListener('click', ()=>{ if(rpIdx<rpItems.length-1){rpIdx++; showRepaso();} });
+  document.getElementById('rp-prev').addEventListener('click', ()=>{ if(rpIdx>0){rpIdx--; showRepaso();} });
+}
+
+// ---- menú móvil ----
+function openMenu(){ document.querySelector('.sidebar').classList.add('open'); document.querySelector('.scrim').classList.add('show'); }
+function closeMenu(){ document.querySelector('.sidebar').classList.remove('open'); const s=document.querySelector('.scrim'); if(s)s.classList.remove('show'); }
+
+// ---- init ----
+document.addEventListener('DOMContentLoaded', ()=>{
+  mount();
+  bindRepaso();
+  updateHUD();
+  document.getElementById('hud-reset').addEventListener('click', resetAll);
+  const b=document.querySelector('.burger'); if(b)b.addEventListener('click', openMenu);
+  const sc=document.querySelector('.scrim'); if(sc)sc.addEventListener('click', closeMenu);
+  // stats hero
+  const hm=document.getElementById('hs-mod'); if(hm)hm.textContent=DATA.modules.length;
+  const hc=document.getElementById('hs-card'); if(hc)hc.textContent=DATA.totals.cards;
+  const hq=document.getElementById('hs-q'); if(hq)hq.textContent=DATA.totals.quiz;
+});
+</script>
+</body>
+</html>
