@@ -513,7 +513,7 @@ tr:hover td{background:var(--s1)}
     </select>
   </div>
   <div style="padding:12px;border:1px solid var(--brd);border-radius:var(--r);background:var(--s1);margin-bottom:12px">
-    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--cyan);margin-bottom:8px">🌙 BIENESTAR DEL DÍA</div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--cyan);margin-bottom:8px">🌙 BIENESTAR DEL DÍA <span style="color:var(--gris);font-weight:500;letter-spacing:0">(opcional · también puedes registrarlo aparte en "Mi Bienestar")</span></div>
     <div class="fr3">
       <div class="fg"><label>💧 Agua (litros)</label><input type="number" id="log_agua" step="0.25" min="0" placeholder="2"/></div>
       <div class="fg"><label>😴 Sueño (horas)</label><input type="number" id="log_sueno" step="0.5" min="0" max="24" placeholder="7"/></div>
@@ -569,6 +569,25 @@ tr:hover td{background:var(--s1)}
 </div>
 </div>
 
+<!-- Registro de bienestar (independiente de la rutina) -->
+<div class="overlay" id="m_bien">
+<div class="modal">
+  <div class="modal-title"><span id="m_bien_title">🌙 MI BIENESTAR</span><button class="close-btn" onclick="closeModal('m_bien')">×</button></div>
+  <input type="hidden" id="bien_id"/>
+  <div class="fg"><label>Fecha</label><input type="date" id="bien_fecha" onchange="loadBienDia()"/></div>
+  <div class="fr3">
+    <div class="fg"><label>💧 Agua (litros)</label><input type="number" id="bien_agua" step="0.25" min="0" placeholder="2"/></div>
+    <div class="fg"><label>😴 Sueño (horas)</label><input type="number" id="bien_sueno" step="0.5" min="0" max="24" placeholder="7"/></div>
+    <div class="fg"><label>🧠 Estrés (1-10)</label><select id="bien_estres"><option value="">—</option><option value="1">1 · Muy bajo</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 · Medio</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10 · Muy alto</option></select></div>
+  </div>
+  <div class="fg"><label>📝 ¿Cómo te sentiste hoy? (opcional)</label><textarea id="bien_nota" placeholder="Energía, ánimo, alimentación..."></textarea></div>
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-p" style="flex:1" id="bien_save_btn" onclick="saveBien()">💾 Guardar</button>
+    <button class="btn btn-d" id="bien_del_btn" onclick="delBien()">🗑️</button>
+  </div>
+</div>
+</div>
+
 <!-- Video Modal -->
 <div class="overlay" id="m_video" style="align-items:center;padding:16px">
 <div style="background:rgba(var(--bg-rgb),1);border:1px solid var(--brd);border-radius:18px;width:min(660px,95vw);overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8)">
@@ -614,7 +633,7 @@ tr:hover td{background:var(--s1)}
     </select>
   </div>
   <div style="padding:12px;border:1px solid var(--brd);border-radius:var(--r);background:var(--s1);margin-bottom:12px">
-    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--cyan);margin-bottom:8px">🌙 BIENESTAR DEL DÍA</div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--cyan);margin-bottom:8px">🌙 BIENESTAR DEL DÍA <span style="color:var(--gris);font-weight:500;letter-spacing:0">(opcional · también puedes registrarlo aparte en "Mi Bienestar")</span></div>
     <div class="fr3">
       <div class="fg"><label>💧 Agua (litros)</label><input type="number" id="edit_log_agua" step="0.25" min="0" placeholder="2"/></div>
       <div class="fg"><label>😴 Sueño (horas)</label><input type="number" id="edit_log_sueno" step="0.5" min="0" max="24" placeholder="7"/></div>
@@ -1497,11 +1516,12 @@ function showApp() {
 var COACH_MENU = [
   {s:'Panel'}, {id:'dashboard',l:'Resumen',ic:'📊'},
   {s:T.Usuarios}, {id:'usuarios',l:T.Usuarios,ic:'👥'}, {id:'medidas',l:'Medidas',ic:'📏'},
-  {s:'Entrenamiento'}, {id:'rutinas',l:'Rutinas',ic:'🏋️'}, {id:'ejercicios',l:'Biblioteca',ic:'📚'}, {id:'logs',l:'Registro global',ic:'📋'},
+  {s:'Entrenamiento'}, {id:'rutinas',l:'Rutinas',ic:'🏋️'}, {id:'ejercicios',l:'Biblioteca',ic:'📚'}, {id:'logs',l:'Registro global',ic:'📋'}, {id:'bienestar',l:'Bienestar',ic:'🌙'},
   {s:'Sistema'}, {id:'ajustes',l:'Configuración',ic:'⚙️'}, {id:'admPanel',l:'Gestión Cuentas',ic:'🔐',adminOnly:true}
 ];
 var USER_MENU = [
   {s:'Entrenamiento'}, {id:'miRutina',l:'Mi Rutina',ic:'🏋️'}, {id:'registrar',l:'Registrar Sesión',ic:'✅'}, {id:'miProgreso',l:'Mi Progreso',ic:'📈'},
+  {s:'Hábitos'}, {id:'miBienestar',l:'Mi Bienestar',ic:'🌙'},
   {s:'Historial'}, {id:'miHistorial',l:'Historial',ic:'📋'}, {id:'miPerfil',l:'Mi Perfil',ic:'👤'}
 ];
 
@@ -1525,8 +1545,8 @@ function buildSidebar() {
 
 var COACH_MOB = [{id:'dashboard',l:'Inicio',ic:'📊'},{id:'usuarios',l:T.Usuarios,ic:'👥'},{id:'rutinas',l:'Rutinas',ic:'🏋️'},{id:'medidas',l:'Medidas',ic:'📏'},{id:'__more',l:'Más',ic:'☰'}];
 var USER_MOB = [{id:'miRutina',l:'Rutina',ic:'🏋️'},{id:'miHistorial',l:'Historial',ic:'📋'},{id:'registrar',l:'Sesion',ic:'✅'},{id:'__free',l:'Extra',ic:'🏃'},{id:'__more',l:'Mas',ic:'☰'}];
-var COACH_MORE = [{id:'ejercicios',l:'Biblioteca',ic:'📚'},{id:'logs',l:'Registro',ic:'📋'},{id:'ajustes',l:'Ajustes',ic:'⚙️'}];
-var USER_MORE = [{id:'miPerfil',l:'Mi Perfil',ic:'👤'}];
+var COACH_MORE = [{id:'ejercicios',l:'Biblioteca',ic:'📚'},{id:'logs',l:'Registro',ic:'📋'},{id:'bienestar',l:'Bienestar',ic:'🌙'},{id:'ajustes',l:'Ajustes',ic:'⚙️'}];
+var USER_MORE = [{id:'miBienestar',l:'Mi Bienestar',ic:'🌙'},{id:'miProgreso',l:'Mi Progreso',ic:'📈'},{id:'miPerfil',l:'Mi Perfil',ic:'👤'}];
 
 function buildMobNav() {
   var items = (CU.role==='admin'||CU.role==='coach'||CU.role==='recepcion') ? COACH_MOB : USER_MOB;
@@ -1573,7 +1593,8 @@ function nav(page) {
     rutinas: pgRutinas, ejercicios: pgEjercicios, logs: pgLogs, ajustes: pgAjustes,
     admPanel: pgAdminPanel,
     miRutina: pgMiRutina, registrar: function() { pgMiRutina(); setTimeout(openLogModal, 200); },
-    miProgreso: pgMiProgreso, miHistorial: pgMiHistorial, miPerfil: pgMiPerfil
+    miProgreso: pgMiProgreso, miHistorial: pgMiHistorial, miPerfil: pgMiPerfil,
+    miBienestar: pgMiBienestar, bienestar: pgBienestarCoach
   };
   if (pages[page]) pages[page]();
 }
@@ -1634,7 +1655,7 @@ function pgDashboard() {
   var usr = d.users.filter(function(u) { return u.role === 'user'; });
   var logsW = 0;
   var now = Date.now();
-  d.logs.forEach(function(l) { if (now - new Date(l.fecha).getTime() < 7 * 86400000) logsW++; });
+  ses(d).forEach(function(l) { if (now - new Date(l.fecha).getTime() < 7 * 86400000) logsW++; });
   // Membership alerts
   var alerts = [];
   usr.forEach(function(u) {
@@ -1659,12 +1680,23 @@ function pgDashboard() {
     var u3 = d.users.filter(function(x){return x.id===m.userId;})[0];
     alerts.push({ name:(u3?u3.name:''), label:'⚑ Check point de medidas ('+fDate(m.fecha)+')'+(m.alertaNota?': '+m.alertaNota:''), color:'#ffaa44', action:'openEditMedida(\''+m.id+'\')' });
   });
-  d.logs.forEach(function(l){
+  ses(d).forEach(function(l){
     if (l.dolor !== 'fuerte' || l.feedback) return;
     var u4 = d.users.filter(function(x){return x.id===l.userId;})[0];
     alerts.push({ name:(u4?u4.name:''), label:'⚠️ Reportó dolor fuerte el '+fDate(l.fecha)+' — sin retroalimentar', color:'#ff8080', action:'showLogDetail(\''+l.id+'\')' });
   });
-  var sinFb = d.logs.filter(function(l){ return l.tipo !== 'libre' && !l.feedback; }).length;
+  var sinFb = ses(d).filter(function(l){ return l.tipo !== 'libre' && !l.feedback; }).length;
+  // Bienestar: estrés alto o poco sueño en los últimos 3 días
+  var hace3 = new Date(Date.now()-3*86400000).toISOString().split('T')[0];
+  bien(d).forEach(function(l){
+    if (l.fecha < hace3) return;
+    var msgs = [];
+    if (parseInt(l.estres) >= 8) msgs.push('estrés '+l.estres+'/10');
+    if (l.sueno && l.sueno < 5) msgs.push('durmió '+l.sueno+' h');
+    if (!msgs.length) return;
+    var u5 = d.users.filter(function(x){return x.id===l.userId;})[0];
+    alerts.push({ name:(u5?u5.name:''), label:'🌙 Bienestar '+fDate(l.fecha)+': '+msgs.join(' · '), color:'#ffaa44', action:"nav('bienestar')" });
+  });
   var alertHtml = '';
   if (alerts.length > 0) {
     alertHtml = '<div style="background:rgba(255,170,0,0.08);border:1px solid rgba(255,170,0,0.25);border-radius:12px;padding:14px;margin-bottom:16px">';
@@ -1675,7 +1707,7 @@ function pgDashboard() {
     alertHtml += '</div>';
   }
   var recentLogs = '';
-  var sortedLogs = d.logs.slice().sort(function(a,b){return b.fecha.localeCompare(a.fecha);}).slice(0, 5);
+  var sortedLogs = ses(d).slice().sort(function(a,b){return b.fecha.localeCompare(a.fecha);}).slice(0, 5);
   if (sortedLogs.length === 0) {
     recentLogs = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-t">SIN SESIONES</div></div>';
   } else {
@@ -1695,13 +1727,13 @@ function pgDashboard() {
   setMain('<div class="page-title">PANEL</div><div class="page-sub">Bienvenido/a, ' + CU.name.split(' ')[0] + ' — ' + new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'}) + '</div>' +
     alertHtml +
     '<div class="stats"><div class="stat"><div class="stat-l">'+T.Usuarios+'</div><div class="stat-v">' + usr.length + '</div></div>' +
-    '<div class="stat"><div class="stat-l">Sesiones totales</div><div class="stat-v">' + d.logs.length + '</div></div>' +
+    '<div class="stat"><div class="stat-l">Sesiones totales</div><div class="stat-v">' + ses(d).length + '</div></div>' +
     '<div class="stat"><div class="stat-l">Esta semana</div><div class="stat-v">' + logsW + '</div></div>' +
     '<div class="stat"><div class="stat-l">Rutinas</div><div class="stat-v">' + d.rutinas.length + '</div></div>' +
     '<div class="stat" style="cursor:pointer" onclick="nav(\'logs\')"><div class="stat-l">Sin retroalimentar</div><div class="stat-v" style="color:'+(sinFb?'#ffaa44':'inherit')+'">' + sinFb + '</div></div></div>' +
     '<div class="g2">' +
     '<div class="card"><div class="card-title">👥 '+T.Usuarios+'</div>' + (usr.length === 0 ? '<div class="empty"><div class="empty-icon">👥</div><div class="empty-t">SIN '+T.Usuarios.toUpperCase()+'</div></div>' : usr.map(function(u) {
-      var ul = null; d.logs.forEach(function(l){if(l.userId===u.id&&(!ul||l.fecha>ul.fecha))ul=l;});
+      var ul = null; ses(d).forEach(function(l){if(l.userId===u.id&&(!ul||l.fecha>ul.fecha))ul=l;});
       var st = memStatus(u);
       return '<div class="u-row" style="cursor:pointer" onclick="nav(\'usuarios\')"><div class="u-av">' + ini(u.name) + '</div><div class="u-info"><div class="u-name">' + u.name + '</div><div class="u-meta">' + (ul ? fDate(ul.fecha) : 'Sin sesiones') + ' · <span style="color:' + st.color + '">' + st.label + '</span></div></div></div>';
     }).join('')) + '<div style="padding:12px"><button class="btn btn-g btn-sm" onclick="openNuevaUsuario()">+ '+T.nuevo+'</button></div></div>' +
@@ -1724,7 +1756,7 @@ function pgUsuarios() {
   } else {
     usr.forEach(function(u) {
       var ruts = 0; d.rutinas.forEach(function(r){if(r.userId===u.id)ruts++;});
-      var sesiones = 0; d.logs.forEach(function(l){if(l.userId===u.id)sesiones++;});
+      var sesiones = 0; ses(d).forEach(function(l){if(l.userId===u.id)sesiones++;});
       var um = null; d.medidas.forEach(function(m){if(m.userId===u.id&&(!um||m.fecha>um.fecha))um=m;});
       var hasDiag = !!u.diagnostico;
       var st = memStatus(u);
@@ -3052,7 +3084,7 @@ function delRutina(rid) {
 // ═══════════════════════════════════════════════════════════
 function pgLogs() {
   var d = db();
-  var sorted = d.logs.slice().sort(function(a,b){return b.fecha.localeCompare(a.fecha);});
+  var sorted = ses(d).slice().sort(function(a,b){return b.fecha.localeCompare(a.fecha);});
   // Filters
   var html = '<div class="page-title">REGISTRO GLOBAL</div>';
   html += '<div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">';
@@ -3639,6 +3671,8 @@ function pgMiRutina(rid) {
   if (r.fechaIni) vigStr += '📅 '+fDate(r.fechaIni);
   if (r.fechaFin) { var dDiff=Math.ceil((new Date(r.fechaFin)-new Date())/86400000); vigStr += ' → '+fDate(r.fechaFin); if(dDiff<=7) vigStr+=' ⚠️'; }
   var html = '<div class="page-title">MI RUTINA</div><div class="page-sub">' + (r.nombre||'Semana '+r.semana) + ' · ' + (r.objetivo||'') + (vigStr?' · '+vigStr:'') + '</div>';
+  var _hoyBien = bien(d).some(function(l){ return l.userId===CU.id && l.fecha===dateCOL(); });
+  if (!_hoyBien) html += '<div onclick="openBien()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;margin-bottom:12px;border:1px dashed rgba(var(--acc-rgb),0.4);border-radius:var(--r);background:var(--s1);font-size:12px"><span>🌙 ¿Cómo estuvo tu día? Registra agua, sueño y estrés</span><span style="color:var(--cyan);font-weight:700">Registrar →</span></div>';
   if (ruts.length > 1) {
     html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"><span style="font-size:11px;color:var(--gris);align-self:center">Mis planes:</span>';
     ruts.forEach(function(x){ html += '<button class="btn btn-sm '+(x.id===r.id?'btn-p':'btn-g')+'" onclick="pgMiRutina(\''+x.id+'\')">'+esc(x.nombre||'Plan '+x.semana)+'</button>'; });
@@ -3779,6 +3813,147 @@ function bienestarHtml(l, compact) {
   return compact ? parts.map(function(p){return '<span style="font-size:11px;color:var(--gris)">'+p+'</span>';}).join('')
     : '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--gris)">'+parts.join('')+'</div>';
 }
+// ── BIENESTAR (registro propio del usuario, aparte de la rutina) ──
+// Se guarda en la misma hoja "logs" con tipo:'bienestar' (no requiere cambiar el Apps Script).
+function ses(d) { return (d.logs||[]).filter(function(l){ return l.tipo !== 'bienestar'; }); }
+function bien(d) { return (d.logs||[]).filter(function(l){ return l.tipo === 'bienestar'; }); }
+
+// Une el bienestar registrado aparte y el que se anotó junto a una sesión, por día
+function bienestarPorDia(userId) {
+  var d = db(), dias = {};
+  (d.logs||[]).forEach(function(l){
+    if (l.userId !== userId || !(l.agua || l.sueno || l.estres)) return;
+    var x = dias[l.fecha] || (dias[l.fecha] = {fecha:l.fecha, fuentes:[]});
+    ['agua','sueno','estres'].forEach(function(k){ if (l[k] && (l.tipo==='bienestar' || !x[k])) x[k] = l[k]; });
+    if (l.tipo === 'bienestar') { x.id = l.id; x.nota = l.comentario; }
+    x.fuentes.push(l.tipo === 'bienestar' ? 'propio' : 'sesión');
+  });
+  return Object.keys(dias).sort().map(function(k){ return dias[k]; });
+}
+
+function openBien(fecha) {
+  document.getElementById('bien_fecha').value = fecha || dateCOL();
+  loadBienDia();
+  openModal('m_bien');
+}
+function loadBienDia() {
+  var f = document.getElementById('bien_fecha').value;
+  var ex = bien(db()).filter(function(l){ return l.userId===CU.id && l.fecha===f; })[0];
+  document.getElementById('bien_id').value = ex ? ex.id : '';
+  document.getElementById('bien_agua').value = ex ? (ex.agua||'') : '';
+  document.getElementById('bien_sueno').value = ex ? (ex.sueno||'') : '';
+  document.getElementById('bien_estres').value = ex ? (ex.estres||'') : '';
+  document.getElementById('bien_nota').value = ex ? (ex.comentario||'') : '';
+  document.getElementById('bien_del_btn').style.display = ex ? '' : 'none';
+  document.getElementById('m_bien_title').textContent = ex ? '✏️ EDITAR BIENESTAR' : '🌙 MI BIENESTAR';
+}
+function saveBien() {
+  if (_saving['bien']) return;
+  var f = document.getElementById('bien_fecha').value;
+  if (!f) { toast('Selecciona la fecha'); return; }
+  var reg = { id: document.getElementById('bien_id').value || ('b'+Date.now()), userId: CU.id, tipo:'bienestar', fecha: f,
+    comentario: document.getElementById('bien_nota').value.trim(), semana:0, dia:'', rutId:'' };
+  readBienestar('bien', reg);
+  if (!reg.agua && !reg.sueno && !reg.estres) { toast('Registra al menos agua, sueño o estrés'); return; }
+  _saving['bien'] = true;
+  saveAndSync('saveLog', reg, function(res){
+    _saving['bien'] = false;
+    closeModal('m_bien');
+    toast(res && res.ok ? '🌙 Bienestar guardado en Drive' : '🌙 Bienestar guardado');
+    if (curPage === 'miBienestar') pgMiBienestar();
+  });
+}
+function delBien() {
+  var id = document.getElementById('bien_id').value;
+  if (!id || !confirm('¿Eliminar este registro de bienestar?')) return;
+  saveAndSync('deleteLog', {id:id}, function(){ closeModal('m_bien'); toast('Registro eliminado'); pgMiBienestar(); });
+}
+
+function bienResumen(dias) {
+  var last7 = dias.filter(function(x){ return x.fecha >= new Date(Date.now()-7*86400000).toISOString().split('T')[0]; });
+  var avg = function(k){ var v = last7.filter(function(x){return x[k];}).map(function(x){return parseFloat(x[k]);}); return v.length ? (v.reduce(function(a,b){return a+b;},0)/v.length).toFixed(1) : '—'; };
+  return '<div class="stats">' +
+    '<div class="stat"><div class="stat-l">💧 Agua promedio</div><div class="stat-v">'+avg('agua')+'<span class="stat-u">L</span></div></div>' +
+    '<div class="stat"><div class="stat-l">😴 Sueño promedio</div><div class="stat-v">'+avg('sueno')+'<span class="stat-u">h</span></div></div>' +
+    '<div class="stat"><div class="stat-l">🧠 Estrés promedio</div><div class="stat-v">'+avg('estres')+'<span class="stat-u">/10</span></div></div>' +
+    '<div class="stat"><div class="stat-l">Días registrados (7d)</div><div class="stat-v">'+last7.length+'</div></div></div>';
+}
+function bienTabla(dias, editable) {
+  var h = '<div style="overflow-x:auto"><table style="min-width:420px"><thead><tr><th>Fecha</th><th>💧 Agua</th><th>😴 Sueño</th><th>🧠 Estrés</th><th>Nota</th><th>Origen</th>'+(editable?'<th></th>':'')+'</tr></thead><tbody>';
+  dias.slice().reverse().forEach(function(x){
+    var ec = x.estres>=8?'#ff8080':x.estres>=6?'#ffaa44':'#80d4a0';
+    h += '<tr><td style="white-space:nowrap">'+fDate(x.fecha)+'</td><td>'+(x.agua?x.agua+' L':'—')+'</td><td style="color:'+(x.sueno&&x.sueno<5?'#ff8080':'inherit')+'">'+(x.sueno?x.sueno+' h':'—')+'</td><td style="color:'+(x.estres?ec:'inherit')+'">'+(x.estres?x.estres+'/10':'—')+'</td><td style="font-size:11px;color:var(--gris)">'+esc(x.nota||'')+'</td><td style="font-size:10px;color:var(--gris)">'+x.fuentes.join(' + ')+'</td>';
+    if (editable) h += '<td><button class="btn btn-g btn-sm" onclick="openBien(\''+x.fecha+'\')">✏️</button></td>';
+    h += '</tr>';
+  });
+  return h + '</tbody></table></div>';
+}
+var _bienChart = null;
+function bienChart(canvasId, dias) {
+  if (typeof Chart === 'undefined') return;
+  var c = document.getElementById(canvasId); if (!c) return;
+  if (_bienChart) { try { _bienChart.destroy(); } catch(e){} }
+  var last = dias.slice(-30);
+  var tick = {color: themeColor('--gris')}, grid = {color:'rgba(255,255,255,0.05)'};
+  _bienChart = new Chart(c.getContext('2d'), {
+    type:'line',
+    data:{ labels: last.map(function(x){ var p=dParts(x.fecha); return p.d+' '+p.m; }), datasets:[
+      {label:'Agua (L)', data:last.map(function(x){return x.agua||null;}), borderColor:themeColor('--cyan'), backgroundColor:themeColor('--cyan'), tension:.3, spanGaps:true, yAxisID:'y'},
+      {label:'Sueño (h)', data:last.map(function(x){return x.sueno||null;}), borderColor:themeColor('--oro'), backgroundColor:themeColor('--oro'), tension:.3, spanGaps:true, yAxisID:'y'},
+      {label:'Estrés', data:last.map(function(x){return x.estres?parseInt(x.estres):null;}), borderColor:'#ff8080', backgroundColor:'#ff8080', tension:.3, spanGaps:true, yAxisID:'y'}
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:themeColor('--gris')}}}, scales:{x:{ticks:tick,grid:grid}, y:{ticks:tick,grid:grid,beginAtZero:true}} }
+  });
+}
+
+function pgMiBienestar() {
+  var dias = bienestarPorDia(CU.id);
+  var hoy = dateCOL();
+  var hoyReg = dias.filter(function(x){ return x.fecha===hoy && x.id; })[0];
+  var html = '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px"><div class="page-title">MI BIENESTAR</div>';
+  html += '<button class="btn btn-p" onclick="openBien()">'+(hoyReg?'✏️ Editar el de hoy':'+ Registrar hoy')+'</button></div>';
+  html += '<div class="page-sub">Agua, sueño y estrés de cada día — con o sin entrenamiento</div>';
+  if (!dias.length) {
+    html += '<div class="empty"><div class="empty-icon">🌙</div><div class="empty-t">SIN REGISTROS</div><div class="empty-s">Anota cuánta agua tomaste, cuánto dormiste y tu nivel de estrés</div></div>';
+    setMain(html); return;
+  }
+  html += bienResumen(dias);
+  html += '<div class="card"><div class="card-title">📈 Últimos 30 días</div><div style="position:relative;height:220px"><canvas id="bien_chart"></canvas></div></div>';
+  html += '<div class="card"><div class="card-title">📅 Historial</div>'+bienTabla(dias, true)+'</div>';
+  setMain(html);
+  setTimeout(function(){ bienChart('bien_chart', dias); }, 60);
+}
+
+function pgBienestarCoach() {
+  var d = db();
+  var usr = d.users.filter(function(u){ return u.role==='user'; });
+  var sel = (document.getElementById('bien_filter_u')||{value:''}).value;
+  var html = '<div class="page-title">BIENESTAR</div><div class="page-sub">Agua, sueño y estrés que registran '+(T.usuario==='usuaria'?'tus usuarias':'tus usuarios')+'</div>';
+  html += '<div style="margin-bottom:14px"><select id="bien_filter_u" onchange="pgBienestarCoach()" style="padding:8px 12px;background:var(--s1);border:1px solid var(--brd);border-radius:var(--r);color:var(--blanco);font-family:var(--font-body);font-size:13px"><option value="">Resumen de '+(T.usuario==='usuaria'?'todas':'todos')+'</option>'+usr.map(function(u){return '<option value="'+u.id+'"'+(u.id===sel?' selected':'')+'>'+esc(u.name)+'</option>';}).join('')+'</select></div>';
+  if (sel) {
+    var dias = bienestarPorDia(sel);
+    if (!dias.length) html += '<div class="empty"><div class="empty-icon">🌙</div><div class="empty-t">SIN REGISTROS</div></div>';
+    else {
+      html += bienResumen(dias);
+      html += '<div class="card"><div class="card-title">📈 Últimos 30 días</div><div style="position:relative;height:220px"><canvas id="bien_chart"></canvas></div></div>';
+      html += '<div class="card"><div class="card-title">📅 Historial</div>'+bienTabla(dias, false)+'</div>';
+    }
+    setMain(html);
+    if (dias.length) setTimeout(function(){ bienChart('bien_chart', dias); }, 60);
+    return;
+  }
+  html += '<div class="card" style="padding:0"><div style="overflow-x:auto"><table style="min-width:520px"><thead><tr><th>'+T.Usuario+'</th><th>Último registro</th><th>💧 Agua 7d</th><th>😴 Sueño 7d</th><th>🧠 Estrés 7d</th><th></th></tr></thead><tbody>';
+  var desde = new Date(Date.now()-7*86400000).toISOString().split('T')[0];
+  usr.forEach(function(u){
+    var dias = bienestarPorDia(u.id), l7 = dias.filter(function(x){return x.fecha>=desde;});
+    var avg = function(k){ var v=l7.filter(function(x){return x[k];}).map(function(x){return parseFloat(x[k]);}); return v.length?(v.reduce(function(a,b){return a+b;},0)/v.length).toFixed(1):'—'; };
+    var e = avg('estres');
+    html += '<tr><td>'+esc(u.name)+'</td><td>'+(dias.length?fDate(dias[dias.length-1].fecha):'—')+'</td><td>'+avg('agua')+'</td><td>'+avg('sueno')+'</td><td style="color:'+(e!=='—'&&e>=7?'#ffaa44':'inherit')+'">'+e+'</td><td><button class="btn btn-g btn-sm" onclick="document.getElementById(\'bien_filter_u\').value=\''+u.id+'\';pgBienestarCoach()">Ver</button></td></tr>';
+  });
+  html += '</tbody></table></div></div>';
+  setMain(html);
+}
+
 function tipoChip(t) {
   if (t === 'biserie') return '<span class="tipo-chip tipo-biserie">BISERIE</span>';
   if (t === 'triserie') return '<span class="tipo-chip tipo-triserie">TRISERIE</span>';
@@ -4005,7 +4180,7 @@ function saveLog() {
 function pgMiProgreso() {
   var d = db();
   var meds = d.medidas.filter(function(m){return m.userId===CU.id;}).sort(function(a,b){return a.fecha.localeCompare(b.fecha);});
-  var logs = d.logs.filter(function(l){return l.userId===CU.id;});
+  var logs = ses(d).filter(function(l){return l.userId===CU.id;});
   var last = meds.length ? meds[meds.length-1] : null;
   var first = meds.length > 1 ? meds[0] : null;
   var html = '<div class="page-title">MI PROGRESO</div><div class="page-sub">Tu evolución durante el programa</div>';
@@ -4124,7 +4299,7 @@ function pgMiProgreso() {
 // ═══════════════════════════════════════════════════════════
 function pgMiHistorial() {
   var d = db();
-  var allLogs = d.logs.filter(function(l) { return l.userId === CU.id; })
+  var allLogs = ses(d).filter(function(l) { return l.userId === CU.id; })
     .sort(function(a,b) { return b.fecha.localeCompare(a.fecha); });
   var rutLogs  = allLogs.filter(function(l) { return l.tipo !== 'libre'; });
   var freeLogs = allLogs.filter(function(l) { return l.tipo === 'libre'; });
@@ -4135,6 +4310,7 @@ function pgMiHistorial() {
   html += '<div style="display:flex;gap:8px">';
   html += '<button class="btn btn-p btn-sm" onclick="openLogModal()">+ Sesion rutina</button>';
   html += '<button class="btn btn-gold btn-sm" onclick="openFreeLog()">+ Actividad extra</button>';
+  html += '<button class="btn btn-g btn-sm" onclick="openBien()">🌙 Bienestar</button>';
   html += '</div></div>';
   html += '<div class="page-sub">' + rutLogs.length + ' sesiones de rutina · ' + freeLogs.length + ' actividades extra</div>';
 
