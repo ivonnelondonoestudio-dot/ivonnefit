@@ -580,6 +580,7 @@ tr:hover td{background:var(--s1)}
     <div class="fg"><label>😴 Sueño (horas)</label><input type="number" id="bien_sueno" step="0.5" min="0" max="24" placeholder="7"/></div>
     <div class="fg"><label>🧠 Estrés (1-10)</label><select id="bien_estres"><option value="">—</option><option value="1">1 · Muy bajo</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 · Medio</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10 · Muy alto</option></select></div>
   </div>
+  <div class="fg"><label>👟 Pasos del día</label><input type="number" id="bien_pasos" step="100" min="0" placeholder="Ej: 8000 (los ves en tu celular o reloj)"/></div>
   <div class="fg"><label>📝 ¿Cómo te sentiste hoy? (opcional)</label><textarea id="bien_nota" placeholder="Energía, ánimo, alimentación..."></textarea></div>
   <div style="display:flex;gap:10px">
     <button class="btn btn-p" style="flex:1" id="bien_save_btn" onclick="saveBien()">💾 Guardar</button>
@@ -3802,6 +3803,7 @@ function readBienestar(p, obj) {
   obj.agua = parseFloat(g('agua')) || null;
   obj.sueno = parseFloat(g('sueno')) || null;
   obj.estres = g('estres') || '';
+  if (document.getElementById(p+'_pasos')) obj.pasos = parseInt(g('pasos')) || null;
   return obj;
 }
 function bienestarHtml(l, compact) {
@@ -3821,10 +3823,17 @@ function bien(d) { return (d.logs||[]).filter(function(l){ return l.tipo === 'bi
 // Une el bienestar registrado aparte y el que se anotó junto a una sesión, por día
 function bienestarPorDia(userId) {
   var d = db(), dias = {};
+  var dia = function(f){ return dias[f] || (dias[f] = {fecha:f, fuentes:[], actividades:[]}); };
   (d.logs||[]).forEach(function(l){
-    if (l.userId !== userId || !(l.agua || l.sueno || l.estres)) return;
-    var x = dias[l.fecha] || (dias[l.fecha] = {fecha:l.fecha, fuentes:[]});
-    ['agua','sueno','estres'].forEach(function(k){ if (l[k] && (l.tipo==='bienestar' || !x[k])) x[k] = l[k]; });
+    if (l.userId !== userId) return;
+    if (l.tipo === 'libre') {
+      var xa = dia(l.fecha);
+      xa.actividades.push({ id:l.id, nombre:l.actNombre||l.actTipo||'Actividad', tipo:l.actTipo||'', dur:l.duracion||null, esf:l.esfuerzo||'' });
+      return;
+    }
+    if (!(l.agua || l.sueno || l.estres || l.pasos)) return;
+    var x = dia(l.fecha);
+    ['agua','sueno','estres','pasos'].forEach(function(k){ if (l[k] && (l.tipo==='bienestar' || !x[k])) x[k] = l[k]; });
     if (l.tipo === 'bienestar') { x.id = l.id; x.nota = l.comentario; }
     x.fuentes.push(l.tipo === 'bienestar' ? 'propio' : 'sesión');
   });
@@ -3843,6 +3852,7 @@ function loadBienDia() {
   document.getElementById('bien_agua').value = ex ? (ex.agua||'') : '';
   document.getElementById('bien_sueno').value = ex ? (ex.sueno||'') : '';
   document.getElementById('bien_estres').value = ex ? (ex.estres||'') : '';
+  document.getElementById('bien_pasos').value = ex ? (ex.pasos||'') : '';
   document.getElementById('bien_nota').value = ex ? (ex.comentario||'') : '';
   document.getElementById('bien_del_btn').style.display = ex ? '' : 'none';
   document.getElementById('m_bien_title').textContent = ex ? '✏️ EDITAR BIENESTAR' : '🌙 MI BIENESTAR';
@@ -3854,7 +3864,7 @@ function saveBien() {
   var reg = { id: document.getElementById('bien_id').value || ('b'+Date.now()), userId: CU.id, tipo:'bienestar', fecha: f,
     comentario: document.getElementById('bien_nota').value.trim(), semana:0, dia:'', rutId:'' };
   readBienestar('bien', reg);
-  if (!reg.agua && !reg.sueno && !reg.estres) { toast('Registra al menos agua, sueño o estrés'); return; }
+  if (!reg.agua && !reg.sueno && !reg.estres && !reg.pasos) { toast('Registra al menos agua, sueño, estrés o pasos'); return; }
   _saving['bien'] = true;
   saveAndSync('saveLog', reg, function(res){
     _saving['bien'] = false;
@@ -3870,20 +3880,31 @@ function delBien() {
 }
 
 function bienResumen(dias) {
-  var last7 = dias.filter(function(x){ return x.fecha >= new Date(Date.now()-7*86400000).toISOString().split('T')[0]; });
-  var avg = function(k){ var v = last7.filter(function(x){return x[k];}).map(function(x){return parseFloat(x[k]);}); return v.length ? (v.reduce(function(a,b){return a+b;},0)/v.length).toFixed(1) : '—'; };
+  var desde = new Date(Date.now()-7*86400000).toISOString().split('T')[0];
+  var last7 = dias.filter(function(x){ return x.fecha >= desde; });
+  var avg = function(k, dec){ var v = last7.filter(function(x){return x[k];}).map(function(x){return parseFloat(x[k]);}); return v.length ? (v.reduce(function(a,b){return a+b;},0)/v.length).toFixed(dec===0?0:1) : '—'; };
+  var acts = 0, mins = 0;
+  last7.forEach(function(x){ acts += x.actividades.length; x.actividades.forEach(function(a){ mins += a.dur||0; }); });
+  var pasos = avg('pasos', 0);
   return '<div class="stats">' +
     '<div class="stat"><div class="stat-l">💧 Agua promedio</div><div class="stat-v">'+avg('agua')+'<span class="stat-u">L</span></div></div>' +
     '<div class="stat"><div class="stat-l">😴 Sueño promedio</div><div class="stat-v">'+avg('sueno')+'<span class="stat-u">h</span></div></div>' +
     '<div class="stat"><div class="stat-l">🧠 Estrés promedio</div><div class="stat-v">'+avg('estres')+'<span class="stat-u">/10</span></div></div>' +
-    '<div class="stat"><div class="stat-l">Días registrados (7d)</div><div class="stat-v">'+last7.length+'</div></div></div>';
+    '<div class="stat"><div class="stat-l">👟 Pasos promedio</div><div class="stat-v">'+(pasos==='—'?'—':Number(pasos).toLocaleString('es-CO'))+'</div></div>' +
+    '<div class="stat"><div class="stat-l">🏃 Actividad extra</div><div class="stat-v">'+acts+'<span class="stat-u"> '+(mins?'· '+mins+' min':'')+'</span></div></div></div>' +
+    '<div style="font-size:11px;color:var(--gris);margin:-8px 0 16px">Promedios de los últimos 7 días</div>';
 }
 function bienTabla(dias, editable) {
-  var h = '<div style="overflow-x:auto"><table style="min-width:420px"><thead><tr><th>Fecha</th><th>💧 Agua</th><th>😴 Sueño</th><th>🧠 Estrés</th><th>Nota</th><th>Origen</th>'+(editable?'<th></th>':'')+'</tr></thead><tbody>';
+  var h = '<div style="overflow-x:auto"><table style="min-width:620px"><thead><tr><th>Fecha</th><th>💧 Agua</th><th>😴 Sueño</th><th>🧠 Estrés</th><th>👟 Pasos</th><th>🏃 Actividad extra</th><th>Nota</th>'+(editable?'<th></th>':'')+'</tr></thead><tbody>';
   dias.slice().reverse().forEach(function(x){
     var ec = x.estres>=8?'#ff8080':x.estres>=6?'#ffaa44':'#80d4a0';
-    h += '<tr><td style="white-space:nowrap">'+fDate(x.fecha)+'</td><td>'+(x.agua?x.agua+' L':'—')+'</td><td style="color:'+(x.sueno&&x.sueno<5?'#ff8080':'inherit')+'">'+(x.sueno?x.sueno+' h':'—')+'</td><td style="color:'+(x.estres?ec:'inherit')+'">'+(x.estres?x.estres+'/10':'—')+'</td><td style="font-size:11px;color:var(--gris)">'+esc(x.nota||'')+'</td><td style="font-size:10px;color:var(--gris)">'+x.fuentes.join(' + ')+'</td>';
-    if (editable) h += '<td><button class="btn btn-g btn-sm" onclick="openBien(\''+x.fecha+'\')">✏️</button></td>';
+    var act = x.actividades.map(function(a){
+      var t = esc(a.nombre)+(a.dur?' · '+a.dur+' min':'');
+      return editable ? '<button class="edit-free-btn" data-lid="'+a.id+'" style="background:rgba(45,106,79,0.2);color:#80d4a0;border:1px solid rgba(45,106,79,0.45);border-radius:20px;padding:2px 8px;font-size:10px;cursor:pointer;margin:1px">'+t+'</button>'
+                      : '<span class="badge" style="background:rgba(45,106,79,0.2);color:#80d4a0;border:1px solid rgba(45,106,79,0.45);margin:1px">'+t+'</span>';
+    }).join('') || '—';
+    h += '<tr><td style="white-space:nowrap">'+fDate(x.fecha)+'</td><td>'+(x.agua?x.agua+' L':'—')+'</td><td style="color:'+(x.sueno&&x.sueno<5?'#ff8080':'inherit')+'">'+(x.sueno?x.sueno+' h':'—')+'</td><td style="color:'+(x.estres?ec:'inherit')+'">'+(x.estres?x.estres+'/10':'—')+'</td><td>'+(x.pasos?Number(x.pasos).toLocaleString('es-CO'):'—')+'</td><td>'+act+'</td><td style="font-size:11px;color:var(--gris)">'+esc(x.nota||'')+'</td>';
+    if (editable) h += '<td><button class="btn btn-g btn-sm" title="Editar agua, sueño, estrés y pasos" onclick="openBien(\''+x.fecha+'\')">✏️</button></td>';
     h += '</tr>';
   });
   return h + '</tbody></table></div>';
@@ -3900,9 +3921,10 @@ function bienChart(canvasId, dias) {
     data:{ labels: last.map(function(x){ var p=dParts(x.fecha); return p.d+' '+p.m; }), datasets:[
       {label:'Agua (L)', data:last.map(function(x){return x.agua||null;}), borderColor:themeColor('--cyan'), backgroundColor:themeColor('--cyan'), tension:.3, spanGaps:true, yAxisID:'y'},
       {label:'Sueño (h)', data:last.map(function(x){return x.sueno||null;}), borderColor:themeColor('--oro'), backgroundColor:themeColor('--oro'), tension:.3, spanGaps:true, yAxisID:'y'},
-      {label:'Estrés', data:last.map(function(x){return x.estres?parseInt(x.estres):null;}), borderColor:'#ff8080', backgroundColor:'#ff8080', tension:.3, spanGaps:true, yAxisID:'y'}
+      {label:'Estrés', data:last.map(function(x){return x.estres?parseInt(x.estres):null;}), borderColor:'#ff8080', backgroundColor:'#ff8080', tension:.3, spanGaps:true, yAxisID:'y'},
+      {type:'bar', label:'Pasos', data:last.map(function(x){return x.pasos||null;}), backgroundColor:themeColor('--gris',0.35), borderRadius:4, yAxisID:'y1', order:10}
     ]},
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:themeColor('--gris')}}}, scales:{x:{ticks:tick,grid:grid}, y:{ticks:tick,grid:grid,beginAtZero:true}} }
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:themeColor('--gris')}}}, scales:{x:{ticks:tick,grid:grid}, y:{ticks:tick,grid:grid,beginAtZero:true,title:{display:true,text:'Agua · Sueño · Estrés',color:themeColor('--gris')}}, y1:{position:'right',beginAtZero:true,ticks:tick,grid:{drawOnChartArea:false},title:{display:true,text:'Pasos',color:themeColor('--gris')}}} }
   });
 }
 
@@ -3911,10 +3933,10 @@ function pgMiBienestar() {
   var hoy = dateCOL();
   var hoyReg = dias.filter(function(x){ return x.fecha===hoy && x.id; })[0];
   var html = '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px"><div class="page-title">MI BIENESTAR</div>';
-  html += '<button class="btn btn-p" onclick="openBien()">'+(hoyReg?'✏️ Editar el de hoy':'+ Registrar hoy')+'</button></div>';
-  html += '<div class="page-sub">Agua, sueño y estrés de cada día — con o sin entrenamiento</div>';
+  html += '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-p" onclick="openBien()">'+(hoyReg?'✏️ Editar el de hoy':'+ Registrar hoy')+'</button><button class="btn btn-gold" onclick="openFreeLog()">🏃 + Actividad extra</button></div></div>';
+  html += '<div class="page-sub">Agua, sueño, estrés, pasos y actividades extra de cada día — con o sin entrenamiento</div>';
   if (!dias.length) {
-    html += '<div class="empty"><div class="empty-icon">🌙</div><div class="empty-t">SIN REGISTROS</div><div class="empty-s">Anota cuánta agua tomaste, cuánto dormiste y tu nivel de estrés</div></div>';
+    html += '<div class="empty"><div class="empty-icon">🌙</div><div class="empty-t">SIN REGISTROS</div><div class="empty-s">Anota tu agua, sueño, estrés y pasos, o registra una actividad extra (caminata, baile, tenis…)</div></div>';
     setMain(html); return;
   }
   html += bienResumen(dias);
@@ -3928,7 +3950,7 @@ function pgBienestarCoach() {
   var d = db();
   var usr = d.users.filter(function(u){ return u.role==='user'; });
   var sel = (document.getElementById('bien_filter_u')||{value:''}).value;
-  var html = '<div class="page-title">BIENESTAR</div><div class="page-sub">Agua, sueño y estrés que registran '+(T.usuario==='usuaria'?'tus usuarias':'tus usuarios')+'</div>';
+  var html = '<div class="page-title">BIENESTAR</div><div class="page-sub">Agua, sueño, estrés, pasos y actividades extra que registran '+(T.usuario==='usuaria'?'tus usuarias':'tus usuarios')+'</div>';
   html += '<div style="margin-bottom:14px"><select id="bien_filter_u" onchange="pgBienestarCoach()" style="padding:8px 12px;background:var(--s1);border:1px solid var(--brd);border-radius:var(--r);color:var(--blanco);font-family:var(--font-body);font-size:13px"><option value="">Resumen de '+(T.usuario==='usuaria'?'todas':'todos')+'</option>'+usr.map(function(u){return '<option value="'+u.id+'"'+(u.id===sel?' selected':'')+'>'+esc(u.name)+'</option>';}).join('')+'</select></div>';
   if (sel) {
     var dias = bienestarPorDia(sel);
@@ -3942,13 +3964,16 @@ function pgBienestarCoach() {
     if (dias.length) setTimeout(function(){ bienChart('bien_chart', dias); }, 60);
     return;
   }
-  html += '<div class="card" style="padding:0"><div style="overflow-x:auto"><table style="min-width:520px"><thead><tr><th>'+T.Usuario+'</th><th>Último registro</th><th>💧 Agua 7d</th><th>😴 Sueño 7d</th><th>🧠 Estrés 7d</th><th></th></tr></thead><tbody>';
+  html += '<div class="card" style="padding:0"><div style="overflow-x:auto"><table style="min-width:520px"><thead><tr><th>'+T.Usuario+'</th><th>Último registro</th><th>💧 Agua 7d</th><th>😴 Sueño 7d</th><th>🧠 Estrés 7d</th><th>👟 Pasos 7d</th><th>🏃 Act. extra 7d</th><th></th></tr></thead><tbody>';
   var desde = new Date(Date.now()-7*86400000).toISOString().split('T')[0];
   usr.forEach(function(u){
     var dias = bienestarPorDia(u.id), l7 = dias.filter(function(x){return x.fecha>=desde;});
     var avg = function(k){ var v=l7.filter(function(x){return x[k];}).map(function(x){return parseFloat(x[k]);}); return v.length?(v.reduce(function(a,b){return a+b;},0)/v.length).toFixed(1):'—'; };
     var e = avg('estres');
-    html += '<tr><td>'+esc(u.name)+'</td><td>'+(dias.length?fDate(dias[dias.length-1].fecha):'—')+'</td><td>'+avg('agua')+'</td><td>'+avg('sueno')+'</td><td style="color:'+(e!=='—'&&e>=7?'#ffaa44':'inherit')+'">'+e+'</td><td><button class="btn btn-g btn-sm" onclick="document.getElementById(\'bien_filter_u\').value=\''+u.id+'\';pgBienestarCoach()">Ver</button></td></tr>';
+    var pv = l7.filter(function(x){return x.pasos;}).map(function(x){return x.pasos;});
+    var pAvg = pv.length ? Math.round(pv.reduce(function(a,b){return a+b;},0)/pv.length).toLocaleString('es-CO') : '—';
+    var nAct = 0; l7.forEach(function(x){ nAct += x.actividades.length; });
+    html += '<tr><td>'+esc(u.name)+'</td><td>'+(dias.length?fDate(dias[dias.length-1].fecha):'—')+'</td><td>'+avg('agua')+'</td><td>'+avg('sueno')+'</td><td style="color:'+(e!=='—'&&e>=7?'#ffaa44':'inherit')+'">'+e+'</td><td>'+pAvg+'</td><td>'+(nAct||'—')+'</td><td><button class="btn btn-g btn-sm" onclick="document.getElementById(\'bien_filter_u\').value=\''+u.id+'\';pgBienestarCoach()">Ver</button></td></tr>';
   });
   html += '</tbody></table></div></div>';
   setMain(html);
@@ -4671,7 +4696,7 @@ function saveFreeLog() {
     if (btn) { btn.disabled = false; btn.textContent = 'Guardar actividad'; }
     closeModal('m_free_log');
     toast(res && res.ok ? 'Actividad guardada en Drive' : 'Actividad guardada');
-    pgMiHistorial();
+    if (curPage === 'miBienestar') pgMiBienestar(); else pgMiHistorial();
   });
 }
 
