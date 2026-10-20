@@ -493,15 +493,8 @@ tr:hover td{background:var(--s1)}
   <div class="fr">
     <div class="fg" style="display:none"><input type="hidden" id="log_peso" value=""/></div>
   <div id="log_last_weight" style="font-size:11px;color:var(--cyan);margin:4px 0 8px;padding:6px 10px;background:rgba(var(--acc-rgb),0.07);border-radius:6px;border-left:2px solid var(--cyan)"></div>
-    <div class="fg"><label>Esfuerzo percibido (1-10)</label>
-      <select id="log_esfuerzo">
-        <option value="">— Selecciona —</option>
-        <option value="1">1 — Muy fácil</option><option value="2">2 — Fácil</option>
-        <option value="3">3 — Moderado</option><option value="4">4 — Un poco duro</option>
-        <option value="5">5 — Duro</option><option value="6">6 — Bastante duro</option>
-        <option value="7">7 — Muy duro</option><option value="8">8 — Intenso</option>
-        <option value="9">9 — Muy intenso</option><option value="10">10 — Máximo esfuerzo</option>
-      </select>
+    <div class="fg"><label>Nivel de esfuerzo (1-10)</label>
+      <select id="log_esfuerzo"><option value="">— Selecciona —</option><option value="1">1 — Muy ligero</option><option value="2">2 — Ligero</option><option value="3">3 — Ligero</option><option value="4">4 — Moderado</option><option value="5">5 — Moderado</option><option value="6">6 — Moderado</option><option value="7">7 — Vigoroso</option><option value="8">8 — Vigoroso</option><option value="9">9 — Muy duro</option><option value="10">10 — Esfuerzo máximo</option></select><div class="esf-help" style="font-size:10px;color:var(--gris);margin-top:4px;line-height:1.5">1 muy ligero · 2-3 ligero (respiras fácil) · 4-6 moderado (hablas en frases cortas) · 7-8 vigoroso (solo pocas palabras) · 9 muy duro · 10 máximo</div>
     </div>
   </div>
   <div class="fg"><label>¿Sentiste algún dolor o molestia?</label>
@@ -515,7 +508,7 @@ tr:hover td{background:var(--s1)}
   <div style="padding:12px;border:1px solid var(--brd);border-radius:var(--r);background:var(--s1);margin-bottom:12px">
     <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--cyan);margin-bottom:8px">🌙 BIENESTAR DEL DÍA <span style="color:var(--gris);font-weight:500;letter-spacing:0">(opcional · también puedes registrarlo aparte en "Mi Bienestar")</span></div>
     <div class="fr3">
-      <div class="fg"><label>💧 Agua (litros)</label><input type="number" id="log_agua" step="0.25" min="0" placeholder="2"/></div>
+      <div class="fg"><label>💧 Agua (ml)</label><input type="number" id="log_agua" step="50" min="0" placeholder="2000"/></div>
       <div class="fg"><label>😴 Sueño (horas)</label><input type="number" id="log_sueno" step="0.5" min="0" max="24" placeholder="7"/></div>
       <div class="fg"><label>🧠 Estrés (1-10)</label><select id="log_estres"><option value="">—</option><option value="1">1 · Muy bajo</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 · Medio</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10 · Muy alto</option></select></div>
     </div>
@@ -556,14 +549,8 @@ tr:hover td{background:var(--s1)}
   <div class="fg"><label>Como te sentiste?</label>
     <textarea id="free_act_comment" placeholder="Cuenta como fue la actividad, como te sentiste, que lograste..." style="min-height:90px"></textarea>
   </div>
-  <div class="fg"><label>Esfuerzo (1-10)</label>
-    <select id="free_act_esf">
-      <option value="">--</option>
-      <option value="1">1 - Muy facil</option><option value="2">2</option><option value="3">3</option>
-      <option value="4">4</option><option value="5">5 - Moderado</option><option value="6">6</option>
-      <option value="7">7</option><option value="8">8 - Intenso</option><option value="9">9</option>
-      <option value="10">10 - Maximo</option>
-    </select>
+  <div class="fg"><label>Nivel de esfuerzo (1-10)</label>
+    <select id="free_act_esf"><option value="">— Selecciona —</option><option value="1">1 — Muy ligero</option><option value="2">2 — Ligero</option><option value="3">3 — Ligero</option><option value="4">4 — Moderado</option><option value="5">5 — Moderado</option><option value="6">6 — Moderado</option><option value="7">7 — Vigoroso</option><option value="8">8 — Vigoroso</option><option value="9">9 — Muy duro</option><option value="10">10 — Esfuerzo máximo</option></select><div class="esf-help" style="font-size:10px;color:var(--gris);margin-top:4px;line-height:1.5">1 muy ligero · 2-3 ligero (respiras fácil) · 4-6 moderado (hablas en frases cortas) · 7-8 vigoroso (solo pocas palabras) · 9 muy duro · 10 máximo</div>
   </div>
   <button class="btn btn-p btn-full" id="free_log_save_btn" onclick="saveFreeLog()">Guardar actividad</button>
 </div>
@@ -576,7 +563,7 @@ tr:hover td{background:var(--s1)}
   <input type="hidden" id="bien_id"/>
   <div class="fg"><label>Fecha</label><input type="date" id="bien_fecha" onchange="loadBienDia()"/></div>
   <div class="fr3">
-    <div class="fg"><label>💧 Agua (litros)</label><input type="number" id="bien_agua" step="0.25" min="0" placeholder="2"/></div>
+    <div class="fg"><label>💧 Agua (ml)</label><input type="number" id="bien_agua" step="50" min="0" placeholder="2000"/></div>
     <div class="fg"><label>😴 Sueño (horas)</label><input type="number" id="bien_sueno" step="0.5" min="0" max="24" placeholder="7"/></div>
     <div class="fg"><label>🧠 Estrés (1-10)</label><select id="bien_estres"><option value="">—</option><option value="1">1 · Muy bajo</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 · Medio</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10 · Muy alto</option></select></div>
   </div>
@@ -590,7 +577,7 @@ tr:hover td{background:var(--s1)}
 </div>
 
 <!-- Video Modal -->
-<div class="overlay" id="m_video" style="align-items:center;padding:16px">
+<div class="overlay" id="m_video" style="align-items:center;padding:16px;z-index:600">
 <div style="background:rgba(var(--bg-rgb),1);border:1px solid var(--brd);border-radius:18px;width:min(660px,95vw);overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.8)">
   <div style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--brd)">
     <div style="font-family:var(--font-head);font-weight:var(--head-w);letter-spacing:1px;font-size:18px;letter-spacing:2px;color:var(--blanco)" id="m_video_title">VIDEO GUÍA</div>
@@ -615,14 +602,8 @@ tr:hover td{background:var(--s1)}
   </div>
   <div class="fr">
     <div class="fg"><label>Peso (kg)</label><input type="number" id="edit_log_peso" step="0.1"/></div>
-    <div class="fg"><label>Esfuerzo (1-10)</label>
-      <select id="edit_log_esf">
-        <option value="">—</option>
-        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-        <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-        <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-        <option value="10">10</option>
-      </select>
+    <div class="fg"><label>Nivel de esfuerzo (1-10)</label>
+      <select id="edit_log_esf"><option value="">— Selecciona —</option><option value="1">1 — Muy ligero</option><option value="2">2 — Ligero</option><option value="3">3 — Ligero</option><option value="4">4 — Moderado</option><option value="5">5 — Moderado</option><option value="6">6 — Moderado</option><option value="7">7 — Vigoroso</option><option value="8">8 — Vigoroso</option><option value="9">9 — Muy duro</option><option value="10">10 — Esfuerzo máximo</option></select><div class="esf-help" style="font-size:10px;color:var(--gris);margin-top:4px;line-height:1.5">1 muy ligero · 2-3 ligero (respiras fácil) · 4-6 moderado (hablas en frases cortas) · 7-8 vigoroso (solo pocas palabras) · 9 muy duro · 10 máximo</div>
     </div>
   </div>
   <div class="fg"><label>¿Dolor o molestia?</label>
@@ -636,7 +617,7 @@ tr:hover td{background:var(--s1)}
   <div style="padding:12px;border:1px solid var(--brd);border-radius:var(--r);background:var(--s1);margin-bottom:12px">
     <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--cyan);margin-bottom:8px">🌙 BIENESTAR DEL DÍA <span style="color:var(--gris);font-weight:500;letter-spacing:0">(opcional · también puedes registrarlo aparte en "Mi Bienestar")</span></div>
     <div class="fr3">
-      <div class="fg"><label>💧 Agua (litros)</label><input type="number" id="edit_log_agua" step="0.25" min="0" placeholder="2"/></div>
+      <div class="fg"><label>💧 Agua (ml)</label><input type="number" id="edit_log_agua" step="50" min="0" placeholder="2000"/></div>
       <div class="fg"><label>😴 Sueño (horas)</label><input type="number" id="edit_log_sueno" step="0.5" min="0" max="24" placeholder="7"/></div>
       <div class="fg"><label>🧠 Estrés (1-10)</label><select id="edit_log_estres"><option value="">—</option><option value="1">1 · Muy bajo</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 · Medio</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10 · Muy alto</option></select></div>
     </div>
@@ -729,7 +710,7 @@ var BRANDS = {
     backupPrefix: 'evolx_backup_',
     // Cuentas que se crean solas la primera vez (si no existen en la hoja)
     seeds: [
-      { id:'coach1', username:'ivonne', password:'Ivo2024**', name:'Ivonne Rodríguez', role:'coach', email:'ivo_wellness_coach@gmail.com' },
+      { id:'coach1', username:'ivonne', password:'Ivo2024**', name:'Ivonne Londoño', role:'coach', email:'ivo_wellness_coach@gmail.com' },
       { id:'admin1', username:'admin', password:'EvolX2024!', name:'Administrador', role:'admin', email:'admin@evol-x.com' },
       { id:'recep1', username:'recepcion', password:'Recep2024!', name:'Recepción', role:'recepcion', email:'recepcion@evol-x.com' }
     ],
@@ -773,7 +754,7 @@ var BRANDS = {
     savedUsersKey: 'iw_saved_users',
     backupPrefix: 'ivonnefit_backup_',
     seeds: [
-      { id:'coach', username:'ivonne', password:'Ivo2024**', name:'Ivonne Rodriguez', role:'coach', email:'ivo_wellness_coach@gmail.com' }
+      { id:'coach', username:'ivonne', password:'Ivo2024**', name:'Ivonne Londoño', role:'coach', email:'ivo_wellness_coach@gmail.com' }
     ],
     theme: {
       bg:'#0d1a26', vino:'#501840', mag:'#770069', mag2:'#9b008a',
@@ -1173,7 +1154,19 @@ function mergeRemote(remote) {
     d.ejercicios = Object.keys(ejMap).map(function(k){ return ejMap[k]; });
   }
   save(d);
+  fixNombreCoach();
   return true;
+}
+
+// Corrige el apellido de la coach en datos ya guardados (antes decía Rodríguez)
+function fixNombreCoach() {
+  var d = db(), cambiados = [];
+  d.users.forEach(function(u){
+    if ((u.username||'').toLowerCase() === 'ivonne' && /rodr[ií]guez/i.test(u.name||'')) { u.name = 'Ivonne Londoño'; cambiados.push(u); }
+  });
+  if (!cambiados.length) return;
+  save(d);
+  cambiados.forEach(function(u){ sync('saveUser', u, function(){}); if (CU && CU.id === u.id) { CU.name = u.name; var n = document.getElementById('tp_name'); if (n) n.textContent = u.name.split(' ')[0]; } });
 }
 
 function findLocalUser(u, p) {
@@ -1939,7 +1932,7 @@ function saveUsuario() {
     saveAndSync('saveUser', nu, function(ok) {
       _saving['usuario'] = false;
       if(btn){btn.disabled=false;btn.textContent='✅ Guardar';}
-      toast('✅ '+nombre+' guardado'+(ok?' en Drive':''));
+      toast('✅ '+nombre+' guardad'+(privRole==='user'&&T.usuario==='usuaria'?'a':'o')+(ok?' en Drive':''));
       closeModal('m_usuario');
       // Small delay to ensure db is written before reading
       setTimeout(function(){
@@ -2626,7 +2619,7 @@ function renderRutinaContent(r) {
         for (var g = 0; g < gSize && (i+g) < exs.length; g++) {
           var ge = exs[i+g];
           var subLbl = g === 0 ? 'A' : g === 1 ? 'B' : 'C';
-          var vidH = ge.videoUrl ? ' <button class="vid-play-btn" data-url="'+ge.videoUrl+'" style="background:none;border:1px solid var(--cyan);border-radius:12px;padding:2px 8px;color:var(--cyan);font-size:10px;cursor:pointer">▶ Ver</button>' : '';
+          var vidH = vidBtn(ge);
           html += '<div style="margin-bottom:6px;padding:6px 8px;background:rgba(0,0,0,0.25);border-radius:6px">';
           html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">';
           html += '<span style="font-size:11px;font-weight:800;color:'+gColor+'">'+subLbl+'</span>';
@@ -2639,7 +2632,7 @@ function renderRutinaContent(r) {
         html += '</div>';
         i += gSize;
       } else {
-        var vidHtml = e.videoUrl ? ' <button class="vid-play-btn" data-url="'+e.videoUrl+'" style="background:none;border:1px solid var(--cyan);border-radius:12px;padding:2px 8px;color:var(--cyan);font-size:10px;cursor:pointer">▶ Ver</button>' : '';
+        var vidHtml = vidBtn(e);
         html += '<div style="padding:10px;border:1px solid rgba(var(--acc-rgb),0.15);border-radius:10px;margin-bottom:6px">';
         html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">';
         html += '<span style="font-size:12px;font-weight:600">'+e.nombre+'</span>'+vidHtml+'</div>';
@@ -2672,7 +2665,7 @@ function rutInitDays(existingDias) {
       if (d.nombre) RUT_DAYS[d.dia].nombre = d.nombre;
       // Reagrupar la lista guardada en bloques (simple / biserie / triserie)
       var flat = d.ejercicios||[], grupos = [], i = 0;
-      var toSub = function(ex){ return {nombre:ex.nombre||'',dosis:ex.dosis||'',intensidad:ex.intensidad||ex.carga||'',descanso:ex.descanso||'',videoUrl:ex.videoUrl||'',comentario:ex.comentario||''}; };
+      var toSub = function(ex){ return {nombre:ex.nombre||'',dosis:ex.dosis||'',intensidad:ex.intensidad||ex.carga||'',intMetric:ex.intMetric||'',descanso:ex.descanso||'',videoUrl:ex.videoUrl||'',comentario:ex.comentario||''}; };
       while (i < flat.length) {
         var tipo = flat[i].tipo || 'simple';
         var size = tipo==='triserie'?3:tipo==='biserie'?2:1;
@@ -2772,9 +2765,15 @@ function rutRenderDayPanel() {
       var sub=(ex.subs&&ex.subs[s])||{};
       if(subCount>1) h+='<div style="font-size:11px;color:'+bc+';font-weight:700;margin-bottom:4px">'+(s===0?'A —':s===1?'B —':'C —')+'</div>';
       h+='<div style="margin-bottom:6px"><input class="rut-inp" list="ejl_'+i+'_'+s+'" data-ei="'+i+'" data-si="'+s+'" data-field="nombre" data-dk="'+dk+'" placeholder="NOMBRE DEL EJERCICIO" value="'+esc(sub.nombre||'')+'" style="'+iStyle+'"><datalist id="ejl_'+i+'_'+s+'">'+ejOpts+'</datalist></div>';
-      h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr 2fr;gap:6px;margin-bottom:'+(s<subCount-1?'10':'2')+'px">';
+      var _pi = parseIntens(sub.intensidad, sub.intMetric);
+      var _met = sub.intMetric || _pi.m;
+      var _metOpts = Object.keys(INT_METRICAS).map(function(k){ return '<option value="'+k+'"'+(k===_met?' selected':'')+'>'+INT_METRICAS[k].label+'</option>'; }).join('');
+      var _valOpts = INT_METRICAS[_met].opts.map(function(o){ return '<option value="'+o+'">'; }).join('');
+      h+='<div style="display:grid;grid-template-columns:1fr 1.7fr 1fr 2fr;gap:6px;margin-bottom:'+(s<subCount-1?'10':'2')+'px">';
       h+='<div><div style="font-size:9px;color:var(--gris);margin-bottom:3px">SERIES×REPS</div><input class="rut-inp" data-ei="'+i+'" data-si="'+s+'" data-field="dosis" data-dk="'+dk+'" placeholder="3x12" value="'+esc(sub.dosis||'')+'" style="'+iStyle+'"></div>';
-      h+='<div><div style="font-size:9px;color:var(--gris);margin-bottom:3px">INTENSIDAD</div><input class="rut-inp" list="rir_list" autocomplete="off" data-ei="'+i+'" data-si="'+s+'" data-field="intensidad" data-dk="'+dk+'" placeholder="RIR 2, 70%..." value="'+esc(sub.intensidad||'')+'" style="'+iStyle+'"></div>';
+      h+='<div><div style="font-size:9px;color:var(--gris);margin-bottom:3px">INTENSIDAD · MÉTRICA</div><div style="display:flex;gap:4px">'+
+         '<select class="rut-inp" data-ei="'+i+'" data-si="'+s+'" data-field="intMetric" data-dk="'+dk+'" style="'+iStyle+';flex:0 0 52%;padding:8px 4px">'+_metOpts+'</select>'+
+         '<input class="rut-inp" list="intl_'+i+'_'+s+'" autocomplete="off" data-ei="'+i+'" data-si="'+s+'" data-field="intVal" data-dk="'+dk+'" placeholder="'+(_met==='PCT'?'70':_met==='RPE'?'8':_met==='RIR'?'2':'TEXTO')+'" value="'+esc(_pi.v||'')+'" style="'+iStyle+';flex:1;min-width:0"><datalist id="intl_'+i+'_'+s+'">'+_valOpts+'</datalist></div></div>';
       h+='<div><div style="font-size:9px;color:var(--gris);margin-bottom:3px">DESCANSO</div><input class="rut-inp" data-ei="'+i+'" data-si="'+s+'" data-field="descanso" data-dk="'+dk+'" placeholder="60s" value="'+esc(sub.descanso||'')+'" style="'+iStyle+'"></div>';
       h+='<div><div style="font-size:9px;color:var(--gris);margin-bottom:3px">VIDEO</div><input class="rut-inp" data-ei="'+i+'" data-si="'+s+'" data-field="videoUrl" data-dk="'+dk+'" placeholder="youtu.be/..." value="'+esc(sub.videoUrl||'')+'" style="'+iStyle+';text-transform:none"></div>';
       h+='</div>';
@@ -2784,7 +2783,6 @@ function rutRenderDayPanel() {
     h+='</div>';
   });
   h+='</div>';
-  h+='<datalist id="rir_list"><option value="RIR 0"><option value="RIR 1"><option value="RIR 2"><option value="RIR 3"><option value="RIR 4"><option value="RIR 5"><option value="FALLO MUSCULAR"><option value="RPE 7"><option value="RPE 8"><option value="RPE 9"><option value="60%"><option value="70%"><option value="80%"></datalist>';
   panel.innerHTML=h;
   // Event delegation for remove buttons
   var panelEl = document.getElementById('rut_day_panel');
@@ -2843,7 +2841,60 @@ function rutUpdateEx(exIdx,subIdx,field,value,dk) {
   if(!RUT_DAYS[dk]||!RUT_DAYS[dk].ejercicios[exIdx]) return;
   if(!RUT_DAYS[dk].ejercicios[exIdx].subs) RUT_DAYS[dk].ejercicios[exIdx].subs=[];
   if(!RUT_DAYS[dk].ejercicios[exIdx].subs[subIdx]) RUT_DAYS[dk].ejercicios[exIdx].subs[subIdx]={};
-  RUT_DAYS[dk].ejercicios[exIdx].subs[subIdx][field] = field==='nombre'?value.toUpperCase():value;
+  var _sb = RUT_DAYS[dk].ejercicios[exIdx].subs[subIdx];
+  if (field === 'intMetric' || field === 'intVal') {
+    var cur = parseIntens(_sb.intensidad, _sb.intMetric);
+    var m = field === 'intMetric' ? value : (_sb.intMetric || cur.m);
+    var v = field === 'intVal' ? value : (field === 'intMetric' && m !== (_sb.intMetric || cur.m) ? '' : cur.v);
+    _sb.intMetric = m; _sb.intensidad = fmtIntens(m, v);
+    if (field === 'intMetric') setTimeout(rutRenderDayPanel, 0);
+    return;
+  }
+  _sb[field] = field==='nombre'?value.toUpperCase():value;
+}
+
+// ── INTENSIDAD: el coach elige la métrica de cada ejercicio y el usuario responde en la misma ──
+var INT_METRICAS = {
+  RIR:   { label:'RIR',      ayuda:'Repeticiones en reserva', opts:['0','1','2','3','4','5','FALLO'] },
+  RPE:   { label:'RPE 1-10', ayuda:'Esfuerzo percibido',      opts:['1','2','3','4','5','6','7','8','9','10'] },
+  PCT:   { label:'% 1RM',    ayuda:'Porcentaje de la carga máxima', opts:['40','45','50','55','60','65','70','75','80','85','90','95','100'] },
+  LIBRE: { label:'Libre',    ayuda:'Texto libre', opts:[] }
+};
+var RPE_TXT = {1:'muy ligero',2:'ligero',3:'ligero',4:'moderado',5:'moderado',6:'moderado',7:'vigoroso',8:'vigoroso',9:'muy duro',10:'máximo'};
+function parseIntens(str, metric) {
+  str = String(str||'').trim();
+  if (metric && INT_METRICAS[metric]) {
+    if (metric === 'RIR') return {m:'RIR', v: /fallo/i.test(str) ? 'FALLO' : str.replace(/^RIR\s*/i,'')};
+    if (metric === 'RPE') return {m:'RPE', v: str.replace(/^RPE\s*/i,'')};
+    if (metric === 'PCT') return {m:'PCT', v: str.replace(/\s*%.*$/,'')};
+    return {m:'LIBRE', v:str};
+  }
+  if (!str) return {m:'RIR', v:''};
+  if (/^RIR/i.test(str)) return {m:'RIR', v:str.replace(/^RIR\s*/i,'')};
+  if (/fallo/i.test(str)) return {m:'RIR', v:'FALLO'};
+  if (/^RPE/i.test(str)) return {m:'RPE', v:str.replace(/^RPE\s*/i,'')};
+  if (/^\d+(\.\d+)?\s*%/.test(str)) return {m:'PCT', v:str.replace(/\s*%.*$/,'')};
+  return {m:'LIBRE', v:str};
+}
+function fmtIntens(m, v) {
+  v = String(v==null?'':v).trim(); if (!v) return '';
+  if (m === 'RIR') return v === 'FALLO' ? 'FALLO MUSCULAR' : 'RIR '+v;
+  if (m === 'RPE') return 'RPE '+v;
+  if (m === 'PCT') return v+'%';
+  return v.toUpperCase();
+}
+function metricaDe(ex) { return (ex && ex.intMetric && INT_METRICAS[ex.intMetric]) ? ex.intMetric : parseIntens(ex ? (ex.intensidad||ex.carga) : '').m; }
+
+// ── VIDEO: el de la rutina o, si no tiene, el de la biblioteca ──
+function videoDe(ex) {
+  if (!ex) return '';
+  if (ex.videoUrl) return ex.videoUrl;
+  var lib = findEjercicio(ex.nombre);
+  return lib ? (lib.video || lib.videoUrl || '') : '';
+}
+function vidBtn(ex) {
+  var u = videoDe(ex);
+  return u ? ' <button type="button" class="vid-play-btn" data-url="'+esc(u)+'" data-nom="'+esc(ex.nombre||'')+'" style="background:none;border:1px solid var(--cyan);border-radius:12px;padding:3px 10px;color:var(--cyan);font-size:11px;cursor:pointer;white-space:nowrap">▶ Ver video</button>' : '';
 }
 
 function findEjercicio(nombre) {
@@ -3023,7 +3074,7 @@ function saveRutina() {
             // AJ-028: el video puesto en la rutina queda guardado en la biblioteca
             libEx.video = sub.videoUrl; save(dbSave); sync('saveEjercicio', libEx, function(){});
           }
-          dayExs.push({nombre:sub.nombre.toUpperCase(),dosis:(sub.dosis||'').toUpperCase(),intensidad:sub.intensidad||'',descanso:sub.descanso||'',videoUrl:sub.videoUrl||'',comentario:sub.comentario||'',tipo:ex.tipo||'simple'});
+          dayExs.push({nombre:sub.nombre.toUpperCase(),dosis:(sub.dosis||'').toUpperCase(),intensidad:sub.intensidad||'',intMetric:sub.intMetric||parseIntens(sub.intensidad).m,descanso:sub.descanso||'',videoUrl:sub.videoUrl||'',comentario:sub.comentario||'',tipo:ex.tipo||'simple'});
         }
       });
     });
@@ -3244,12 +3295,13 @@ function showLogDetail(logId) {
   if (l.ejercicios && l.ejercicios.length) {
     html += '<div style="font-size:11px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">📝 DETALLE DE EJERCICIOS</div>';
     html += '<div style="overflow-x:auto;margin-bottom:14px">';
-    html += '<table><thead><tr><th>Ejercicio</th><th>Planeado</th><th>RIR coach</th><th>Reps real</th><th>Carga / RIR real</th><th>Estado</th></tr></thead><tbody>';
+    html += '<table><thead><tr><th>Ejercicio</th><th>Planeado</th><th>Intensidad coach</th><th>Reps real</th><th>Carga · Intensidad real</th><th>Estado</th></tr></thead><tbody>';
     l.ejercicios.forEach(function(e) {
       var ok = e.completado || !!(e.repsReal || e.intensidadReal);
       var repsReal = e.repsReal || e.reps || '—';
       var cargaReal = e.cargaReal || e.intensidadReal || e.carga || '—';
-      var rirReal  = e.intensidadReal && e.intensidadReal.indexOf('RIR')>=0 ? e.intensidadReal : (e.cargaReal ? (e.intensidadReal||'—') : '—');
+      var rirReal  = e.intensidadReal || '—';
+      if (e.cargaReal) cargaReal = e.cargaReal;
       var intPlan  = e.intensidadPlaneada || '—';
       var dosis    = e.dosisPlaneada || '—';
       html += '<tr>';
@@ -3701,25 +3753,25 @@ function pgMiRutina(rid) {
         for (var g=0;g<gSize&&(di+g)<exs.length;g++) {
           var ge = exs[di+g];
           var subLbl = g===0?'A':g===1?'B':'C';
-          var vidH2 = ge.videoUrl?'<button class="vid-play-btn" data-url="'+ge.videoUrl+'" style="background:none;border:1px solid var(--cyan);border-radius:12px;padding:2px 8px;color:var(--cyan);font-size:10px;cursor:pointer">▶ Ver</button>':'';
+          var vidH2 = vidBtn(ge);
           html += '<div style="margin-bottom:6px;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:6px">';
           html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">';
           html += '<span style="font-weight:800;font-size:11px;color:'+gColor+'">'+subLbl+'</span>';
           html += '<span style="font-size:12px;font-weight:600">'+ge.nombre+'</span>'+vidH2+'</div>';
           html += '<div style="font-size:11px;color:var(--gris);margin-bottom:3px">📊 '+(ge.dosis||'—')+(ge.descanso?' &nbsp;⏱ '+ge.descanso:'')+'</div>';
-          if(ge.intensidad) html += '<div style="font-size:11px;margin-bottom:3px"><span style="padding:2px 8px;background:rgba(var(--acc-rgb),0.1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:20px;color:var(--cyan)">💪 RIR sugerido: '+ge.intensidad+'</span></div>';
+          if(ge.intensidad) html += '<div style="font-size:11px;margin-bottom:3px"><span style="padding:2px 8px;background:rgba(var(--acc-rgb),0.1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:20px;color:var(--cyan)">💪 Intensidad sugerida: '+ge.intensidad+'</span></div>';
           if(ge.comentario) html += '<div style="font-size:11px;padding:4px 8px;background:rgba(var(--acc-rgb),0.07);border-left:2px solid var(--cyan);border-radius:6px;color:var(--cyan)">💬 '+ge.comentario+'</div>';
           html += '</div>';
         }
         html += '</div>';
         di += gSize;
       } else {
-        var vidH3 = e.videoUrl?'<button class="vid-play-btn" data-url="'+e.videoUrl+'" style="background:none;border:1px solid var(--cyan);border-radius:12px;padding:2px 8px;color:var(--cyan);font-size:10px;cursor:pointer">▶ Ver</button>':'';
+        var vidH3 = vidBtn(e);
         html += '<div style="padding:10px;border:1px solid rgba(var(--acc-rgb),0.15);border-radius:10px;margin-bottom:6px">';
         html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">';
         html += '<span style="font-size:12px;font-weight:600">'+e.nombre+'</span>'+vidH3+'</div>';
         html += '<div style="font-size:11px;color:var(--gris);margin-bottom:3px">📊 '+(e.dosis||'—')+(e.descanso?' &nbsp;⏱ '+e.descanso:'')+'</div>';
-        if(e.intensidad) html += '<div style="font-size:11px;margin-bottom:3px"><span style="padding:2px 8px;background:rgba(var(--acc-rgb),0.1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:20px;color:var(--cyan)">💪 RIR sugerido: '+e.intensidad+'</span></div>';
+        if(e.intensidad) html += '<div style="font-size:11px;margin-bottom:3px"><span style="padding:2px 8px;background:rgba(var(--acc-rgb),0.1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:20px;color:var(--cyan)">💪 Intensidad sugerida: '+e.intensidad+'</span></div>';
         if(e.comentario) html += '<div style="font-size:11px;padding:4px 8px;background:rgba(var(--acc-rgb),0.07);border-left:2px solid var(--cyan);border-radius:6px;color:var(--cyan)">💬 '+e.comentario+'</div>';
         html += '</div>';
         di++;
@@ -3798,9 +3850,12 @@ function resetBienestar(p) {
   var esf = document.getElementById('log_esfuerzo'); if (p==='log' && esf) esf.value = '';
   var dol = document.getElementById('log_dolor'); if (p==='log' && dol) dol.value = 'no';
 }
+// Agua en mililitros. Los registros viejos venían en litros (valores pequeños): se convierten.
+function aguaMl(v) { v = parseFloat(v); if (!v) return null; return v <= 20 ? Math.round(v*1000) : Math.round(v); }
+function fmtMl(v) { v = aguaMl(v); return v ? v.toLocaleString('es-CO')+' ml' : '—'; }
 function readBienestar(p, obj) {
   var g = function(k){ var el = document.getElementById(p+'_'+k); return el ? el.value : ''; };
-  obj.agua = parseFloat(g('agua')) || null;
+  obj.agua = aguaMl(g('agua'));
   obj.sueno = parseFloat(g('sueno')) || null;
   obj.estres = g('estres') || '';
   if (document.getElementById(p+'_pasos')) obj.pasos = parseInt(g('pasos')) || null;
@@ -3808,7 +3863,7 @@ function readBienestar(p, obj) {
 }
 function bienestarHtml(l, compact) {
   var parts = [];
-  if (l.agua) parts.push('💧 '+l.agua+' L');
+  if (l.agua) parts.push('💧 '+fmtMl(l.agua));
   if (l.sueno) parts.push('😴 '+l.sueno+' h');
   if (l.estres) parts.push('<span style="color:'+(l.estres>=8?'#ff8080':l.estres>=6?'#ffaa44':'#80d4a0')+'">🧠 Estrés '+l.estres+'/10</span>');
   if (!parts.length) return '';
@@ -3833,7 +3888,7 @@ function bienestarPorDia(userId) {
     }
     if (!(l.agua || l.sueno || l.estres || l.pasos)) return;
     var x = dia(l.fecha);
-    ['agua','sueno','estres','pasos'].forEach(function(k){ if (l[k] && (l.tipo==='bienestar' || !x[k])) x[k] = l[k]; });
+    ['agua','sueno','estres','pasos'].forEach(function(k){ if (l[k] && (l.tipo==='bienestar' || !x[k])) x[k] = k==='agua' ? aguaMl(l[k]) : l[k]; });
     if (l.tipo === 'bienestar') { x.id = l.id; x.nota = l.comentario; }
     x.fuentes.push(l.tipo === 'bienestar' ? 'propio' : 'sesión');
   });
@@ -3849,7 +3904,7 @@ function loadBienDia() {
   var f = document.getElementById('bien_fecha').value;
   var ex = bien(db()).filter(function(l){ return l.userId===CU.id && l.fecha===f; })[0];
   document.getElementById('bien_id').value = ex ? ex.id : '';
-  document.getElementById('bien_agua').value = ex ? (ex.agua||'') : '';
+  document.getElementById('bien_agua').value = ex ? (aguaMl(ex.agua)||'') : '';
   document.getElementById('bien_sueno').value = ex ? (ex.sueno||'') : '';
   document.getElementById('bien_estres').value = ex ? (ex.estres||'') : '';
   document.getElementById('bien_pasos').value = ex ? (ex.pasos||'') : '';
@@ -3887,7 +3942,7 @@ function bienResumen(dias) {
   last7.forEach(function(x){ acts += x.actividades.length; x.actividades.forEach(function(a){ mins += a.dur||0; }); });
   var pasos = avg('pasos', 0);
   return '<div class="stats">' +
-    '<div class="stat"><div class="stat-l">💧 Agua promedio</div><div class="stat-v">'+avg('agua')+'<span class="stat-u">L</span></div></div>' +
+    '<div class="stat"><div class="stat-l">💧 Agua promedio</div><div class="stat-v">'+(avg('agua',0)==='—'?'—':Number(avg('agua',0)).toLocaleString('es-CO'))+'<span class="stat-u">ml</span></div></div>' +
     '<div class="stat"><div class="stat-l">😴 Sueño promedio</div><div class="stat-v">'+avg('sueno')+'<span class="stat-u">h</span></div></div>' +
     '<div class="stat"><div class="stat-l">🧠 Estrés promedio</div><div class="stat-v">'+avg('estres')+'<span class="stat-u">/10</span></div></div>' +
     '<div class="stat"><div class="stat-l">👟 Pasos promedio</div><div class="stat-v">'+(pasos==='—'?'—':Number(pasos).toLocaleString('es-CO'))+'</div></div>' +
@@ -3903,7 +3958,7 @@ function bienTabla(dias, editable) {
       return editable ? '<button class="edit-free-btn" data-lid="'+a.id+'" style="background:rgba(45,106,79,0.2);color:#80d4a0;border:1px solid rgba(45,106,79,0.45);border-radius:20px;padding:2px 8px;font-size:10px;cursor:pointer;margin:1px">'+t+'</button>'
                       : '<span class="badge" style="background:rgba(45,106,79,0.2);color:#80d4a0;border:1px solid rgba(45,106,79,0.45);margin:1px">'+t+'</span>';
     }).join('') || '—';
-    h += '<tr><td style="white-space:nowrap">'+fDate(x.fecha)+'</td><td>'+(x.agua?x.agua+' L':'—')+'</td><td style="color:'+(x.sueno&&x.sueno<5?'#ff8080':'inherit')+'">'+(x.sueno?x.sueno+' h':'—')+'</td><td style="color:'+(x.estres?ec:'inherit')+'">'+(x.estres?x.estres+'/10':'—')+'</td><td>'+(x.pasos?Number(x.pasos).toLocaleString('es-CO'):'—')+'</td><td>'+act+'</td><td style="font-size:11px;color:var(--gris)">'+esc(x.nota||'')+'</td>';
+    h += '<tr><td style="white-space:nowrap">'+fDate(x.fecha)+'</td><td>'+fmtMl(x.agua)+'</td><td style="color:'+(x.sueno&&x.sueno<5?'#ff8080':'inherit')+'">'+(x.sueno?x.sueno+' h':'—')+'</td><td style="color:'+(x.estres?ec:'inherit')+'">'+(x.estres?x.estres+'/10':'—')+'</td><td>'+(x.pasos?Number(x.pasos).toLocaleString('es-CO'):'—')+'</td><td>'+act+'</td><td style="font-size:11px;color:var(--gris)">'+esc(x.nota||'')+'</td>';
     if (editable) h += '<td><button class="btn btn-g btn-sm" title="Editar agua, sueño, estrés y pasos" onclick="openBien(\''+x.fecha+'\')">✏️</button></td>';
     h += '</tr>';
   });
@@ -3919,12 +3974,12 @@ function bienChart(canvasId, dias) {
   _bienChart = new Chart(c.getContext('2d'), {
     type:'line',
     data:{ labels: last.map(function(x){ var p=dParts(x.fecha); return p.d+' '+p.m; }), datasets:[
-      {label:'Agua (L)', data:last.map(function(x){return x.agua||null;}), borderColor:themeColor('--cyan'), backgroundColor:themeColor('--cyan'), tension:.3, spanGaps:true, yAxisID:'y'},
+      {label:'Agua (ml)', data:last.map(function(x){return x.agua||null;}), borderColor:themeColor('--cyan'), backgroundColor:themeColor('--cyan'), tension:.3, spanGaps:true, yAxisID:'y1'},
       {label:'Sueño (h)', data:last.map(function(x){return x.sueno||null;}), borderColor:themeColor('--oro'), backgroundColor:themeColor('--oro'), tension:.3, spanGaps:true, yAxisID:'y'},
       {label:'Estrés', data:last.map(function(x){return x.estres?parseInt(x.estres):null;}), borderColor:'#ff8080', backgroundColor:'#ff8080', tension:.3, spanGaps:true, yAxisID:'y'},
       {type:'bar', label:'Pasos', data:last.map(function(x){return x.pasos||null;}), backgroundColor:themeColor('--gris',0.35), borderRadius:4, yAxisID:'y1', order:10}
     ]},
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:themeColor('--gris')}}}, scales:{x:{ticks:tick,grid:grid}, y:{ticks:tick,grid:grid,beginAtZero:true,title:{display:true,text:'Agua · Sueño · Estrés',color:themeColor('--gris')}}, y1:{position:'right',beginAtZero:true,ticks:tick,grid:{drawOnChartArea:false},title:{display:true,text:'Pasos',color:themeColor('--gris')}}} }
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:themeColor('--gris')}}}, scales:{x:{ticks:tick,grid:grid}, y:{ticks:tick,grid:grid,beginAtZero:true,title:{display:true,text:'Sueño (h) · Estrés',color:themeColor('--gris')}}, y1:{position:'right',beginAtZero:true,ticks:tick,grid:{drawOnChartArea:false},title:{display:true,text:'Agua (ml) · Pasos',color:themeColor('--gris')}}} }
   });
 }
 
@@ -3973,7 +4028,7 @@ function pgBienestarCoach() {
     var pv = l7.filter(function(x){return x.pasos;}).map(function(x){return x.pasos;});
     var pAvg = pv.length ? Math.round(pv.reduce(function(a,b){return a+b;},0)/pv.length).toLocaleString('es-CO') : '—';
     var nAct = 0; l7.forEach(function(x){ nAct += x.actividades.length; });
-    html += '<tr><td>'+esc(u.name)+'</td><td>'+(dias.length?fDate(dias[dias.length-1].fecha):'—')+'</td><td>'+avg('agua')+'</td><td>'+avg('sueno')+'</td><td style="color:'+(e!=='—'&&e>=7?'#ffaa44':'inherit')+'">'+e+'</td><td>'+pAvg+'</td><td>'+(nAct||'—')+'</td><td><button class="btn btn-g btn-sm" onclick="document.getElementById(\'bien_filter_u\').value=\''+u.id+'\';pgBienestarCoach()">Ver</button></td></tr>';
+    html += '<tr><td>'+esc(u.name)+'</td><td>'+(dias.length?fDate(dias[dias.length-1].fecha):'—')+'</td><td>'+(avg('agua')==='—'?'—':Math.round(avg('agua')).toLocaleString('es-CO')+' ml')+'</td><td>'+avg('sueno')+'</td><td style="color:'+(e!=='—'&&e>=7?'#ffaa44':'inherit')+'">'+e+'</td><td>'+pAvg+'</td><td>'+(nAct||'—')+'</td><td><button class="btn btn-g btn-sm" onclick="document.getElementById(\'bien_filter_u\').value=\''+u.id+'\';pgBienestarCoach()">Ver</button></td></tr>';
   });
   html += '</tbody></table></div></div>';
   setMain(html);
@@ -4058,7 +4113,7 @@ function loadLogExs() {
       html += '<div style="margin-bottom:'+(g<gSize-1?'10':'2')+'px;'+(gSize>1?'padding:6px;background:rgba(0,0,0,0.2);border-radius:6px':'')+'"">';
       html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
       html += '<input type="checkbox" id="lex_done_'+exIdx+'" style="accent-color:var(--cyan);width:16px;height:16px;cursor:pointer" checked>';
-      html += '<label for="lex_done_'+exIdx+'" style="font-size:12px;font-weight:700;cursor:pointer">'+subLbl+ge.nombre+'</label>';
+      html += '<label for="lex_done_'+exIdx+'" style="font-size:12px;font-weight:700;cursor:pointer;flex:1">'+subLbl+ge.nombre+'</label>' + vidBtn(ge);
       html += '</div>';
       var coachInt = ge.intensidad||ge.carga||'';
       html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">';
@@ -4068,7 +4123,9 @@ function loadLogExs() {
       
       // Series selector
       // RIR options for intensity achieved
-      var rirOpts = ['—','RIR 0','RIR 1','RIR 2','RIR 3','RIR 4','RIR 5','Fallo muscular'].map(function(v){return '<option>'+v+'</option>';}).join('');
+      var _m = metricaDe(ge);
+      var _mi = INT_METRICAS[_m];
+      var rirOpts = '<option value="">—</option>' + _mi.opts.map(function(o){ return '<option value="'+fmtIntens(_m,o)+'">'+(_m==='RPE'?o+' · '+RPE_TXT[o]:fmtIntens(_m,o))+'</option>'; }).join('');
       html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:6px;margin-bottom:6px">';
       // Series
       html += '<div><div style="font-size:9px;color:var(--gris);margin-bottom:3px">SERIES</div>';
@@ -4083,8 +4140,10 @@ function loadLogExs() {
       html += '<div><div style="font-size:9px;color:var(--gris);margin-bottom:3px">UNIDAD</div>';
       html += '<select id="lex_u_'+exIdx+'" style="width:100%;padding:6px;background:var(--s1);border:1px solid var(--brd);border-radius:6px;color:var(--blanco);font-size:12px"><option>kg</option><option>lb</option></select></div>';
       // RIR achieved
-      html += '<div><div style="font-size:9px;color:var(--cyan);margin-bottom:3px">INTENSIDAD (RIR)</div>';
-      html += '<select id="lex_rir_'+exIdx+'" style="width:100%;padding:6px;background:var(--s1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:6px;color:var(--cyan);font-size:12px">'+rirOpts+'</select></div>';
+      html += '<div><div style="font-size:9px;color:var(--cyan);margin-bottom:3px" title="'+_mi.ayuda+'">INTENSIDAD ('+_mi.label+')</div>';
+      if (_m === 'LIBRE') html += '<input id="lex_rir_'+exIdx+'" placeholder="¿Cómo te fue?" style="width:100%;padding:6px;background:var(--s1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:6px;color:var(--cyan);font-size:12px;box-sizing:border-box">';
+      else html += '<select id="lex_rir_'+exIdx+'" style="width:100%;padding:6px;background:var(--s1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:6px;color:var(--cyan);font-size:12px">'+rirOpts+'</select>';
+      html += '</div>';
       html += '</div>';
       
       if(lastInt) html += '<div style="font-size:10px;color:var(--cyan);margin-bottom:4px">⚡ Última sesión: '+lastInt+'</div>';
@@ -4162,7 +4221,8 @@ function saveLog() {
       var reps   = (document.getElementById('lex_rp_'+exIdx)||{value:''}).value||'';
       var intVal = (document.getElementById('lex_int_'+exIdx)||{value:'—'}).value||'—';
       var unidad = (document.getElementById('lex_u_'+exIdx)||{value:'kg'}).value||'kg';
-      var rir    = (document.getElementById('lex_rir_'+exIdx)||{value:'—'}).value||'—';
+      var rir    = ((document.getElementById('lex_rir_'+exIdx)||{value:''}).value||'').trim() || '—';
+      if (metricaDe(pe) === 'LIBRE' && rir !== '—') rir = rir.toUpperCase();
       var com    = (document.getElementById('lex_com_'+exIdx)||{value:''}).value||'';
       var cargaReal = (intVal && intVal !== '—') ? intVal+' '+unidad : '';
       var rirReal = rir !== '—' ? rir : '';
@@ -4171,6 +4231,7 @@ function saveLog() {
         nombre: pe.nombre,
         dosisPlaneada: pe.dosis||'',
         intensidadPlaneada: pe.intensidad||'',
+        intMetric: metricaDe(pe),
         repsReal: repsReal,
         cargaReal: cargaReal,
         intensidadReal: rirReal,
@@ -4483,21 +4544,23 @@ function closeVideoModal() {
 function showVideoModal(url, nombre) {
   document.getElementById('m_video_title').textContent = nombre ? nombre.toUpperCase() : 'VIDEO GUÍA';
   var wrap = document.getElementById('m_video_wrap');
-  // Build YouTube URL - ensure it's embed format
-  var embedUrl = url;
+  var extLink = document.getElementById('m_video_ext');
+  url = String(url||'').trim();
+  if (url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
   var ytId = '';
-  var m1 = url.match(/youtube\.com\/embed\/([^?&]+)/);
-  var m2 = url.match(/youtu\.be\/([^?&]+)/);
-  var m3 = url.match(/youtube\.com\/watch\?v=([^&]+)/);
-  if (m1) ytId = m1[1];
-  else if (m2) ytId = m2[1];
-  else if (m3) ytId = m3[1];
-  if (ytId) {
-    embedUrl = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&rel=0&modestbranding=1';
-    var extLink = document.getElementById('m_video_ext');
-    if (extLink) extLink.href = 'https://www.youtube.com/watch?v=' + ytId;
+  var m = url.match(/youtube\.com\/embed\/([^?&\/]+)/) || url.match(/youtu\.be\/([^?&\/]+)/) || url.match(/youtube\.com\/watch\?v=([^&]+)/) || url.match(/youtube\.com\/shorts\/([^?&\/]+)/);
+  if (m) ytId = m[1];
+  var embedUrl = '';
+  if (ytId) { embedUrl = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&rel=0&modestbranding=1&playsinline=1'; if (extLink) { extLink.href = 'https://www.youtube.com/watch?v=' + ytId; extLink.textContent = 'Abrir en YouTube ↗'; } }
+  else {
+    var dm = url.match(/drive\.google\.com\/file\/d\/([^\/?]+)/);
+    var vm = url.match(/vimeo\.com\/(\d+)/);
+    if (dm) embedUrl = 'https://drive.google.com/file/d/' + dm[1] + '/preview';
+    else if (vm) embedUrl = 'https://player.vimeo.com/video/' + vm[1] + '?autoplay=1';
+    if (extLink) { extLink.href = url; extLink.textContent = 'Abrir en otra pestaña ↗'; }
   }
-  wrap.innerHTML = '<iframe src="'+embedUrl+'" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>';
+  if (embedUrl) wrap.innerHTML = '<iframe src="'+embedUrl+'" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>';
+  else wrap.innerHTML = '<div style="position:absolute;inset:0;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;color:#fff;font-size:13px;padding:20px;text-align:center">Este video no se puede mostrar aquí.<a href="'+esc(url)+'" target="_blank" rel="noopener" class="btn btn-p" style="text-decoration:none">▶ Abrir video</a></div>';
   openModal('m_video');
 }
 
@@ -4515,6 +4578,7 @@ function stopVideo() {
 //  INIT
 // ═══════════════════════════════════════════════════════════
 db(); // Inicializa y crea las cuentas base de la marca
+fixNombreCoach();
 
 // Global click handlers
 document.addEventListener('click', function(ev) {
@@ -4573,7 +4637,7 @@ function openEditLog(logId) {
   document.getElementById('edit_log_esf').value=l.esfuerzo||'';
   document.getElementById('edit_log_dolor').value=l.dolor||'no';
   document.getElementById('edit_log_comment').value=l.comentario||'';
-  document.getElementById('edit_log_agua').value=l.agua||'';
+  document.getElementById('edit_log_agua').value=aguaMl(l.agua)||'';
   document.getElementById('edit_log_sueno').value=l.sueno||'';
   document.getElementById('edit_log_estres').value=l.estres||'';
   openModal('m_edit_log');
