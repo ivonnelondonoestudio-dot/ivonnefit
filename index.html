@@ -2627,6 +2627,7 @@ function renderRutinaContent(r) {
           html += '<div style="font-size:11px;color:var(--gris);margin-bottom:3px">📊 '+(ge.dosis||'—')+(ge.descanso?' &nbsp;⏱ '+ge.descanso:'')+'</div>';
           if(ge.intensidad||ge.carga) html += '<div style="font-size:11px;margin-bottom:2px"><span style="padding:2px 8px;background:rgba(var(--acc-rgb),0.1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:20px;color:var(--cyan)">💪 Intensidad sugerida: '+(ge.intensidad||ge.carga)+'</span></div>';
           if(ge.comentario) html += '<div style="font-size:11px;color:var(--cyan);margin-top:4px;padding:3px 8px;background:rgba(var(--acc-rgb),0.08);border-radius:6px;border-left:2px solid var(--cyan)">💬 '+ge.comentario+'</div>';
+          html += instrBlock(ge);
           html += '</div>';
         }
         html += '</div>';
@@ -2639,6 +2640,7 @@ function renderRutinaContent(r) {
         html += '<div style="font-size:11px;color:var(--gris);margin-bottom:3px">📊 '+(e.dosis||'—')+(e.descanso?' &nbsp;⏱ '+e.descanso:'')+'</div>';
         if(e.intensidad||e.carga) html += '<div style="font-size:11px;margin-bottom:2px"><span style="padding:2px 8px;background:rgba(var(--acc-rgb),0.1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:20px;color:var(--cyan)">💪 Intensidad sugerida: '+(e.intensidad||e.carga)+'</span></div>';
         if(e.comentario) html += '<div style="font-size:11px;color:var(--cyan);margin-top:4px;padding:3px 8px;background:rgba(var(--acc-rgb),0.08);border-radius:6px;border-left:2px solid var(--cyan)">💬 '+e.comentario+'</div>';
+        html += instrBlock(e);
         html += '</div>';
         i++;
       }
@@ -2891,6 +2893,19 @@ function videoDe(ex) {
   if (ex.videoUrl) return ex.videoUrl;
   var lib = findEjercicio(ex.nombre);
   return lib ? (lib.video || lib.videoUrl || '') : '';
+}
+// ── INSTRUCCIONES: descripción y equipamiento de la biblioteca, desplegables en la rutina ──
+function instrBlock(ex) {
+  var lib = ex ? findEjercicio(ex.nombre) : null;
+  if (!lib) return '';
+  var desc = (lib.desc || lib.descripcion || '').trim(), eq = (lib.equipo || '').trim();
+  if (!desc && !eq) return '';
+  var h = '<details class="instr-box" style="margin-top:6px;border:1px solid rgba(var(--oro-rgb),0.3);border-radius:8px;background:rgba(var(--oro-rgb),0.06)">';
+  h += '<summary style="cursor:pointer;padding:5px 9px;font-size:11px;font-weight:700;color:var(--oro);list-style:none">📋 Cómo hacerlo ›</summary>';
+  h += '<div style="padding:2px 10px 9px;font-size:12px;line-height:1.6;color:var(--blanco);white-space:pre-line">';
+  if (eq) h += '<div style="font-size:11px;color:var(--gris);margin-bottom:4px">🏋️ Equipo: '+esc(eq)+'</div>';
+  if (desc) h += esc(desc);
+  return h + '</div></details>';
 }
 function vidBtn(ex) {
   var u = videoDe(ex);
@@ -3725,7 +3740,7 @@ function pgMiRutina(rid) {
   if (r.fechaFin) { var dDiff=Math.ceil((new Date(r.fechaFin)-new Date())/86400000); vigStr += ' → '+fDate(r.fechaFin); if(dDiff<=7) vigStr+=' ⚠️'; }
   var html = '<div class="page-title">MI RUTINA</div><div class="page-sub">' + (r.nombre||'Semana '+r.semana) + ' · ' + (r.objetivo||'') + (vigStr?' · '+vigStr:'') + '</div>';
   var _hoyBien = bien(d).some(function(l){ return l.userId===CU.id && l.fecha===dateCOL(); });
-  if (!_hoyBien) html += '<div onclick="openBien()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;margin-bottom:12px;border:1px dashed rgba(var(--acc-rgb),0.4);border-radius:var(--r);background:var(--s1);font-size:12px"><span>🌙 ¿Cómo estuvo tu día? Registra agua, sueño y estrés</span><span style="color:var(--cyan);font-weight:700">Registrar →</span></div>';
+  if (!_hoyBien) html += '<div onclick="openBien()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;margin-bottom:12px;border:1px dashed rgba(var(--acc-rgb),0.4);border-radius:var(--r);background:var(--s1);font-size:12px"><span>🌙 ¿Cómo estuvo tu día? Registra agua, sueño, estrés y pasos</span><span style="color:var(--cyan);font-weight:700">Registrar →</span></div>';
   if (ruts.length > 1) {
     html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"><span style="font-size:11px;color:var(--gris);align-self:center">Mis planes:</span>';
     ruts.forEach(function(x){ html += '<button class="btn btn-sm '+(x.id===r.id?'btn-p':'btn-g')+'" onclick="pgMiRutina(\''+x.id+'\')">'+esc(x.nombre||'Plan '+x.semana)+'</button>'; });
@@ -3761,6 +3776,7 @@ function pgMiRutina(rid) {
           html += '<div style="font-size:11px;color:var(--gris);margin-bottom:3px">📊 '+(ge.dosis||'—')+(ge.descanso?' &nbsp;⏱ '+ge.descanso:'')+'</div>';
           if(ge.intensidad) html += '<div style="font-size:11px;margin-bottom:3px"><span style="padding:2px 8px;background:rgba(var(--acc-rgb),0.1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:20px;color:var(--cyan)">💪 Intensidad sugerida: '+ge.intensidad+'</span></div>';
           if(ge.comentario) html += '<div style="font-size:11px;padding:4px 8px;background:rgba(var(--acc-rgb),0.07);border-left:2px solid var(--cyan);border-radius:6px;color:var(--cyan)">💬 '+ge.comentario+'</div>';
+          html += instrBlock(ge);
           html += '</div>';
         }
         html += '</div>';
@@ -3773,6 +3789,7 @@ function pgMiRutina(rid) {
         html += '<div style="font-size:11px;color:var(--gris);margin-bottom:3px">📊 '+(e.dosis||'—')+(e.descanso?' &nbsp;⏱ '+e.descanso:'')+'</div>';
         if(e.intensidad) html += '<div style="font-size:11px;margin-bottom:3px"><span style="padding:2px 8px;background:rgba(var(--acc-rgb),0.1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:20px;color:var(--cyan)">💪 Intensidad sugerida: '+e.intensidad+'</span></div>';
         if(e.comentario) html += '<div style="font-size:11px;padding:4px 8px;background:rgba(var(--acc-rgb),0.07);border-left:2px solid var(--cyan);border-radius:6px;color:var(--cyan)">💬 '+e.comentario+'</div>';
+        html += instrBlock(e);
         html += '</div>';
         di++;
       }
@@ -4120,6 +4137,7 @@ function loadLogExs() {
       html += '<span style="font-size:11px;color:var(--gris)">📊 Plan: <strong>'+(ge.dosis||'—')+'</strong></span>';
       if(coachInt) html += '<span style="font-size:11px;padding:2px 8px;background:rgba(var(--acc-rgb),0.12);border:1px solid var(--cyan);border-radius:20px;color:var(--cyan)">💪 Intens. coach: <strong>'+coachInt+'</strong></span>';
       html += '</div>';
+      html += instrBlock(ge);
       
       // Series selector
       // RIR options for intensity achieved
